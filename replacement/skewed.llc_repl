@@ -1,0 +1,164 @@
+/*
+    Modified LRU/NRU for 4-way skewed cache, proposed by Andre Seznec
+    - 1 RU bit per way
+    - Hit/New Allocated:
+        - ru_bit[set_id][way_id] = 1 when way_id is accessed
+        - reset when num_accesses == RESET_PERIOD
+    - Miss: randomly victimize in this order
+        1. among ru_bit[set_id][way_id] = 0
+        2. among ru_bit[set_id][way_id] = 1 and dirty == 0
+        3. among ru_bit[set_id][way_id] = 1 and dirty == 1
+*/
+
+#include "cache.h"
+
+#define RESET_PERIOD LLC_SET*LLC_WAY*BLOCK_SIZE/4
+uint32_t num_accesses = 0;
+
+// initialize replacement state
+void CACHE::llc_initialize_replacement() {
+    for(int i=0; i<LLC_SET; i++) {
+        for(int j=0; j<LLC_WAY; j++)
+            ru_bit[i][j] = false;
+    }
+
+    cout << "RESET_PERIOD: " << RESET_PERIOD << endl;
+}
+
+// find replacement victim
+uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
+{
+    // type cast index ptr to skewed cache
+    SkewedIndex* m_skewed_index = static_cast<SkewedIndex*>(m_index);
+
+    // call get_victim from SkewedIndex class
+    uint32_t set_id = 0;
+    uint32_t way_id = 0;
+    m_skewed_index->get_victim(full_addr>>LOG2_BLOCK_SIZE, &set_id, &way_id);
+
+    if (block[set_id][way_id].valid && m_index) {
+        m_index->increment_eviction(set_id);
+    }
+    return way_id;
+}
+
+// called on every cache hit and cache fill
+void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, uint64_t full_addr, uint64_t ip, uint64_t victim_addr, uint32_t type, uint8_t hit)
+{
+    num_accesses++;
+    if (num_accesses >= RESET_PERIOD) {
+        for(int i=0; i<LLC_SET; i++) {
+            for(int j=0; j<LLC_WAY; j++)
+                ru_bit[i][j] = false;
+        }
+        num_accesses = 0;
+        cout << "reset access counter" << endl;
+    }
+    ru_bit[set][way] = 1;
+}
+
+void CACHE::llc_replacement_final_stats()
+{
+    // do nothing
+}
+
+void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
+    // compute hashed index of each way
+    vector<uint32_t> hashed_indices;
+    for (uint32_t i=0; i < NUM_WAY; ++i) {
+        uint32_t hashed_idx = compute_index(address, m_shuffled_bit_sels[0], m_shuffled_bit_sels[i+1]);
+        
+        // victimize invalid lines if any
+        if (!block_array[hashed_idx][i].valid) {
+            *way_id = i;
+            *set_id = hashed_idx;
+            return;
+        }
+        hashed_indices.push_back(hashed_idx);
+    }
+
+    vector<vector<uint32_t>> ru_types;
+    ru_types.resize(2);
+    for (uint32_t way=0; way < NUM_WAY; ++way) {
+        uint32_t hashed_idx = hashed_indices[way];
+        ru_types[ru_bit[hashed_idx][way]].push_back(way);
+    }
+
+    /*
+    // debug
+    cout << "address: " << address << endl;
+    cout << "hashed_indices: ";
+    for (uint32_t i=0; i < NUM_WAY; ++i)
+        cout << hashed_indices[i] << " ";
+    cout << endl;
+
+    cout << "ru_types[0]: ";
+    for (uint32_t i=0; i < ru_types[0].size(); ++i)
+        cout << ru_types[0][i] << " ";
+    cout << endl;
+
+    cout << "ru_types[1]: ";
+    for (uint32_t i=0; i < ru_types[1].size(); ++i)
+        cout << ru_types[1][i] << " ";
+    cout << endl;
+    */
+
+    // all lines are ru_bit == 1
+    if (ru_types[0].size() == 0) {
+        vector<vector<uint32_t>> dirty_types;
+        dirty_types.resize(2);
+        for (uint32_t way=0; way < ru_types[1].size(); ++way) {
+            uint32_t hashed_idx = ru_types[1][way];
+            dirty_types[block_array[hashed_idx][way].dirty].push_back(way);
+        }
+
+        // all lines are dirty => random victim
+        if (dirty_types[0].size() == 0) {
+            // *way_id = dirty_types[1][rand() % dirty_types[1].size()];    // random
+            *way_id = dirty_types[1][0];
+            *set_id = hashed_indices[*way_id];
+        }
+
+        // only one clean line
+        else if (dirty_types[0].size() == 1) {
+            *way_id = dirty_types[0][0];
+            *set_id = hashed_indices[*way_id];
+        }
+
+        // more than one clean lines => random victim
+        else {
+            // *way_id = dirty_types[0][rand() % dirty_types[0].size()];    // random
+            *way_id = dirty_types[0][0];
+            *set_id = hashed_indices[*way_id];
+        }
+
+        /*
+        // debug
+        cout << "dirty_types[0]: ";
+        for (uint32_t i=0; i < dirty_types[0].size(); ++i)
+            cout << dirty_types[0][i] << " ";
+        cout << endl;
+
+        cout << "dirty_types[1]: ";
+        for (uint32_t i=0; i < dirty_types[1].size(); ++i)
+            cout << dirty_types[1][i] << " ";
+        cout << endl;
+        */
+    }
+
+    // only one line with ru_bit == 0
+    else if (ru_types[0].size() == 1) {
+        *way_id = ru_types[0][0];
+        *set_id = hashed_indices[ru_types[0][0]];
+    }
+
+    // more than one line with ru_bit == 0 => random victim
+    else {
+        // *way_id = ru_types[0][rand() % ru_types[0].size()];  // random
+        *way_id = ru_types[0][0];
+        *set_id = hashed_indices[*way_id];
+    }
+
+    // cout << "victim_set: " << *set_id << ". victim_way: " << *way_id << endl;
+    // cout << endl;
+}
