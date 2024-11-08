@@ -169,13 +169,13 @@ public:
     void     print_stats();
     string   etp_vector_to_string(vector<BitEntropy>& entropy);
     void     warmup_check();
-    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
     bool     is_same_sequence(vector<uint32_t> x_seq_a, vector<uint32_t> x_seq_b);
     bool     is_zero_segment(vector<uint32_t>& x_seq_a);
     bool     check_remap();
     
     virtual void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     virtual void etp_tracker_access_update(uint64_t address);
+    virtual void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
     virtual void etp_tracker_interval_update();
 
     // replacement policy

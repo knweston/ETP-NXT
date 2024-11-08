@@ -13,10 +13,11 @@ class INDEX(Enum):
    ENTROPY     = 5
    SKEWED      = 6
    PRIMEREAL   = 7
+   ENTROPYV2   = 8
 
 # From left to right, the latency (in cycles) of:
 # nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, primereal
-LATENCY = [0,0,2,0,0,0,0,5]
+LATENCY = [0,0,2,0,0,0,0,5,0]
 
 
 
@@ -27,7 +28,12 @@ def change_idx_in_file(idx_type):
    
    with open(filepath, 'r', encoding='utf-8') as file: 
       data = file.readlines()
-   data[51] = typeterm + " " + str(idx_type.value) + "\n"
+   
+   if idx_type == INDEX.PRIMEREAL:
+      data[51] = typeterm + " " + str(INDEX.PRIMEIDEAL.value) + "\n"
+   else:
+      data[51] = typeterm + " " + str(idx_type.value) + "\n"
+
    data[52] = latencyterm + " " + str(LATENCY[idx_type.value]) + "\n"
 
    with open(filepath, 'w', encoding='utf-8') as file: 
@@ -69,15 +75,16 @@ def execute(exec_file, traces_dir, result_dir=""):
 
 
 def main():
-   build(INDEX.NOHASH, is_pf=False)
+   # build(INDEX.NOHASH, is_pf=False)
    # build(INDEX.PRIMEIDEAL, is_pf=False)
    # build(INDEX.CEASER, is_pf=False)
    # build(INDEX.XORHASH, is_pf=False)
    # build(INDEX.ENTROPY, is_pf=False)
    # build(INDEX.SKEWED, is_pf=False)
    # build(INDEX.PRIMEREAL, is_pf=False)
+   # build(INDEX.ENTROPYV2, is_pf=False)
 
-   build(INDEX.NOHASH, is_pf=True)
+   # build(INDEX.NOHASH, is_pf=True)
    # build(INDEX.PRIMEIDEAL, is_pf=True)
    # build(INDEX.CEASER, is_pf=True)
    # build(INDEX.XORHASH, is_pf=True)
@@ -85,7 +92,10 @@ def main():
    # build(INDEX.SKEWED, is_pf=True)
    # build(INDEX.PRIMEREAL, is_pf=True)
 
-   execute("nohash", "/Volumes/microSD/dpc3-traces/")
+   # execute("primereal", "/Volumes/microSD/entropy-traces/")
+   execute("entropy", "/Volumes/microSD/entropy-traces/")
+   # execute("entropyv2", "/Volumes/microSD/entropy-traces/")
+
 
 if __name__ == "__main__":
    main()

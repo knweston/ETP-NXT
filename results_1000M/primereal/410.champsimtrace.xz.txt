@@ -1,0 +1,39 @@
+intitialized seed: 0
+cache: 2048 x 16. num warmup access: 0
+cache: 16 x 4. num warmup access: 0
+cache: 16 x 4. num warmup access: 0
+cache: 128 x 12. num warmup access: 0
+cache: 256 x 2. num warmup access: 0
+cache: 256 x 2. num warmup access: 0
+cache: 512 x 4. num warmup access: 0
+
+*** ChampSim Multicore Out-of-Order Simulator ***
+
+Warmup Instructions: 2000000
+Simulation Instructions: 1000000000
+Number of CPUs: 1
+L1D sets: 256. L1D ways: 2
+L2C sets: 512. L2C ways: 4
+L2C INDEX TYPE:   -1
+LLC sets: 2048. LLC ways: 16
+LLC LATENCY: 32
+LLC HASH LATENCY: 0
+LLC INDEX TYPE:   1
+VARIABLE_ADDRESS_TRANSLATION: No
+Random Seed Offset: 0
+Off-chip DRAM Size: 8192 MB Channels: 1 Width: 64-bit Data Rate: 3000 MT/s
+
+CPU 0 runs /Volumes/microSD/entropy-traces/410.champsimtrace.xz
+4 0 52
+1 1 101
+0 2 149
+champsim_seed = 0. srand_seed = 149
+CPU 0 Bimodal branch predictor
+cache: 2048 x 16. num warmup access: 0
+PRIME NUMBER: 2039
+cache: 2048 x 16. num warmup access: 2000000
+
+Warmup complete CPU 0 instructions: 1 cycles: 15 (Simulation time: 0 hr 0 min 0 sec) 
+
+Heartbeat CPU 0 instructions: 10000001 cycles: 14639201 heartbeat IPC: 0.683097 cumulative IPC: 0.683098 (Simulation time: 0 hr 0 min 16 sec) 
+Caught signal: 2
