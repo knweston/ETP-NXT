@@ -82,7 +82,7 @@ def main():
    # build(INDEX.ENTROPY, is_pf=False)
    # build(INDEX.SKEWED, is_pf=False)
    # build(INDEX.PRIMEREAL, is_pf=False)
-   # build(INDEX.ENTROPYV2, is_pf=False)
+   build(INDEX.ENTROPYV2, is_pf=False)
 
    # build(INDEX.NOHASH, is_pf=True)
    # build(INDEX.PRIMEIDEAL, is_pf=True)
@@ -93,7 +93,7 @@ def main():
    # build(INDEX.PRIMEREAL, is_pf=True)
 
    # execute("primereal", "/Volumes/microSD/entropy-traces/")
-   execute("entropy", "/Volumes/microSD/entropy-traces/")
+   # execute("entropy", "/Volumes/microSD/entropy-traces/")
    # execute("entropyv2", "/Volumes/microSD/entropy-traces/")
 
 

@@ -15,9 +15,10 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
    
    if (!UPDATE_MISS_ONLY)
       etp_tracker_access_update(address);
-   else
+   else {
       if (!is_hit)
          etp_tracker_access_update(address);
+   }
 
 
    // should remap when last index config != current index config
