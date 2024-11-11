@@ -164,7 +164,6 @@ public:
     ~EntropyIndex() {}
     
     uint32_t get_set(uint64_t address);
-    void     move_cache_data(MEMORY *lower_level);
     uint32_t compute_index(uint64_t address, vector<uint32_t> x_seq_a, vector<uint32_t> x_seq_b);
     void     print_stats();
     string   etp_vector_to_string(vector<BitEntropy>& entropy);
@@ -173,6 +172,7 @@ public:
     bool     is_zero_segment(vector<uint32_t>& x_seq_a);
     bool     check_remap();
     
+    virtual void move_cache_data(MEMORY *lower_level);
     virtual void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     virtual void etp_tracker_access_update(uint64_t address);
     virtual void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);

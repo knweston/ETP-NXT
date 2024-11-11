@@ -2,6 +2,7 @@ import sys
 import os
 from enum import Enum
 import subprocess
+import argparse
 
 # Indexing types supported
 class INDEX(Enum):
@@ -14,6 +15,28 @@ class INDEX(Enum):
    SKEWED      = 6
    PRIMEREAL   = 7
    ENTROPYV2   = 8
+
+def parse_index_type(str_type):
+   if str_type == "nohash":
+      return INDEX.NOHASH
+   elif str_type == "primeideal":
+      return INDEX.PRIMEIDEAL
+   elif str_type == "ceaser":
+      return INDEX.CEASER
+   elif str_type == "xorhash":
+      return INDEX.XORHASH
+   elif str_type == "genetic":
+      return INDEX.GENETIC
+   elif str_type == "entropy":
+      return INDEX.ENTROPY
+   elif str_type == "skewed":
+      return INDEX.SKEWED
+   elif str_type == "primereal":
+      return INDEX.PRIMEREAL
+   elif str_type == "entropyv2":
+      return INDEX.ENTROPYV2
+   else:
+      print("Index not found: ", str_type)
 
 # From left to right, the latency (in cycles) of:
 # nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, primereal
@@ -43,18 +66,24 @@ def change_idx_in_file(idx_type):
 
 
 
-def build(idx_type, is_pf):
+def build(idx_type, is_pf, filename):
    idx_str = str(idx_type).split(".")[-1].lower()
+
+   if (filename == ""):
+      exec_name = idx_str
+   else:
+      exec_name = filename
+
    if is_pf:
       if idx_type == INDEX.SKEWED:
-         cmd = "./build_champsim.sh bimodal no next_line spp_dev no skewed 1 " + idx_str + "pf"
+         cmd = "./build_champsim.sh bimodal no next_line spp_dev no skewed 1 " + exec_name + "pf"
       else:
-         cmd = "./build_champsim.sh bimodal no next_line spp_dev no lru 1 " + idx_str + "pf"
+         cmd = "./build_champsim.sh bimodal no next_line spp_dev no lru 1 " + exec_name + "pf"
    else:
       if idx_type == INDEX.SKEWED:
-         cmd = "./build_champsim.sh bimodal no no no no skewed 1 " + idx_str
+         cmd = "./build_champsim.sh bimodal no no no no skewed 1 " + exec_name
       else:
-         cmd = "./build_champsim.sh bimodal no no no no lru 1 " + idx_str
+         cmd = "./build_champsim.sh bimodal no no no no lru 1 " + exec_name
    change_idx_in_file(idx_type)
    os.system(cmd)
 
@@ -75,27 +104,20 @@ def execute(exec_file, traces_dir, result_dir=""):
 
 
 def main():
-   # build(INDEX.NOHASH, is_pf=False)
-   # build(INDEX.PRIMEIDEAL, is_pf=False)
-   # build(INDEX.CEASER, is_pf=False)
-   # build(INDEX.XORHASH, is_pf=False)
-   # build(INDEX.ENTROPY, is_pf=False)
-   # build(INDEX.SKEWED, is_pf=False)
-   # build(INDEX.PRIMEREAL, is_pf=False)
-   build(INDEX.ENTROPYV2, is_pf=False)
+   parser = argparse.ArgumentParser()
+   parser.add_argument("-i", "--idx_type", required=True, type=str)
+   parser.add_argument("-f", "--exec_name", required=False, default="", type=str)
+   parser.add_argument("-p", "--is_pf", required=True, type=str)
+   args = parser.parse_args()
 
-   # build(INDEX.NOHASH, is_pf=True)
-   # build(INDEX.PRIMEIDEAL, is_pf=True)
-   # build(INDEX.CEASER, is_pf=True)
-   # build(INDEX.XORHASH, is_pf=True)
-   # build(INDEX.ENTROPY, is_pf=True)
-   # build(INDEX.SKEWED, is_pf=True)
-   # build(INDEX.PRIMEREAL, is_pf=True)
-
-   # execute("primereal", "/Volumes/microSD/entropy-traces/")
-   # execute("entropy", "/Volumes/microSD/entropy-traces/")
-   # execute("entropyv2", "/Volumes/microSD/entropy-traces/")
-
+   if (args.is_pf == "true"):
+      is_pf = True
+   elif (args.is_pf == "false"):
+      is_pf = False
+   else:
+      print("Invalid option: ", args.is_pf)
+   
+   build(parse_index_type(args.idx_type), is_pf, args.exec_name)
 
 if __name__ == "__main__":
    main()

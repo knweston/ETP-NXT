@@ -102,7 +102,11 @@ void CACHE::handle_fill()
 
             // [Kevin]
             if (m_index) {
-                m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
+                if ((IGNORE_UPDATE_PF && (MSHR.entry[mshr_index].type == PREFETCH))
+                 || (IGNORE_UPDATE_WB && (MSHR.entry[mshr_index].type == WRITEBACK))) {}
+                else {
+                    m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
+                }
             }
 
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -257,7 +261,10 @@ void CACHE::handle_fill()
 
             // [Kevin]
             if (m_index) {
-                m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
+                if ((IGNORE_UPDATE_PF && (MSHR.entry[mshr_index].type == PREFETCH))
+                 || (IGNORE_UPDATE_WB && (MSHR.entry[mshr_index].type == WRITEBACK))) {}
+                else
+                    m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
             }
 
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -333,7 +340,10 @@ void CACHE::handle_writeback()
 
             // [Kevin]
             if (m_index) {
-                m_index->update(WQ.entry[index].address, lower_level, true, WQ.entry[index].type);
+                if ((IGNORE_UPDATE_PF && (WQ.entry[index].type == PREFETCH))
+                 || (IGNORE_UPDATE_WB && (WQ.entry[index].type == WRITEBACK))) {}
+                else
+                    m_index->update(WQ.entry[index].address, lower_level, true, WQ.entry[index].type);
             }
 
             // remove this entry from WQ
@@ -584,7 +594,10 @@ void CACHE::handle_writeback()
 
                     // [Kevin]
                     if (m_index) {
-                        m_index->update(WQ.entry[index].address, lower_level, false, WQ.entry[index].type);
+                        if ((IGNORE_UPDATE_PF && (WQ.entry[index].type == PREFETCH))
+                         || (IGNORE_UPDATE_WB && (WQ.entry[index].type == WRITEBACK))) {}
+                        else
+                            m_index->update(WQ.entry[index].address, lower_level, false, WQ.entry[index].type);
                     }
 
                     // remove this entry from WQ
@@ -692,7 +705,10 @@ void CACHE::handle_read()
 
                 // [Kevin]
                 if (m_index) {
-                    m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
+                    if ((IGNORE_UPDATE_PF && (RQ.entry[index].type == PREFETCH))
+                     || (IGNORE_UPDATE_WB && (RQ.entry[index].type == WRITEBACK))) {}
+                    else
+                        m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
                 }
                 
                 // remove this entry from RQ
@@ -926,7 +942,10 @@ void CACHE::handle_prefetch()
 
                 // [Kevin]
                 if (m_index) {
-                    m_index->update(PQ.entry[index].address, lower_level, true, PQ.entry[index].type);
+                    if ((IGNORE_UPDATE_PF && (PQ.entry[index].type == PREFETCH))
+                     || (IGNORE_UPDATE_WB && (PQ.entry[index].type == WRITEBACK))) {}
+                    else
+                        m_index->update(PQ.entry[index].address, lower_level, true, PQ.entry[index].type);
                 }
 
                 // run prefetcher on prefetches from higher caches

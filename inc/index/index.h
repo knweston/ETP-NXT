@@ -11,6 +11,8 @@
 extern string CONFIG_FILE;
 extern vector<string> APP_LIST;
 
+#define IGNORE_UPDATE_PF 0
+#define IGNORE_UPDATE_WB 0
 
 //========================================================================//
 // HELPER FUNCTIONS
@@ -43,6 +45,9 @@ public:
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
 
         warmup_access(x_warmup);
+
+        cout << "IGNORE_UPDATE_PF: " << (IGNORE_UPDATE_PF? "Yes" : "No") << endl;
+        cout << "IGNORE_UPDATE_WB: " << (IGNORE_UPDATE_WB? "Yes" : "No") << endl;
     }
 
     ~Index() {

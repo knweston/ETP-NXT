@@ -1,6 +1,10 @@
 #include "index/entropy.h"
 
 void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
+    // Note: to reproduce MICRO24 results, skip update pref hit (both etp access update and interval access ctr), but keep updating pref miss
+    if ((type == PREFETCH) && is_hit)
+        return;
+
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;

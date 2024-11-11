@@ -1,5 +1,18 @@
 #include "index/entropy2.h"
 
+bool EntropyV2::should_update_trackers(bool is_hit, uint32_t type) {
+   if (UPDATE_MISS_ONLY && is_hit)
+      return false;
+   if (SKIP_UPDATE_PF && (type == PREFETCH))
+      return false;
+   if (SKIP_UPDATE_WB && (type == WRITEBACK))
+      return false;
+   if (m_should_remap)
+      return false;
+
+   return true;
+}
+
 void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
    uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
    uint32_t hashed_index   = get_set(address);
@@ -13,21 +26,16 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
    }
    access_ctr++;
    
-   if (!UPDATE_MISS_ONLY)
+   if (should_update_trackers(is_hit, type))
       etp_tracker_access_update(address);
-   else {
-      if (!is_hit)
-         etp_tracker_access_update(address);
-   }
-
-
+   
    // should remap when last index config != current index config
    if (m_should_remap) {
       // if all sets have been remapped, skip this step
       if ((REMAP_INTERVAL > 0) && (access_ctr % REMAP_INTERVAL == 0) && (map_ptr < NUM_SET)) {
          move_cache_data(dram);
          if (map_ptr == NUM_SET)
-               m_should_remap = false; // remapping done
+            m_should_remap = false; // remapping done
       }
    }
 
@@ -89,11 +97,8 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
          itv_entropy[i].m_entropy = 0;
       } 
    }
-
    warmup_check();
 }
-
-
 
 void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
    // size of the bit sequence being tracked for entropy must greater than the size of the index sequences
@@ -123,21 +128,21 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
       // compute next_etp
       double next_etp = 0;
       for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-            next_etp += itv_entropy[x_seq_a[i]].m_entropy;
+         next_etp += itv_entropy[x_seq_a[i]].m_entropy;
       }
       
       for (uint32_t i=0; i < x_seq_b.size(); ++i) {
-            next_etp += itv_entropy[x_seq_b[i]].m_entropy;
+         next_etp += itv_entropy[x_seq_b[i]].m_entropy;
       }
       
       // compute curr_etp
       double curr_etp = 0;
       for (uint32_t i=0; i < m_curr_seq_a.size(); ++i) {
-            curr_etp += itv_entropy[m_curr_seq_a[i]].m_entropy;
+         curr_etp += itv_entropy[m_curr_seq_a[i]].m_entropy;
       }
       
       for (uint32_t i=0; i < m_curr_seq_b.size(); ++i) {
-            curr_etp += itv_entropy[m_curr_seq_b[i]].m_entropy;
+         curr_etp += itv_entropy[m_curr_seq_b[i]].m_entropy;
       }
       
       // compute etp difference
@@ -151,12 +156,12 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
       cout << std::setprecision(0) << "Current Cfg ETP:  " << curr_etp << endl;
       cout << std::setprecision(0) << "Next Cfg ETP:     " << next_etp << endl;
       if (etp_diff >= SENSE_THRESHOLD) {
-            cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% >= " << SENSE_THRESHOLD << "%. Switch to new candidate." << endl;
+         cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% >= " << SENSE_THRESHOLD << "%. Switch to new candidate." << endl;
       }
       else {
-            cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% < " << SENSE_THRESHOLD << "%. Keep current candidate." << endl;
-            x_seq_a = m_curr_seq_a;
-            x_seq_b = m_curr_seq_b;
+         cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% < " << SENSE_THRESHOLD << "%. Keep current candidate." << endl;
+         x_seq_a = m_curr_seq_a;
+         x_seq_b = m_curr_seq_b;
       }
       cout << std::setprecision(5);
    }
@@ -164,21 +169,21 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
       // compute next_etp
       double next_etp = 0;
       for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-            next_etp += itv_entropy[x_seq_a[i]].m_entropy;
+         next_etp += itv_entropy[x_seq_a[i]].m_entropy;
       }
       
       for (uint32_t i=0; i < x_seq_b.size(); ++i) {
-            next_etp += itv_entropy[x_seq_b[i]].m_entropy;
+         next_etp += itv_entropy[x_seq_b[i]].m_entropy;
       }
       
       // compute last_etp
       double last_etp = 0;
       for (uint32_t i=0; i < m_last_seq_a.size(); ++i) {
-            last_etp += itv_entropy[m_last_seq_a[i]].m_entropy;
+         last_etp += itv_entropy[m_last_seq_a[i]].m_entropy;
       }
       
       for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
-            last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
+         last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
       }
       
       // compute etp difference
@@ -192,14 +197,127 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
       cout << std::setprecision(0) << "Last Cfg ETP: " << last_etp << endl;
       cout << std::setprecision(0) << "Next Cfg ETP: " << next_etp << endl;
       if (etp_diff >= SENSE_THRESHOLD) {
-            cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% >= " << SENSE_THRESHOLD << "%. Switch to new candidate." << endl;
+         cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% >= " << SENSE_THRESHOLD << "%. Switch to new candidate." << endl;
       }
       else {
-            cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% < " << SENSE_THRESHOLD << "%. Keep last candidate." << endl;
-            x_seq_a = m_last_seq_a;
-            x_seq_b = m_last_seq_b;
+         cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% < " << SENSE_THRESHOLD << "%. Keep last candidate." << endl;
+         x_seq_a = m_last_seq_a;
+         x_seq_b = m_last_seq_b;
       }
       cout << std::setprecision(5);
    }
    return;
+}
+
+void EntropyV2::move_cache_data(MEMORY *lower_level) {
+   for (uint32_t way=0; way < NUM_WAY; ++way) {
+      BLOCK *src_block = &block_array[map_ptr][way];
+
+      // initiate a move if the source block is valid
+      if (src_block->valid) {
+         
+         // compute new index
+         uint32_t dest_index = compute_index(src_block->address, m_curr_seq_a, m_curr_seq_b);
+         uint32_t last_index = compute_index(src_block->address, m_last_seq_a, m_last_seq_b);
+
+         // if new index == map_ptr => this src_block is already in the new position => skip
+         if (dest_index == map_ptr)
+            continue;
+
+         // sanity check
+         uint32_t curr_index = get_set(src_block->address);
+         if (curr_index != map_ptr) {
+            cout << "ERROR: curr_index != map_ptr" << endl;
+            cout << "address:  " << src_block->address << endl;
+            cout << "cpu:      " << CPU_ID << endl;
+            cout << "curr_idx: " << curr_index << endl;
+            cout << "map_ptr:  " << map_ptr << endl;
+            cout << "dest_idx: " << dest_index << endl;
+            cout << "last_idx: " << last_index << endl;
+            assert(false);
+         }
+
+         bool fill_ready = true;
+         uint32_t dest_way = get_lru_victim(dest_index);
+
+         BLOCK *dest_block = &block_array[dest_index][dest_way];
+
+         /*
+            tie-breaking rules: 
+               1. dest_block->dirty && !src_block->dirty   => dest_block > src_block
+               2. dest_block->dirty && src_block->dirty    => dest_block < src_block
+               3. !dest_block->dirty && src_block->dirty   => dest_block < src_block
+               4. !dest_block->dirty && !src_block->dirty  => dest_block < src_block
+
+            additional rules:
+               1. dest_block->pf_useless
+         */ 
+         // if the destination block is dirty, write it back before overriding the data
+         if (dest_block->valid) {
+            // if (dest_block->dirty) {
+            //    if (!src_block->dirty) {
+            //       // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
+            //       num_drop++;
+            //       fill_ready = false;
+            //    }
+            //    else { // if both blocks are dirty, write back the destination block then move the source block to the destination
+            //       bool writeback_success = force_writeback(dest_block, lower_level, FILL_LEVEL, CPU_ID);
+            //       if (writeback_success) {
+            //          num_writeback++;    // update extra writeback statistics
+            //       }
+            //    }
+            // }
+
+            // else if (!dest_block->prefetch) {
+            //    // if destination block is a clean demand and the source block is prefetch, drop the source block, regardless of its dirty state (do not fill)
+            //    if (src_block->prefetch) {
+            //       num_drop++;
+            //       fill_ready = false;
+            //       if (src_block->dirty) {
+            //          bool writeback_success = force_writeback(src_block, lower_level, FILL_LEVEL, CPU_ID);
+            //          if (writeback_success) {
+            //             num_writeback++;
+            //          }
+            //       }
+            //    }
+            // }
+
+            if ((!dest_block->prefetch) && (src_block->prefetch)) {  // demand destination and prefetch source
+               num_drop++;
+               fill_ready = false;
+               if (src_block->dirty) {
+                  bool writeback_success = force_writeback(src_block, lower_level, FILL_LEVEL, CPU_ID);
+                  if (writeback_success) {
+                     num_writeback++;
+                  }
+               }
+            }
+            else {
+               if (dest_block->dirty) {
+                  bool writeback_success = force_writeback(dest_block, lower_level, FILL_LEVEL, CPU_ID);
+                  if (writeback_success) {
+                     num_writeback++;
+                  }
+               }
+            }
+         }
+
+         // override destination block with source block
+         // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
+         if (fill_ready) {
+            if (dest_block->valid)
+               increment_eviction(dest_index);
+
+            override_block(src_block, dest_block);
+            lru_update(dest_index, dest_way, src_block->lru);
+         }
+         
+         // invalidate the source block
+         src_block->valid = 0;
+
+         // update extra read statistics
+         num_read++;
+      }
+   }
+   map_ptr++;
 }
