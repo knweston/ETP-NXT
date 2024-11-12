@@ -62,11 +62,14 @@ public:
     virtual uint32_t get_set(uint64_t address) = 0;
     virtual void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
     virtual void     print_stats() = 0;
+    virtual void     eviction_update(BLOCK &victim_blk) {}
 
     virtual void increment_eviction(uint32_t set) { 
         EVICTION[set]++;
         PI_EVICTION[set]++;
     }
+
+    
 
     void interval_size(uint32_t x_interval_length) {
         INTERVAL_SIZE = x_interval_length;

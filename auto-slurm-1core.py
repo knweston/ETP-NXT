@@ -306,6 +306,15 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
                           "cc.road-36B","cc.urand-353B","cc.web-24B", \
                           "pr.web-3076B", "tc.twitter-4460B",\
                           "bodytrack", "canneal", "freqmine", "facesim", "fluidanimate", "streamcluster"]
+    
+    elif apps == "betpset-adj":
+        requested_apps = ["403", "410", "433", "450", "459", "471", "473", "482", \
+                          "607", "620", "621", "623", "627", "628", \
+                          "bc.urand-3004B", \
+                          "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
+                          "cc.road-36B","cc.urand-353B",\
+                          "pr.web-3076B", "tc.twitter-4460B",\
+                          "canneal", "freqmine", "facesim", "fluidanimate"]
                           
     # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 
     # due to "src/ooo_cpu.cc:1653: void O3_CPU::execute_store(uint32_t, uint32_t, uint32_t): Assertion `0' failed."

@@ -7,6 +7,8 @@ bool EntropyV2::should_update_trackers(bool is_hit, uint32_t type) {
       return false;
    if (SKIP_UPDATE_WB && (type == WRITEBACK))
       return false;
+   if (SKIP_UPDATE_WB_HIT && (type == WRITEBACK) && is_hit)
+      return false;
    if (m_should_remap)
       return false;
 
@@ -26,8 +28,8 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
    }
    access_ctr++;
    
-   if (should_update_trackers(is_hit, type))
-      etp_tracker_access_update(address);
+   // if (should_update_trackers(is_hit, type))
+   //    etp_tracker_access_update(address);
    
    // should remap when last index config != current index config
    if (m_should_remap) {
@@ -98,6 +100,14 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
       } 
    }
    warmup_check();
+}
+
+void EntropyV2::eviction_update(BLOCK &victim_blk) {
+   // if (should_update_trackers(is_hit, type))
+   bool is_pf_useless = (victim_blk.prefetch && (victim_blk.used == 0));
+
+   if (!is_pf_useless && !m_should_remap)
+      etp_tracker_access_update(victim_blk.address);
 }
 
 void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
