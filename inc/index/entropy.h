@@ -16,7 +16,7 @@
 #define HISTORY_LENGTH  1
 #define SENSE_THRESHOLD 20
 #define RECONFIG_NO_DELAY 1
-#define UPDATE_MISS_ONLY 0
+#define UPDATE_MISS_ONLY 1
 
 // entropy index params
 #define FIX_SEQUENCE 3

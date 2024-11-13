@@ -103,11 +103,11 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
 }
 
 void EntropyV2::eviction_update(BLOCK &victim_blk) {
-   // if (should_update_trackers(is_hit, type))
-   bool is_pf_useless = (victim_blk.prefetch && (victim_blk.used == 0));
+   // bool is_pf_useless = (victim_blk.prefetch && !victim_blk.used);
+   // bool is_unused = !victim_blk.used;
 
-   if (!is_pf_useless && !m_should_remap)
-      etp_tracker_access_update(victim_blk.address);
+   // if (!is_pf_useless && !m_should_remap && !is_unused)
+   etp_tracker_access_update(victim_blk.address);
 }
 
 void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
@@ -247,72 +247,11 @@ void EntropyV2::move_cache_data(MEMORY *lower_level) {
             assert(false);
          }
 
-         bool fill_ready = true;
          uint32_t dest_way = get_lru_victim(dest_index);
-
          BLOCK *dest_block = &block_array[dest_index][dest_way];
+         bool fill_ready = remap_tie_break(src_block, dest_block, lower_level);
 
-         /*
-            tie-breaking rules: 
-               1. dest_block->dirty && !src_block->dirty   => dest_block > src_block
-               2. dest_block->dirty && src_block->dirty    => dest_block < src_block
-               3. !dest_block->dirty && src_block->dirty   => dest_block < src_block
-               4. !dest_block->dirty && !src_block->dirty  => dest_block < src_block
-
-            additional rules:
-               1. dest_block->pf_useless
-         */ 
-         // if the destination block is dirty, write it back before overriding the data
-         if (dest_block->valid) {
-            // if (dest_block->dirty) {
-            //    if (!src_block->dirty) {
-            //       // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
-            //       num_drop++;
-            //       fill_ready = false;
-            //    }
-            //    else { // if both blocks are dirty, write back the destination block then move the source block to the destination
-            //       bool writeback_success = force_writeback(dest_block, lower_level, FILL_LEVEL, CPU_ID);
-            //       if (writeback_success) {
-            //          num_writeback++;    // update extra writeback statistics
-            //       }
-            //    }
-            // }
-
-            // else if (!dest_block->prefetch) {
-            //    // if destination block is a clean demand and the source block is prefetch, drop the source block, regardless of its dirty state (do not fill)
-            //    if (src_block->prefetch) {
-            //       num_drop++;
-            //       fill_ready = false;
-            //       if (src_block->dirty) {
-            //          bool writeback_success = force_writeback(src_block, lower_level, FILL_LEVEL, CPU_ID);
-            //          if (writeback_success) {
-            //             num_writeback++;
-            //          }
-            //       }
-            //    }
-            // }
-
-            if ((!dest_block->prefetch) && (src_block->prefetch)) {  // demand destination and prefetch source
-               num_drop++;
-               fill_ready = false;
-               if (src_block->dirty) {
-                  bool writeback_success = force_writeback(src_block, lower_level, FILL_LEVEL, CPU_ID);
-                  if (writeback_success) {
-                     num_writeback++;
-                  }
-               }
-            }
-            else {
-               if (dest_block->dirty) {
-                  bool writeback_success = force_writeback(dest_block, lower_level, FILL_LEVEL, CPU_ID);
-                  if (writeback_success) {
-                     num_writeback++;
-                  }
-               }
-            }
-         }
-
-         // override destination block with source block
+         // overwrite destination block with source block
          // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
          if (fill_ready) {
             if (dest_block->valid)
@@ -330,4 +269,96 @@ void EntropyV2::move_cache_data(MEMORY *lower_level) {
       }
    }
    map_ptr++;
+}
+
+bool EntropyV2::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
+   if (!dest->valid)
+      return true;
+   
+   bool overwrite_dest = true;
+
+   // option 1: dirty -> prefetch
+   if (dest->dirty) {
+      if (!src->dirty) {
+         // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
+         num_drop++;
+         overwrite_dest = false;
+      }
+      else { // if both blocks are dirty, write back the destination block then move the source block to the destination
+         bool writeback_success = force_writeback(dest, lower_level, FILL_LEVEL, CPU_ID);
+         if (writeback_success) {
+            num_writeback++;    // update extra writeback statistics
+         }
+      }
+   }
+
+   else if (!dest->prefetch) {
+      // if destination block is a clean demand and the source block is prefetch, drop the source block, regardless of its dirty state (do not fill)
+      if (src->prefetch) {
+         num_drop++;
+         overwrite_dest = false;
+         if (src->dirty) {
+            bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
+            if (writeback_success) {
+               num_writeback++;
+            }
+         }
+      }
+   }
+   else {
+      // dest prefetch clean -> just overwrite, no further action
+   }
+
+   // option 2: prefetch only
+   // if ((!dest_block->prefetch) && (src_block->prefetch)) {  // demand destination and prefetch source
+   //    num_drop++;
+   //    fill_ready = false;
+   //    if (src_block->dirty) {
+   //       bool writeback_success = force_writeback(src_block, lower_level, FILL_LEVEL, CPU_ID);
+   //       if (writeback_success) {
+   //          num_writeback++;
+   //       }
+   //    }
+   // }
+   // else {
+   //    if (dest_block->dirty) {
+   //       bool writeback_success = force_writeback(dest_block, lower_level, FILL_LEVEL, CPU_ID);
+   //       if (writeback_success) {
+   //          num_writeback++;
+   //       }
+   //    }
+   // }
+
+   // option 3: prefetch -> dirty
+   // if (!dest->prefetch) {
+   //    // dest NOT prefetch but the src is, drop the src, regardless of src dirty state
+   //    if (src->prefetch) {
+   //       num_drop++;
+   //       overwrite_dest = false;
+   //       if (src->dirty) {
+   //          bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
+   //          if (writeback_success) {
+   //             num_writeback++;
+   //          }
+   //       }
+   //    }
+   // }
+   // else if (dest->dirty) {
+   //    // dest is prefetch dirty
+   //    if (!src->dirty) {
+   //       // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
+   //       num_drop++;
+   //       overwrite_dest = false;
+   //    }
+   //    else { // if both blocks are dirty, write back the destination block then move the source block to the destination
+   //       bool writeback_success = force_writeback(dest, lower_level, FILL_LEVEL, CPU_ID);
+   //       if (writeback_success) {
+   //          num_writeback++;    // update extra writeback statistics
+   //       }
+   //    }
+   // }
+   // else {
+   //    // dest prefetch clean -> just overwrite, no further action
+   // }
+   return overwrite_dest;
 }

@@ -337,10 +337,13 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
     job_list = []
     # construct commands
     for idx, app in enumerate(requested_apps):
+        
         if trace_folder == "goog-traces":
-            cmd = f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {trace_dir+'/'+app+'.champsimtrace.gz'}"
+            cmd = f"cp {trace_dir+'/'+app+'.champsimtrace.gz'} $TMPDIR\n"
+            cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.gz'}"
         else:
-            cmd = f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {trace_dir+'/'+app+'.champsimtrace.xz'}"
+            cmd = f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
+            cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.xz'}"
         
         if result_output == "":
             cmd += f" {executable}" # default result folder name = exec file name

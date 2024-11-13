@@ -47,6 +47,7 @@ public:
    void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
    bool should_update_trackers(bool is_hit, uint32_t type);
    void eviction_update(BLOCK &victim_blk);
+   bool remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level);
 };
 
 #endif // ENTROPY_INDEX_H
