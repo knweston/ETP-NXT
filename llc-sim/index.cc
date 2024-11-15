@@ -9,7 +9,11 @@ void Index::profile(vector<Access>& history) {
     vector<Record> sorted_table;
 
     // get distinct addresses, sort them and count access frequency
-    for (uint64_t i=0; i < history.size(); ++i) {
+    uint32_t num_profile_accesses = history.size();
+    if (MAX_INST > 0)
+        num_profile_accesses = MAX_INST;
+
+    for (uint64_t i=0; i < num_profile_accesses; ++i) {
         // print profiling progress
         if (PRINT_INTERVAL && (i % PRINT_INTERVAL == 0))
             cout << "  Profiled Accesses = " << i << endl;
@@ -74,7 +78,7 @@ void Index::profile(vector<Access>& history) {
 
     ofstream export_file(filename);
     for (uint64_t i=0; i < sorted_table.size(); ++i) {
-        export_file << sorted_table[i].address << " " << sorted_table[i].frequency << endl;
+        export_file << std::hex << std::setw(12) << std::setfill('0') << sorted_table[i].address << " " << std::dec << sorted_table[i].frequency << endl;
     }
     export_file.close();
     cout << "Profile data exported to file: " << filename << endl;

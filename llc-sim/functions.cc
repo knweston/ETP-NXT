@@ -24,8 +24,8 @@ void init_global_history() {
             string type="";
             getline(trace_file, line);
             stringstream ss(line);
-            ss >> address;
-            ss >> ip;
+            ss >> hex >> address;
+            ss >> hex >> ip;
             ss >> type;
 
             // skip zero address

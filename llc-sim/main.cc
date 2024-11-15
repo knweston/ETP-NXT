@@ -396,6 +396,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    else if (INDEXING_SCHEME == "PROFILE") {
+        Index* indexing = init_indexing_scheme();
+    }
+
     else {
         for (uint32_t num_sim=0; num_sim < NUM_LOOPS; ++num_sim) {
             // initialize indexing
@@ -438,6 +442,6 @@ int main(int argc, char *argv[]) {
             reset_statistics();
         }
     }
-
+    
     return 0;
 }

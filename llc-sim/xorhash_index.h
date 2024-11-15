@@ -87,6 +87,10 @@ public:
             }
          }
       }
+      else {
+         cout << "Cannot open config file" << endl;
+         exit(0);
+      }
    }
 
    vector<uint32_t> parse_config(string input_line) {

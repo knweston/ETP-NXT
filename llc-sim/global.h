@@ -31,7 +31,7 @@
 
 // VA-PA Translation Simulation Settings
 #define REMAP_FRACTION 4            // amount of VA-PA mappings change = 1/REMAP_FRACTION
-#define TRANSLATION_ENABLE 1
+#define TRANSLATION_ENABLE 0
 #define USE_RANDOM_CLASS 0
 #define XOR_NEW_FRAMEID 1
 
