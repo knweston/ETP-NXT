@@ -9,7 +9,7 @@
 #include <algorithm>
 
 extern string CONFIG_FILE;
-extern vector<string> APP_LIST;
+extern vector<string> APP_LIST, APP_PATH;
 
 #define IGNORE_UPDATE_PF 0
 #define IGNORE_UPDATE_WB 0

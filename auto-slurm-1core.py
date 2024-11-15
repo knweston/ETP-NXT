@@ -64,7 +64,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
     # parse requested apps
     requested_apps = apps.split("_")
     
-    elif apps == "xsbench":
+    if apps == "xsbench":
         requested_apps = ["xs.XL100hash-194B",\
                         "xs.XL100hash-28B",\
                         "xs.XL100nuclide-185B",\
@@ -128,6 +128,11 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
             "625.x264_s-39B",\
             "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B"
+        ]
+
+    elif apps == "nxetp-bonus":
+        requested_apps [
+            "429","436","437","462","481","619","654","654simopt","657"
         ]
 
     elif apps == "cvp1":
@@ -386,15 +391,21 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
     create_dir(job_dir)
     create_dir(job_output_dir)
 
+    deadblock_tracepath = "/scratch/user/kevin.weston/llc-traces/dead-blks"
+
     job_list = []
     # construct commands
     for idx, app in enumerate(requested_apps):
+        if (os.path.isfile(deadblock_tracepath+'/'+app+"-DEAD-BLKS.txt"))
+            cmd = f"cp {deadblock_tracepath+'/'+app+"-DEAD-BLKS.txt"} $TMPDIR\n"
+        else
+            cmd = ""
         
         if trace_folder == "goog-traces":
-            cmd = f"cp {trace_dir+'/'+app+'.champsimtrace.gz'} $TMPDIR\n"
+            cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.gz'} $TMPDIR\n"
             cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.gz'}"
         else:
-            cmd = f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
+            cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
             cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.xz'}"
         
         if result_output == "":

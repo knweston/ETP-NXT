@@ -66,7 +66,7 @@ def change_idx_in_file(idx_type):
 
 
 
-def build(idx_type, is_pf, filename):
+def build(idx_type, is_pf, filename, repl_policy):
    idx_str = str(idx_type).split(".")[-1].lower()
 
    if (filename == ""):
@@ -78,12 +78,12 @@ def build(idx_type, is_pf, filename):
       if idx_type == INDEX.SKEWED:
          cmd = "./build_champsim.sh bimodal no next_line spp_dev no skewed 1 " + exec_name + "pf"
       else:
-         cmd = "./build_champsim.sh bimodal no next_line spp_dev no lru 1 " + exec_name + "pf"
+         cmd = "./build_champsim.sh bimodal no next_line spp_dev no " + repl_policy + " 1 " + exec_name + "pf"
    else:
       if idx_type == INDEX.SKEWED:
          cmd = "./build_champsim.sh bimodal no no no no skewed 1 " + exec_name
       else:
-         cmd = "./build_champsim.sh bimodal no no no no lru 1 " + exec_name
+         cmd = "./build_champsim.sh bimodal no no no no " + repl_policy + " 1 " + exec_name
    change_idx_in_file(idx_type)
    os.system(cmd)
 
@@ -106,6 +106,7 @@ def execute(exec_file, traces_dir, result_dir=""):
 def main():
    parser = argparse.ArgumentParser()
    parser.add_argument("-i", "--idx_type", required=True, type=str)
+   parser.add_argument("-r", "--replacement", required=False, default="lru", type=str)
    parser.add_argument("-f", "--exec_name", required=False, default="", type=str)
    parser.add_argument("-p", "--is_pf", required=True, type=str)
    args = parser.parse_args()
@@ -117,7 +118,7 @@ def main():
    else:
       print("Invalid option: ", args.is_pf)
    
-   build(parse_index_type(args.idx_type), is_pf, args.exec_name)
+   build(parse_index_type(args.idx_type), is_pf, args.exec_name, args.replacement)
 
 if __name__ == "__main__":
    main()

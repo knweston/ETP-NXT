@@ -27,7 +27,7 @@ uint32_t rrpv[LLC_SET][LLC_WAY];
 
 time_t start_time;
 string CONFIG_FILE;
-vector<string> APP_LIST;
+vector<string> APP_LIST, APP_PATH;
 
 // PAGE TABLE
 uint32_t PAGE_TABLE_LATENCY = 0, SWAP_LATENCY = 0;
@@ -614,15 +614,14 @@ int main(int argc, char** argv)
     cout << "Warmup Instructions: " << warmup_instructions << endl;
     cout << "Simulation Instructions: " << simulation_instructions << endl;
     cout << "Number of CPUs: " << NUM_CPUS << endl;
-    cout << "L1D sets: " << L1D_SET << ". L1D ways: " << L1D_WAY << endl;
-    cout << "L2C sets: " << L2C_SET << ". L2C ways: " << L2C_WAY << endl;
+    cout << "L1D sets: " << L1D_SET << ". L1D ways: " << L1D_WAY << ". L1D LATENCY: " << L1D_LATENCY << endl;
+    cout << "L2C sets: " << L2C_SET << ". L2C ways: " << L2C_WAY << ". L2C LATENCY: " << L2C_LATENCY << endl;
     cout << "L2C INDEX TYPE:   " << L2C_INDEX_TYPE << endl;
-    cout << "LLC sets: " << LLC_SET << ". LLC ways: " << LLC_WAY << endl;
-    cout << "LLC LATENCY: " << LLC_LATENCY << endl;
-    cout << "LLC HASH LATENCY: " << LLC_HASH_LATENCY << endl;
-    cout << "LLC INDEX TYPE:   " << LLC_INDEX_TYPE << endl;
+    cout << "LLC sets: " << LLC_SET << ". LLC ways: " << LLC_WAY << ". LLC LATENCY: " << LLC_LATENCY << endl;
+    cout << "LLC INDEX TYPE:   " << LLC_INDEX_TYPE << ". LLC HASH LATENCY: " << LLC_HASH_LATENCY << endl;
     cout << "VARIABLE_ADDRESS_TRANSLATION: " << (VARIABLE_ADDRESS_TRANSLATION? "Yes" : "No") << endl;
     cout << "Random Seed Offset: " << rand_offset << endl; 
+    cout << "DRAM_RANKS: " << DRAM_RANKS << endl;
 
     if (knob_low_bandwidth)
         DRAM_MTPS = DRAM_IO_FREQ/4;
@@ -727,6 +726,7 @@ int main(int argc, char** argv)
                 }
             }
             APP_LIST.push_back(app_name);
+            APP_PATH.push_back(path);
 
             for (uint32_t i=0; i<app_name.size(); ++i) {
                 seed_number += app_name[i];
