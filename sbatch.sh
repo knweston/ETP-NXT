@@ -12,8 +12,8 @@
 # python3 auto-slurm-1core.py -a nxetp-specmore -o skewed       -e skewed       -w 2 -r skewed       -t more-traces
 # python3 auto-slurm-1core.py -a nxetp-specmore -o skewedpf     -e skewedpf     -w 2 -r skewedpf     -t more-traces
 
-python3 auto-slurm-1core.py -a xsbench -o entropy      -e entropy      -w 2 -r xs-entropy      -t xsbm-traces
-python3 auto-slurm-1core.py -a xsbench -o entropypf    -e entropypf    -w 2 -r xs-entropypf    -t xsbm-traces
+# python3 auto-slurm-1core.py -a xsbench -o entropy      -e entropy      -w 2 -r xs-entropy      -t xsbm-traces
+# python3 auto-slurm-1core.py -a xsbench -o entropypf    -e entropypf    -w 2 -r xs-entropypf    -t xsbm-traces
 # python3 auto-slurm-1core.py -a xsbench -o xorhash      -e xorhash      -w 2 -r xs-xorhash      -t xsbm-traces
 # python3 auto-slurm-1core.py -a xsbench -o xorhashpf    -e xorhashpf    -w 2 -r xs-xorhashpf    -t xsbm-traces
 # python3 auto-slurm-1core.py -a xsbench -o nohash       -e nohash       -w 2 -r xs-nohash       -t xsbm-traces
@@ -23,16 +23,16 @@ python3 auto-slurm-1core.py -a xsbench -o entropypf    -e entropypf    -w 2 -r x
 # python3 auto-slurm-1core.py -a xsbench -o skewed       -e skewed       -w 2 -r xs-skewed       -t xsbm-traces
 # python3 auto-slurm-1core.py -a xsbench -o skewedpf     -e skewedpf     -w 2 -r xs-skewedpf     -t xsbm-traces
 
-# python3 auto-slurm-1core.py -a nxetp -o nohash       -e nohash       -w 2 -r nohash       -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o primeideal   -e primeideal   -w 2 -r primeideal   -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o xorhash      -e xorhash      -w 2 -r xorhash      -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o skewed       -e skewed       -w 2 -r skewed       -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o entropy      -e entropy      -w 2 -r entropy      -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o nohashpf     -e nohashpf     -w 2 -r nohashpf     -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o primeidealpf -e primeidealpf -w 2 -r primeidealpf -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o xorhashpf    -e xorhashpf    -w 2 -r xorhashpf    -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o skewedpf     -e skewedpf     -w 2 -r skewedpf     -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o entropypf    -e entropypf    -w 2 -r entropypf    -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o nohash       -e nohash       -w 2 -r nohash       -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o primeideal   -e primeideal   -w 2 -r primeideal   -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o xorhash      -e xorhash      -w 2 -r xorhash      -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o skewed       -e skewed       -w 2 -r skewed       -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o entropy      -e entropy      -w 2 -r entropy      -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o nohashpf     -e nohashpf     -w 2 -r nohashpf     -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o primeidealpf -e primeidealpf -w 2 -r primeidealpf -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o xorhashpf    -e xorhashpf    -w 2 -r xorhashpf    -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o skewedpf     -e skewedpf     -w 2 -r skewedpf     -t dpc3-traces
+python3 auto-slurm-1core.py -a nxetp-bonus -o entropypf    -e entropypf    -w 2 -r entropypf    -t dpc3-traces
 
 
 # python3 auto-slurm-1core.py -a cvp1 -o cvp-nohash       -e nohash       -w 2 -r cvp-nohash       -t cvp1-traces
@@ -47,6 +47,9 @@ python3 auto-slurm-1core.py -a xsbench -o entropypf    -e entropypf    -w 2 -r x
 # python3 auto-slurm-1core.py -a cvp1 -o cvp-skewedpf     -e skewedpf     -w 2 -r cvp-skewedpf     -t cvp1-traces
 
 
+# python3 auto-slurm-1core.py -a nxetp -o xorhash -e xorhash-dblru -w 2 -r xorhash-dblru -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o primeideal -e primeideal-dblru -w 2 -r primeideal-dblru -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o etp3-dblru -e etp3-dblru -w 2 -r etp3-dblru -t dpc3-traces
 
 # python3 auto-slurm-1core.py -a 470_605_649_bc.web-1627B_cc.web-24B_bodytrack_freqmine_streamcluster -o etp2t5 -e etp2t5 -w 2 -r etp2t5 -t dpc3-traces
 # python3 auto-slurm-1core.py -a 470_605_649_bc.web-1627B_cc.web-24B_bodytrack_freqmine_streamcluster -o etp2t5pf -e etp2t5pf -w 2 -r etp2t5pf -t dpc3-traces

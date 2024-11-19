@@ -50,4 +50,4 @@ public:
    bool remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level);
 };
 
-#endif // ENTROPY_INDEX_H
+#endif // ENTROPY_INDEX_V3_H

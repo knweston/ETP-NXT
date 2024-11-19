@@ -49,7 +49,7 @@
 #define LLC_PQ_SIZE NUM_CPUS*32
 #define LLC_MSHR_SIZE NUM_CPUS*64
 
-#define LLC_INDEX_TYPE 0
+#define LLC_INDEX_TYPE 9
 #define LLC_HASH_LATENCY 0
 
 // LLC_LATENCY = 4 (L1I or L1D) + 8 (L2C) + 24/26/32 = 36/38/44 cycles

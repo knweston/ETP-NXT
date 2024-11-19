@@ -6,9 +6,9 @@ string DBLK_FILE_PATH;
 
 bool is_dead_block(uint64_t x_addr) {
     bool found = binary_search(dead_blocks.begin(), dead_blocks.end(), x_addr);
-    if (found) {
-        cout << "Deadblock found: " << std::hex << x_addr << std::dec << endl;
-    }
+    // if (found) {
+    //     cout << "Deadblock found: " << std::hex << x_addr << std::dec << endl;
+    // }
     return found;
 }
 
@@ -52,6 +52,12 @@ void CACHE::llc_initialize_replacement()
     else {
         cout << "Deadblocks File not found." << endl;
         exit(0);
+    }
+
+    if (LLC_INDEX_TYPE == 9) {
+        EntropyIndex* entropy = dynamic_cast<EntropyIndex*>(m_index);
+        EntropyV3* etp3 = dynamic_cast<EntropyV3*>(entropy);
+        etp3->set_perfect_deadblk_mode(true, dead_blocks);
     }
 }
 

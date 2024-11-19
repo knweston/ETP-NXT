@@ -63,8 +63,9 @@ class SlurmScript:
 def generate_jobs(apps, job_output, result_output, cluster, executable, num_loops, config_file, num_warmup, num_simulate, trace_folder):
     # parse requested apps
     requested_apps = apps.split("_")
-    
+
     if apps == "xsbench":
+        # "fast" xsbench under 8w1r setup
         requested_apps = ["xs.XL100hash-194B",\
                         "xs.XL100hash-28B",\
                         "xs.XL100nuclide-185B",\
@@ -85,29 +86,19 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
                         "xs.XL64unionized-66B",\
                         "xs.XL64unionized-75B",\
                         "xs.XXL100hash-18B",\
-                        "xs.XXL100hash-552B",\
-                        "xs.XXL100hash-563B",\
                         "xs.XXL100hash-94B",\
-                        "xs.XXL100nuclide-165B",\
                         "xs.XXL100nuclide-30B",\
-                        "xs.XXL100nuclide-324B",\
-                        "xs.XXL100nuclide-487B",\
-                        "xs.XXL100nuclide-648B",\
-                        "xs.XXL100nuclide-650B",\
-                        "xs.XXL100nuclide-861B",\
                         "xs.XXL100unionized-122B",\
                         "xs.XXL100unionized-155B",\
                         "xs.XXL100unionized-188B",\
                         "xs.XXL100unionized-24B",\
-                        "xs.XXL64hash-205B",\
                         "xs.XXL64hash-24B",\
                         "xs.XXL64nuclide-24B",\
-                        "xs.XXL64nuclide-531B",\
-                        "xs.XXL64nuclide-566B",\
                         "xs.XXL64unionized-122B",\
                         "xs.XXL64unionized-155B",\
                         "xs.XXL64unionized-188B",\
                         "xs.XXL64unionized-24B"]
+
 
     elif apps == "nxetp":
         # MPKI > 1 under config 64/8-2,256/8-8,2048/16-20, rank1, DRAM=24
@@ -131,8 +122,8 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
         ]
 
     elif apps == "nxetp-bonus":
-        requested_apps [
-            "429","436","437","462","481","619","654","654simopt","657"
+        requested_apps = [
+            "429", "436", "437", "462", "481", "619", "654", "654simopt", "657"
         ]
 
     elif apps == "cvp1":
@@ -396,9 +387,9 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
     job_list = []
     # construct commands
     for idx, app in enumerate(requested_apps):
-        if (os.path.isfile(deadblock_tracepath+'/'+app+"-DEAD-BLKS.txt"))
-            cmd = f"cp {deadblock_tracepath+'/'+app+"-DEAD-BLKS.txt"} $TMPDIR\n"
-        else
+        if (os.path.isfile(deadblock_tracepath+'/'+app+"-DEAD-BLKS.txt")):
+            cmd = f"cp {deadblock_tracepath+'/'+app+'-DEAD-BLKS.txt'} $TMPDIR\n"
+        else:
             cmd = ""
         
         if trace_folder == "goog-traces":
@@ -444,3 +435,49 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# if apps == "xsbench":
+#     requested_apps = ["xs.XL100hash-194B",\
+#                     "xs.XL100hash-28B",\
+#                     "xs.XL100nuclide-185B",\
+#                     "xs.XL100nuclide-296B",\
+#                     "xs.XL100nuclide-577B",\
+#                     "xs.XL100nuclide-7B",\
+#                     "xs.XL100nuclide-829B",\
+#                     "xs.XL100unionized-28B",\
+#                     "xs.XL100unionized-56B",\
+#                     "xs.XL100unionized-66B",\
+#                     "xs.XL100unionized-75B",\
+#                     "xs.XL64hash-126B",\
+#                     "xs.XL64hash-49B",\
+#                     "xs.XL64nuclide-355B",\
+#                     "xs.XL64nuclide-7B",\
+#                     "xs.XL64unionized-28B",\
+#                     "xs.XL64unionized-56B",\
+#                     "xs.XL64unionized-66B",\
+#                     "xs.XL64unionized-75B",\
+#                     "xs.XXL100hash-18B",\
+#                     "xs.XXL100hash-552B",\
+#                     "xs.XXL100hash-563B",\
+#                     "xs.XXL100hash-94B",\
+#                     "xs.XXL100nuclide-165B",\
+#                     "xs.XXL100nuclide-30B",\
+#                     "xs.XXL100nuclide-324B",\
+#                     "xs.XXL100nuclide-487B",\
+#                     "xs.XXL100nuclide-648B",\
+#                     "xs.XXL100nuclide-650B",\
+#                     "xs.XXL100nuclide-861B",\
+#                     "xs.XXL100unionized-122B",\
+#                     "xs.XXL100unionized-155B",\
+#                     "xs.XXL100unionized-188B",\
+#                     "xs.XXL100unionized-24B",\
+#                     "xs.XXL64hash-205B",\
+#                     "xs.XXL64hash-24B",\
+#                     "xs.XXL64nuclide-24B",\
+#                     "xs.XXL64nuclide-531B",\
+#                     "xs.XXL64nuclide-566B",\
+#                     "xs.XXL64unionized-122B",\
+#                     "xs.XXL64unionized-155B",\
+#                     "xs.XXL64unionized-188B",\
+#                     "xs.XXL64unionized-24B"]

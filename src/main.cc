@@ -876,9 +876,6 @@ int main(int argc, char** argv)
         major_fault[i] = 0;
     }
 
-    uncore.LLC.llc_initialize_replacement();
-    uncore.LLC.llc_prefetcher_initialize();
-
     // initialize hashed index (if not NoHash) [Kevin]
     if (LLC_INDEX_TYPE == 1) {
         if (NUM_CPUS == 1) { // single core
@@ -941,6 +938,15 @@ int main(int argc, char** argv)
         }
     }
 
+    else if (LLC_INDEX_TYPE == 9) {
+        if (NUM_CPUS == 1) { // single core
+            uncore.LLC.m_index = new EntropyV3(LLC_SET, LLC_WAY, interval_size_1core, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
+        }
+        else {
+            uncore.LLC.m_index = new EntropyV3(LLC_SET, LLC_WAY, interval_size_ncore, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
+        }
+    }
+
     else if (LLC_INDEX_TYPE == 0) {
         if (NUM_CPUS == 1) { // single core
             uncore.LLC.m_index->interval_size(interval_size_1core);
@@ -978,7 +984,8 @@ int main(int argc, char** argv)
         }
     }
 
-
+    uncore.LLC.llc_initialize_replacement();
+    uncore.LLC.llc_prefetcher_initialize();
     
     // simulation entry point
     start_time = time(NULL);
