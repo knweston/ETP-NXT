@@ -9,7 +9,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="4G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="9:00:00", mem="4G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
@@ -123,7 +123,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
 
     elif apps == "nxetp-bonus":
         requested_apps = [
-            "429", "436", "437", "462", "481", "619", "654", "654simopt", "657"
+            "429", "436", "437", "462", "481", "619", "654", "657"
         ]
 
     elif apps == "cvp1":
