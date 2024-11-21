@@ -9,7 +9,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="9:00:00", mem="4G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="4G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
@@ -98,7 +98,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
                         "xs.XXL64unionized-155B",\
                         "xs.XXL64unionized-188B",\
                         "xs.XXL64unionized-24B"]
-
 
     elif apps == "nxetp":
         # MPKI > 1 under config 64/8-2,256/8-8,2048/16-20, rank1, DRAM=24
@@ -246,7 +245,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "compute_int_921",\
             "compute_int_942",\
             "compute_int_962",\
-            "compute_int_96"
+            "compute_int_96",\
             "srv10",\
             "srv111",\
             "srv128",\
@@ -364,6 +363,23 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "srv93"
         ]
     
+    elif apps == "gapmore":
+        requested_apps = [
+            "cc.kron-82B", "cc.twitter-85B", \
+            "bc.road-174B","bc.road-79B","bc.road-95B",\
+            "bc.twitter-876B","bc.twitter-1658B","bc.twitter-2320B","bc.twitter-309B","bc.web-2078B",\
+            "bfs.kron-154B","bfs.kron-469B", \
+            "bfs.road-112B","bfs.road-128B","bfs.road-140B","bfs.road-99B",\
+            "bfs.twitter-160B","bfs.twitter-242B","bfs.twitter-408B","bfs.twitter-44B",\
+            "bfs.urand-161B","bfs.urand-36B","bfs.urand-410B","bfs.urand-60B",\
+            "cc.kron-10B","cc.kron-17B","cc.kron-78B","cc.kron-99B",\
+            "cc.twitter-10B","cc.twitter-15B","cc.twitter-16B","cc.twitter-17B","cc.twitter-25B",\
+            "pr.kron-90B","pr.twitter-168B",\
+            "sssp.twitter-1116B","sssp.twitter-900B",\
+            "tc.twitter-2097B","tc.twitter-34B",\
+            "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B"
+        ]
+
     # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 
     # due to "src/ooo_cpu.cc:1653: void O3_CPU::execute_store(uint32_t, uint32_t, uint32_t): Assertion `0' failed."
     # this bug is seen in all indexing types, including nohash

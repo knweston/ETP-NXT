@@ -3,12 +3,13 @@
 
 vector<uint64_t> dead_blocks;
 string DBLK_FILE_PATH;
+uint32_t num_dblk_found = 0;
 
 bool is_dead_block(uint64_t x_addr) {
     bool found = binary_search(dead_blocks.begin(), dead_blocks.end(), x_addr);
-    // if (found) {
-    //     cout << "Deadblock found: " << std::hex << x_addr << std::dec << endl;
-    // }
+    if (found) {
+        num_dblk_found++;
+    }
     return found;
 }
 
@@ -116,7 +117,7 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
 
 void CACHE::llc_replacement_final_stats()
 {
-
+    cout << "Num deadblocks found: " << num_dblk_found << endl;
 }
 
 void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {}

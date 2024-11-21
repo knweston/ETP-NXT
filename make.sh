@@ -10,7 +10,7 @@
 # python3 autobuild.py -i skewed -p false -f skewed
 # python3 autobuild.py -i entropy -p false -f entropy
 
-python3 autobuild.py -i xorhash -p false -f xorhash-dblru -r dblru
-python3 autobuild.py -i primeideal -p false -f primeideal-dblru -r dblru
-python3 autobuild.py -i nohash -p false -f nohash-dblru -r dblru
+# python3 autobuild.py -i xorhash -p false -f xorhash-dblru -r dblru
+# python3 autobuild.py -i primeideal -p false -f primeideal-dblru -r dblru
+# python3 autobuild.py -i nohash -p false -f nohash-dblru -r dblru
 # python3 autobuild.py -i entropyv3 -p false -f etp3-dblru -r dblru

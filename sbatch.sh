@@ -46,11 +46,23 @@
 # python3 auto-slurm-1core.py -a cvp1 -o cvp-skewed       -e skewed       -w 2 -r cvp-skewed       -t cvp1-traces
 # python3 auto-slurm-1core.py -a cvp1 -o cvp-skewedpf     -e skewedpf     -w 2 -r cvp-skewedpf     -t cvp1-traces
 
+python3 auto-slurm-1core.py -a gapmore -o gap-nohash       -e nohash       -w 2 -r gap-nohash       -t gaps-traces
+python3 auto-slurm-1core.py -a gapmore -o gap-nohashpf     -e nohashpf     -w 2 -r gap-nohashpf     -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-entropy      -e entropy      -w 2 -r gap-entropy      -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-entropypf    -e entropypf    -w 2 -r gap-entropypf    -t gaps-traces
+python3 auto-slurm-1core.py -a gapmore -o gap-xorhash      -e xorhash      -w 2 -r gap-xorhash      -t gaps-traces
+python3 auto-slurm-1core.py -a gapmore -o gap-xorhashpf    -e xorhashpf    -w 2 -r gap-xorhashpf    -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-primeideal   -e primeideal   -w 2 -r gap-primeideal   -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-primeidealpf -e primeidealpf -w 2 -r gap-primeidealpf -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-skewed       -e skewed       -w 2 -r gap-skewed       -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-skewedpf     -e skewedpf     -w 2 -r gap-skewedpf     -t gaps-traces
 
-python3 auto-slurm-1core.py -a nxetp-specmore -o xorhash -e xorhash-dblru -w 2 -r xorhash-dblru -t more-traces
-python3 auto-slurm-1core.py -a nxetp-specmore -o primeideal -e primeideal-dblru -w 2 -r primeideal-dblru -t more-traces
-python3 auto-slurm-1core.py -a nxetp-bonus -o xorhash -e xorhash-dblru -w 2 -r xorhash-dblru -t dpc3-traces
-python3 auto-slurm-1core.py -a nxetp-bonus -o primeideal -e primeideal-dblru -w 2 -r primeideal-dblru -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o nohash -e nohash-dblru -w 2 -r nohash-dblru -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o nohash -e nohash-dblru -w 2 -r nohash-dblru -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o xorhash -e xorhash-dblru -w 2 -r xorhash-dblru -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o primeideal -e primeideal-dblru -w 2 -r primeideal-dblru -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o xorhash -e xorhash-dblru -w 2 -r xorhash-dblru -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o primeideal -e primeideal-dblru -w 2 -r primeideal-dblru -t dpc3-traces
 # python3 auto-slurm-1core.py -a nxetp-specmore -o etp3-dblru -e etp3-dblru -w 2 -r etp3-dblru -t more-traces
 # python3 auto-slurm-1core.py -a nxetp-bonus -o etp3-dblru -e etp3-dblru -w 2 -r etp3-dblru -t dpc3-traces
 
