@@ -46,12 +46,13 @@
 # python3 auto-slurm-1core.py -a cvp1 -o cvp-skewed       -e skewed       -w 2 -r cvp-skewed       -t cvp1-traces
 # python3 auto-slurm-1core.py -a cvp1 -o cvp-skewedpf     -e skewedpf     -w 2 -r cvp-skewedpf     -t cvp1-traces
 
-python3 auto-slurm-1core.py -a gapmore -o gap-nohash       -e nohash       -w 2 -r gap-nohash       -t gaps-traces
-python3 auto-slurm-1core.py -a gapmore -o gap-nohashpf     -e nohashpf     -w 2 -r gap-nohashpf     -t gaps-traces
+
+# python3 auto-slurm-1core.py -a gapmore -o gap-nohash       -e nohash       -w 2 -r gap-nohash       -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-nohashpf     -e nohashpf     -w 2 -r gap-nohashpf     -t gaps-traces
 # python3 auto-slurm-1core.py -a gapmore -o gap-entropy      -e entropy      -w 2 -r gap-entropy      -t gaps-traces
 # python3 auto-slurm-1core.py -a gapmore -o gap-entropypf    -e entropypf    -w 2 -r gap-entropypf    -t gaps-traces
-python3 auto-slurm-1core.py -a gapmore -o gap-xorhash      -e xorhash      -w 2 -r gap-xorhash      -t gaps-traces
-python3 auto-slurm-1core.py -a gapmore -o gap-xorhashpf    -e xorhashpf    -w 2 -r gap-xorhashpf    -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-xorhash      -e xorhash      -w 2 -r gap-xorhash      -t gaps-traces
+# python3 auto-slurm-1core.py -a gapmore -o gap-xorhashpf    -e xorhashpf    -w 2 -r gap-xorhashpf    -t gaps-traces
 # python3 auto-slurm-1core.py -a gapmore -o gap-primeideal   -e primeideal   -w 2 -r gap-primeideal   -t gaps-traces
 # python3 auto-slurm-1core.py -a gapmore -o gap-primeidealpf -e primeidealpf -w 2 -r gap-primeidealpf -t gaps-traces
 # python3 auto-slurm-1core.py -a gapmore -o gap-skewed       -e skewed       -w 2 -r gap-skewed       -t gaps-traces
@@ -66,7 +67,26 @@ python3 auto-slurm-1core.py -a gapmore -o gap-xorhashpf    -e xorhashpf    -w 2 
 # python3 auto-slurm-1core.py -a nxetp-specmore -o etp3-dblru -e etp3-dblru -w 2 -r etp3-dblru -t more-traces
 # python3 auto-slurm-1core.py -a nxetp-bonus -o etp3-dblru -e etp3-dblru -w 2 -r etp3-dblru -t dpc3-traces
 
-# python3 auto-slurm-1core.py -a 470_605_649_bc.web-1627B_cc.web-24B_bodytrack_freqmine_streamcluster -o etp2t5 -e etp2t5 -w 2 -r etp2t5 -t dpc3-traces
-# python3 auto-slurm-1core.py -a 470_605_649_bc.web-1627B_cc.web-24B_bodytrack_freqmine_streamcluster -o etp2t5pf -e etp2t5pf -w 2 -r etp2t5pf -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o etp2t5 -e etp2t5 -w 2 -r etp2t5 -t dpc3-traces
-# python3 auto-slurm-1core.py -a nxetp -o etp2t5pf -e etp2t5pf -w 2 -r etp2t5pf -t dpc3-traces
+# python3 auto-slurm-1core.py -a cvp1 -o cvp-nohash-dblru     -e nohash-dblru     -w 2 -r cvp-nohash-dblru     -t cvp1-traces
+# python3 auto-slurm-1core.py -a cvp1 -o cvp-primeideal-dblru -e primeideal-dblru -w 2 -r cvp-primeideal-dblru -t cvp1-traces
+# python3 auto-slurm-1core.py -a cvp1 -o cvp-etp3-dblru       -e etp3-dblru       -w 2 -r cvp-etp3-dblru       -t cvp1-traces
+# python3 auto-slurm-1core.py -a cvp1 -o cvp-xorhash-dblru    -e xorhash-dblru    -w 2 -r cvp-xorhash-dblru    -t cvp1-traces
+
+# python3 auto-slurm-1core.py -a nxetp -o entropy500      -e entropy500      -w 2 -r entropy500      -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o entropy250      -e entropy250      -w 2 -r entropy250      -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o etp3-500-dblru  -e etp3-500-dblru  -w 2 -r etp3-500-dblru  -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o etp3-250-dblru  -e etp3-250-dblru  -w 2 -r etp3-250-dblru  -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o entropy500pf    -e entropy500pf    -w 2 -r entropy500pf    -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp -o entropy250pf    -e entropy250pf    -w 2 -r entropy250pf    -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o entropy500      -e entropy500      -w 2 -r entropy500      -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o entropy250      -e entropy250      -w 2 -r entropy250      -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o etp3-500-dblru  -e etp3-500-dblru  -w 2 -r etp3-500-dblru  -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o etp3-250-dblru  -e etp3-250-dblru  -w 2 -r etp3-250-dblru  -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o entropy500pf    -e entropy500pf    -w 2 -r entropy500pf    -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-specmore -o entropy250pf    -e entropy250pf    -w 2 -r entropy250pf    -t more-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o entropy500      -e entropy500      -w 2 -r entropy500      -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o entropy250      -e entropy250      -w 2 -r entropy250      -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o etp3-500-dblru  -e etp3-500-dblru  -w 2 -r etp3-500-dblru  -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o etp3-250-dblru  -e etp3-250-dblru  -w 2 -r etp3-250-dblru  -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o entropy500pf    -e entropy500pf    -w 2 -r entropy500pf    -t dpc3-traces
+# python3 auto-slurm-1core.py -a nxetp-bonus -o entropy250pf    -e entropy250pf    -w 2 -r entropy250pf    -t dpc3-traces

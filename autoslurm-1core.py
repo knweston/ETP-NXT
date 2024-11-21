@@ -125,6 +125,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "429", "436", "437", "462", "481", "619", "654", "657"
         ]
 
+    
     elif apps == "cvp1":
         requested_apps = [
             "compute_fp_100",\
