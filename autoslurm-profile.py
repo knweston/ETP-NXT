@@ -52,38 +52,6 @@ def generate_jobs(apps, output, executable, num_loops, trace_folder):
     # parse requested apps
     requested_apps = apps.split("_")
     
-    if apps == "setptest":
-        requested_apps = ["403", "410", "437", "450", "470", "471", "473", "482", "605", "607", "620", "623", "627", "628", "649", \
-                          "bc.urand-3004B","bc.web-1627B", \
-                          "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
-                          "cc.road-36B","cc.urand-353B","cc.web-24B", \
-                          "pr.web-3076B", "tc.twitter-4460B",\
-                           "bodytrack", "canneal", "vips", "facesim", "streamcluster"]
-    
-    elif apps == "setptrain":
-        requested_apps = ["401","429","436","445","456","459","602","621","657", \
-                          "bc.kron-2608B","bc.road-131B","pr.road-600B","sssp.road-66B", \
-                          "sssp.web-1185B","tc.kron-4490B","tc.road-1B", \
-                          "fluidanimate","freqmine", \
-                          "xs.XL100hash-194B","xs.XL100nuclide-577B","xs.XL100unionized-28B","xs.XL64hash-126B"]
-
-    elif apps == "setpother":
-        requested_apps = ["bc.twitter-876B", "cc.twitter-85B", \
-                          "xs.XL64unionized-28B","xs.XXL100unionized-24B"]
-    
-    elif apps == "setpfocus":
-        requested_apps = ["403","410","437","450","470","471","473","482","605","607","620","623","627","628","649", \
-                          "401","436","445","456","459","602","621","657", \
-                          "fluidanimate","freqmine", \
-                          "bodytrack","canneal","vips","facesim","streamcluster"]
-    
-    elif apps == "setpcore":
-        requested_apps = ["403","473","482","605","bodytrack","canneal","streamcluster"]
-
-    elif apps == "google":
-        requested_apps = ["charlie_combined_1", "charlie_combined_2", "charlie_combined_3", 
-                          "charlie_combined_4", "charlie_combined_5", "charlie_combined_6"]
-    
     elif apps == "nxetp":
         # MPKI > 1 under config 64/8-2,256/8-8,2048/16-20, rank1, DRAM=24
         requested_apps = ["410", "433", "450", "459", "470", "471", "473", "482", \
@@ -105,15 +73,245 @@ def generate_jobs(apps, output, executable, num_loops, trace_folder):
             "625.x264_s-39B",\
             "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B"
         ]
+    
     elif apps == "nxetp-bonus":
         requested_apps = [
-            "429","436","437","462","481","619","654","654simopt","657"
+            "429","436","437","462","481","619","654","657"
         ]
 
     elif apps == "cvp1":
         requested_apps = [
-            "compute_int_96",\
-            "srv10"
+            "compute_fp_100",\
+            "compute_fp_101",\
+            "compute_fp_103",\
+            "compute_fp_104",\
+            "compute_fp_105",\
+            "compute_fp_108",\
+            "compute_fp_110",\
+            "compute_fp_111",\
+            "compute_fp_112",\
+            "compute_fp_121",\
+            "compute_fp_122",\
+            "compute_fp_124",\
+            "compute_fp_127",\
+            "compute_fp_128",\
+            "compute_fp_129",\
+            "compute_fp_12",\
+            "compute_fp_130",\
+            "compute_fp_132",\
+            "compute_fp_133",\
+            "compute_fp_134",\
+            "compute_fp_136",\
+            "compute_fp_137",\
+            "compute_fp_139",\
+            "compute_fp_13",\
+            "compute_fp_14",\
+            "compute_fp_15",\
+            "compute_fp_18",\
+            "compute_fp_1",\
+            "compute_fp_23",\
+            "compute_fp_25",\
+            "compute_fp_26",\
+            "compute_fp_28",\
+            "compute_fp_2",\
+            "compute_fp_30",\
+            "compute_fp_34",\
+            "compute_fp_37",\
+            "compute_fp_41",\
+            "compute_fp_44",\
+            "compute_fp_45",\
+            "compute_fp_46",\
+            "compute_fp_47",\
+            "compute_fp_48",\
+            "compute_fp_49",\
+            "compute_fp_4",\
+            "compute_fp_51",\
+            "compute_fp_52",\
+            "compute_fp_54",\
+            "compute_fp_55",\
+            "compute_fp_56",\
+            "compute_fp_57",\
+            "compute_fp_58",\
+            "compute_fp_59",\
+            "compute_fp_5",\
+            "compute_fp_60",\
+            "compute_fp_61",\
+            "compute_fp_63",\
+            "compute_fp_64",\
+            "compute_fp_65",\
+            "compute_fp_67",\
+            "compute_fp_6",\
+            "compute_fp_70",\
+            "compute_fp_71",\
+            "compute_fp_72",\
+            "compute_fp_73",\
+            "compute_fp_75",\
+            "compute_fp_76",\
+            "compute_fp_78",\
+            "compute_fp_79",\
+            "compute_fp_7",\
+            "compute_fp_82",\
+            "compute_fp_84",\
+            "compute_fp_86",\
+            "compute_fp_87",\
+            "compute_fp_8",\
+            "compute_fp_90",\
+            "compute_fp_94",\
+            "compute_fp_95",\
+            "compute_fp_96",\
+            "compute_fp_97",\
+            "compute_fp_99",\
+            "compute_fp_9",\
+            "compute_int_141",\
+            "compute_int_149",\
+            "compute_int_150",\
+            "compute_int_158",\
+            "compute_int_161",\
+            "compute_int_174",\
+            "compute_int_181",\
+            "compute_int_204",\
+            "compute_int_20",\
+            "compute_int_248",\
+            "compute_int_259",\
+            "compute_int_297",\
+            "compute_int_353",\
+            "compute_int_354",\
+            "compute_int_415",\
+            "compute_int_41",\
+            "compute_int_424",\
+            "compute_int_434",\
+            "compute_int_479",\
+            "compute_int_536",\
+            "compute_int_563",\
+            "compute_int_568",\
+            "compute_int_63",\
+            "compute_int_645",\
+            "compute_int_751",\
+            "compute_int_788",\
+            "compute_int_841",\
+            "compute_int_844",\
+            "compute_int_848",\
+            "compute_int_856",\
+            "compute_int_859",\
+            "compute_int_865",\
+            "compute_int_877",\
+            "compute_int_907",\
+            "compute_int_921",\
+            "compute_int_942",\
+            "compute_int_962",\
+            "srv111",\
+            "srv128",\
+            "srv12",\
+            "srv131",\
+            "srv132",\
+            "srv133",\
+            "srv137",\
+            "srv151",\
+            "srv155",\
+            "srv160",\
+            "srv171",\
+            "srv174",\
+            "srv194",\
+            "srv207",\
+            "srv215",\
+            "srv21",\
+            "srv222",\
+            "srv225",\
+            "srv228",\
+            "srv242",\
+            "srv255",\
+            "srv259",\
+            "srv262",\
+            "srv276",\
+            "srv279",\
+            "srv287",\
+            "srv293",\
+            "srv314",\
+            "srv326",\
+            "srv32",\
+            "srv331",\
+            "srv333",\
+            "srv358",\
+            "srv364",\
+            "srv366",\
+            "srv371",\
+            "srv393",\
+            "srv394",\
+            "srv3",\
+            "srv401",\
+            "srv403",\
+            "srv405",\
+            "srv408",\
+            "srv41",\
+            "srv425",\
+            "srv426",\
+            "srv440",\
+            "srv442",\
+            "srv44",\
+            "srv453",\
+            "srv456",\
+            "srv459",\
+            "srv45",\
+            "srv461",\
+            "srv470",\
+            "srv475",\
+            "srv483",\
+            "srv489",\
+            "srv48",\
+            "srv490",\
+            "srv495",\
+            "srv504",\
+            "srv506",\
+            "srv509",\
+            "srv526",\
+            "srv527",\
+            "srv537",\
+            "srv540",\
+            "srv551",\
+            "srv552",\
+            "srv562",\
+            "srv564",\
+            "srv56",\
+            "srv582",\
+            "srv58",\
+            "srv598",\
+            "srv602",\
+            "srv606",\
+            "srv609",\
+            "srv617",\
+            "srv61",\
+            "srv623",\
+            "srv637",\
+            "srv641",\
+            "srv642",\
+            "srv64",\
+            "srv650",\
+            "srv662",\
+            "srv664",\
+            "srv669",\
+            "srv671",\
+            "srv676",\
+            "srv69",\
+            "srv702",\
+            "srv706",\
+            "srv715",\
+            "srv717",\
+            "srv727",\
+            "srv72",\
+            "srv738",\
+            "srv742",\
+            "srv743",\
+            "srv745",\
+            "srv757",\
+            "srv760",\
+            "srv764",\
+            "srv767",\
+            "srv768",\
+            "srv771",\
+            "srv776",\
+            "srv78",\
+            "srv85",\
+            "srv93"
         ]
     
     elif apps == "gapmore":
