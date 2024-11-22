@@ -54,12 +54,6 @@ void CACHE::llc_initialize_replacement()
         cout << "Deadblocks File not found." << endl;
         exit(0);
     }
-
-    if (LLC_INDEX_TYPE == 9) {
-        EntropyIndex* entropy = dynamic_cast<EntropyIndex*>(m_index);
-        EntropyV3* etp3 = dynamic_cast<EntropyV3*>(entropy);
-        etp3->set_perfect_deadblk_mode(true, dead_blocks);
-    }
 }
 
 // find replacement victim

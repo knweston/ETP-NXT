@@ -2,7 +2,7 @@
 #define ENTROPY_INDEX_V3_H
 
 #include "index/entropy.h"
-#define IGNORE_DEADBLK 1
+#define READ_DBLK_FILE_INTERNAL 1
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -24,6 +24,7 @@ public:
          cout << "UnhashIdx maxETP:   " << ((NOHASH_IF_SEQ_IDX_HIGHEST_ETP == 1)? "hashing OFF" : "hashing ON") << endl;
          cout << "No-delay reconfig:  " << (RECONFIG_NO_DELAY? "Yes" : "No") << endl;
          cout << "Update Miss Only:   " << (UPDATE_MISS_ONLY? "Yes" : "No") << endl;
+         cout << "Read dblk_file internally: " << (READ_DBLK_FILE_INTERNAL? "Yes" : "No") << endl;
          cout << "========================================================================" << endl;
          cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
          cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
@@ -33,6 +34,9 @@ public:
          cout << "m_next_seq_b: " << vec_to_string(m_next_seq_b) << endl;
          cout << endl;
       }
+      if (READ_DBLK_FILE_INTERNAL) {
+         read_dblk_file();
+      }
    }
    ~EntropyV3() {}
 
@@ -41,11 +45,7 @@ public:
    void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
    bool should_update_trackers(uint64_t address, bool is_hit, uint32_t type);
    bool remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level);
-   void set_perfect_deadblk_mode(bool x_mode, vector<uint64_t> x_dblks) {
-      m_perfect_deadblock_mode = x_mode;
-      dead_blocks = x_dblks;
-      cout << "PERFECT DEADBLOCK MODE ENABLED FOR ENTROPY-V3" << endl;
-   }
+   void read_dblk_file();
    bool is_dead_block(uint64_t x_addr) {
       return binary_search(dead_blocks.begin(), dead_blocks.end(), x_addr);
    }

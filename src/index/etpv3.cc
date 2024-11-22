@@ -3,8 +3,6 @@
 bool EntropyV3::should_update_trackers(uint64_t address, bool is_hit, uint32_t type) {
    if (UPDATE_MISS_ONLY && is_hit)
       return false;
-   // if (m_should_remap)
-   //    return false;
    if (m_perfect_deadblock_mode && is_dead_block(address))
       return false;
 
@@ -297,4 +295,49 @@ bool EntropyV3::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
       // dest prefetch clean -> just overwrite, no further action
    }
    return overwrite_dest;
+}
+
+// initialize replacement state
+void EntropyV3::read_dblk_file() {
+   // only works in single-core setup for now
+   uint32_t appname_endpt;
+   string DBLK_FILE_PATH;
+   
+   if(APP_PATH[0].find(".champsimtrace.xz") != -1){
+      appname_endpt = APP_PATH[0].find(".champsimtrace.xz");
+   }
+   else{
+      appname_endpt = APP_PATH[0].find(".champsimtrace.gz");
+   }
+
+   for (uint32_t i=0; i<appname_endpt; ++i) {
+      DBLK_FILE_PATH += APP_PATH[0][i];
+   }
+   DBLK_FILE_PATH += "-DEAD-BLKS.txt";
+   cout << "DBLK_FILE_PATH: " << DBLK_FILE_PATH << endl;
+
+   ifstream dblk_file(DBLK_FILE_PATH);
+   string line;
+   uint64_t address;
+   if (dblk_file.is_open()) {
+      while(getline(dblk_file, line)) {
+         stringstream ss(line);
+         ss >> hex >> address;
+
+         // skip zero address
+         if (!address)
+               continue;
+         
+         dead_blocks.push_back(address);
+      }
+      dblk_file.close();
+      sort(dead_blocks.begin(), dead_blocks.end());
+      m_perfect_deadblock_mode = true;
+      cout << "Deadblocks list initialized." << endl;
+      cout << "PERFECT DEADBLOCK MODE ENABLED FOR ENTROPY-V3" << endl;
+   }
+   else {
+      cout << "Deadblocks File not found." << endl;
+      exit(0);
+   }
 }
