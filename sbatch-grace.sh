@@ -91,5 +91,6 @@
 # python3 autoslurm-1core.py -a nxetp-bonus -o entropy500pf    -e entropy500pf    -w 2 -r entropy500pf    -t dpc3-traces
 # python3 autoslurm-1core.py -a nxetp-bonus -o entropy250pf    -e entropy250pf    -w 2 -r entropy250pf    -t dpc3-traces
 
-python3 autoslurm-1core.py -a 459_bodytrack_streamcluster -o etp3t -e etp3t -w 2 -r etp3t -t dpc3-traces
-python3 autoslurm-1core.py -a 459_bodytrack_streamcluster -o etp3lru -e etp3lru -w 2 -r etp3lru -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t more-traces

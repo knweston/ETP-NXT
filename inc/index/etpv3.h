@@ -3,6 +3,7 @@
 
 #include "index/entropy.h"
 #define READ_DBLK_FILE_INTERNAL 1
+#define UPDATE_HITMISS_SETTING 1    // 0: miss only, 1: hit only, 2: both hit+miss
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -23,7 +24,7 @@ public:
          cout << "ETP match option:   " << matching_option_to_string(FIX_SEQUENCE) << endl;
          cout << "UnhashIdx maxETP:   " << ((NOHASH_IF_SEQ_IDX_HIGHEST_ETP == 1)? "hashing OFF" : "hashing ON") << endl;
          cout << "No-delay reconfig:  " << (RECONFIG_NO_DELAY? "Yes" : "No") << endl;
-         cout << "Update Miss Only:   " << (UPDATE_MISS_ONLY? "Yes" : "No") << endl;
+         cout << "Update on Hit/Miss: " << (UPDATE_HITMISS_SETTING==0? "Miss only" : (UPDATE_HITMISS_SETTING==1? "Hit only" : "Both Hit/Miss")) << endl;
          cout << "Read dblk_file internally: " << (READ_DBLK_FILE_INTERNAL? "Yes" : "No") << endl;
          cout << "========================================================================" << endl;
          cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;

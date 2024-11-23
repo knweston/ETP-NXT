@@ -1,7 +1,9 @@
 #include "index/etpv3.h"
 
 bool EntropyV3::should_update_trackers(uint64_t address, bool is_hit, uint32_t type) {
-   if (UPDATE_MISS_ONLY && is_hit)
+   if ((UPDATE_HITMISS_SETTING==0) && is_hit)
+      return false;
+   if ((UPDATE_HITMISS_SETTING==1) && !is_hit)
       return false;
    if (m_perfect_deadblock_mode && is_dead_block(address))
       return false;

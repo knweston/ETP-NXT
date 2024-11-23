@@ -18,8 +18,8 @@ uint64_t warmup_instructions     = 1000000,
          simulation_instructions = 10000000,
          champsim_seed, rand_offset = 0;
 
-uint32_t interval_size_1core = 1000000,
-         interval_size_ncore = 4000000;
+uint32_t interval_size_1core = 500000,
+         interval_size_ncore = interval_size_1core*NUM_CPUS;
 
 // Replacement Policy
 bool ru_bit[LLC_SET][LLC_WAY];
