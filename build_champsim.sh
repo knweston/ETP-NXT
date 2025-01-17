@@ -95,6 +95,9 @@ cp prefetcher/${L2C_PREFETCHER}.l2c_pref prefetcher/l2c_prefetcher.cc
 cp prefetcher/${LLC_PREFETCHER}.llc_pref prefetcher/llc_prefetcher.cc
 cp replacement/${LLC_REPLACEMENT}.llc_repl replacement/llc_replacement.cc
 
+echo -en '\n' >> replacement/llc_replacement.cc
+echo "void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {}" >> replacement/llc_replacement.cc
+
 # Build
 mkdir -p bin
 rm -f bin/champsim

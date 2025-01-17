@@ -281,5 +281,3 @@ void CACHE::llc_replacement_final_stats()
 {
 
 }
-
-void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {}

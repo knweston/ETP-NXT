@@ -23,7 +23,7 @@ uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, c
     {
         for (int i=0; i<LLC_WAY; i++)
             if (rrpv[set][i] == maxRRPV) {
-                if (block[set_id][way_id].valid && m_index) {
+                if (block[set][i].valid && m_index) {
                     m_index->increment_eviction(set);
                 }
                 return i;
@@ -76,5 +76,3 @@ void CACHE::llc_replacement_final_stats()
 {
 
 }
-
-void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {}
