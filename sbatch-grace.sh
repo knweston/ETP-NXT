@@ -91,6 +91,9 @@
 # python3 autoslurm-1core.py -a nxetp-bonus -o entropy500pf    -e entropy500pf    -w 2 -r entropy500pf    -t dpc3-traces
 # python3 autoslurm-1core.py -a nxetp-bonus -o entropy250pf    -e entropy250pf    -w 2 -r entropy250pf    -t dpc3-traces
 
-python3 autoslurm-1core.py -a nxetp -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-bonus -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-specmore -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t more-traces
+# python3 autoslurm-1core.py -a nxetp -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp-bonus -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp-specmore -o etp3b-500 -e etp3b-500 -w 2 -r etp3b-500 -t more-traces
+
+python3 autoslurm-1core.py -a nxetp -o entropy -e entropy -w 2 -r entropy -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp -o pf-entropy -e pf-entropy -w 2 -r pf-entropy -t dpc3-traces
