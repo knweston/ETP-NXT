@@ -256,7 +256,7 @@ void CACHE::handle_fill()
             }
 
             // [Kevin]
-            if (m_index) {
+            if (m_index) {                
                 m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
             }
 

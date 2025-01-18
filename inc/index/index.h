@@ -78,9 +78,9 @@ public:
              << ". num warmup access: " << num_warmup_access << endl;
     }
 
-protected:
-    uint32_t NUM_SET;
-    uint32_t NUM_WAY;
+public:
+    const uint32_t NUM_SET;
+    const uint32_t NUM_WAY;
 
     // connection config
     static int32_t m_port;

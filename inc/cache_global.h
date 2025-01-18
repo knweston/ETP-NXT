@@ -14,31 +14,31 @@
 #define IS_LLC  6
 
 // L1 INSTRUCTION CACHE
-#define L1I_SET 256
-#define L1I_WAY 2
+#define L1I_SET 64
+#define L1I_WAY 8
 #define L1I_RQ_SIZE 64
 #define L1I_WQ_SIZE 64 
 #define L1I_PQ_SIZE 32
 #define L1I_MSHR_SIZE 8
-#define L1I_LATENCY 2
+#define L1I_LATENCY 4
 
 // L1 DATA CACHE
-#define L1D_SET 256
-#define L1D_WAY 2
+#define L1D_SET 64
+#define L1D_WAY 8
 #define L1D_RQ_SIZE 64
 #define L1D_WQ_SIZE 64 
 #define L1D_PQ_SIZE 8
 #define L1D_MSHR_SIZE 16
-#define L1D_LATENCY 2
+#define L1D_LATENCY 4
 
 // L2 CACHE
-#define L2C_SET 512
-#define L2C_WAY 4
+#define L2C_SET 256
+#define L2C_WAY 8
 #define L2C_RQ_SIZE 32
 #define L2C_WQ_SIZE 32
 #define L2C_PQ_SIZE 16
 #define L2C_MSHR_SIZE 32
-#define L2C_LATENCY 8      // 4 (L1I or L1D) + 8 = 12 cycles
+#define L2C_LATENCY 10      // 4 (L1I or L1D) + 8 = 12 cycles
 #define L2C_INDEX_TYPE -1
 
 // LAST LEVEL CACHE

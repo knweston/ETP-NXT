@@ -75,7 +75,6 @@ class CACHE : public MEMORY {
     uint64_t total_miss_latency;
 
     // smart index ptr [Kevin]
-    // NeuralIndex* m_index = NULL;
     Index* m_index;
     
     // constructor

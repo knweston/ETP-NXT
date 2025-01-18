@@ -15,5 +15,6 @@
 # python3 autobuild.py -i nohash -p false -f nohash-dblru -r dblru
 # python3 autobuild.py -i entropyv3 -p false -f etp3-dblru -r dblru
 
-python3 autobuild.py -i entropyv3 -p false -f etp3b-500
-python3 autobuild.py -i entropyv3 -p false -f etp3b-500-dblru -r dblru
+python3 autobuild.py -i nohash -p false -r ship
+python3 autobuild.py -i xorhash -p false -r ship
+python3 autobuild.py -i entropy -p false -r ship

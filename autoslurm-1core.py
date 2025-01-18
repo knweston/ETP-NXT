@@ -101,7 +101,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
 
     elif apps == "nxetp":
         # MPKI > 1 under config 64/8-2,256/8-8,2048/16-20, rank1, DRAM=24
-        requested_apps = ["433", "450", "459", "470", "471", "473", "482", \
+        requested_apps = ["410", "433", "450", "459", "470", "471", "473", "482", \
                           "605", "607", "620", "621", "623", "627", "628", "649", \
                           "bc.urand-3004B","bc.web-1627B", \
                           "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \

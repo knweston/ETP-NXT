@@ -135,6 +135,7 @@ void CACHE::llc_initialize_replacement()
             }
         }
     }
+    cout << "Sampled Cache Size: " << sampled_cache.size();
 }
 
 
