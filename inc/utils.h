@@ -122,6 +122,32 @@ void standardize_array(T* input_arr, double* output_arr, uint64_t array_size) {
     }
 }
 
+template<typename T>
+uint32_t find_min_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avoid_idx) {
+   uint32_t min_idx = 0;
+   T min_val        = input_arr[0];
+   for (uint32_t i=1; i < array_size; ++i) {
+      if ((min_val > input_arr[i]) && !is_existed(i, avoid_idx)) {
+         min_val = input_arr[i];
+         min_idx = i;
+      }
+   }
+   return min_idx; 
+}
+
+template<typename T>
+uint32_t find_max_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avoid_idx) {
+   uint32_t max_idx = 0;
+   T max_val        = input_arr[0];
+   for (uint32_t i=1; i < array_size; ++i) {
+      if ((max_val < input_arr[i]) && !is_existed(i, avoid_idx)) {
+         max_val = input_arr[i];
+         max_idx = i;
+      }
+   }
+   return max_idx; 
+}
+
 //========================================================================//
 // TO STRING
 //========================================================================//

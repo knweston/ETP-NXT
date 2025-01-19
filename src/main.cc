@@ -947,6 +947,15 @@ int main(int argc, char** argv)
         }
     }
 
+    else if (LLC_INDEX_TYPE == 10) {
+        if (NUM_CPUS == 1) { // single core
+            uncore.LLC.m_index = new BuddyIndex(LLC_SET, LLC_WAY, interval_size_1core, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
+        }
+        else {
+            uncore.LLC.m_index = new BuddyIndex(LLC_SET, LLC_WAY, interval_size_ncore, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
+        }
+    }
+
     else if (LLC_INDEX_TYPE == 0) {
         if (NUM_CPUS == 1) { // single core
             uncore.LLC.m_index->interval_size(interval_size_1core);

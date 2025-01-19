@@ -7,6 +7,7 @@
 #include "index/entropy2.h"
 #include "index/etpv3.h"
 #include "index/skewed.h"
+#include "index/buddy.h"
 
 // PAGE
 extern uint32_t PAGE_TABLE_LATENCY, SWAP_LATENCY;
