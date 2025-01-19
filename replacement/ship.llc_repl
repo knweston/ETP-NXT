@@ -9,7 +9,7 @@
 #define SAMPLER_WAY LLC_WAY
 #define SHCT_MAX 7
 
-uint32_t rrpv[LLC_SET][LLC_WAY];
+// uint32_t rrpv[LLC_SET][LLC_WAY];
 
 // sampler structure
 class SAMPLER_class

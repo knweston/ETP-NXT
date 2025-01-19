@@ -109,8 +109,8 @@ def execute(exec_file, traces_dir, result_dir=""):
 def main():
    parser = argparse.ArgumentParser()
    parser.add_argument("-i", "--idx_type", required=True, type=str)
-   parser.add_argument("-r", "--replacement", required=False, default="lru", type=str)
-   parser.add_argument("-f", "--exec_name", required=False, default="", type=str)
+   parser.add_argument("-r", "--replacement_type", required=False, default="lru", type=str)
+   parser.add_argument("-o", "--output_filename", required=False, default="", type=str)
    parser.add_argument("-p", "--is_pf", required=True, type=str)
    args = parser.parse_args()
 
@@ -121,7 +121,7 @@ def main():
    else:
       print("Invalid option: ", args.is_pf)
    
-   build(parse_index_type(args.idx_type), is_pf, args.exec_name, args.replacement)
+   build(parse_index_type(args.idx_type), is_pf, args.output_filename, args.replacement_type)
 
 if __name__ == "__main__":
    main()

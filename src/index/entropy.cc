@@ -155,7 +155,8 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
             }
 
             bool fill_ready = true;
-            uint32_t dest_way = get_lru_victim(dest_index);
+            // uint32_t dest_way = get_lru_victim(dest_index); // if the cache is using LRU replacement policy
+            uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
 
             BLOCK *dest_block = &block_array[dest_index][dest_way];
 
@@ -191,7 +192,8 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
                     increment_eviction(dest_index);
 
                 override_block(src_block, dest_block);
-                lru_update(dest_index, dest_way, src_block->lru);
+                // lru_update(dest_index, dest_way, src_block->lru);
+                rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
             }
             
             // invalidate the source block
@@ -242,7 +244,7 @@ string EntropyIndex::etp_vector_to_string(vector<BitEntropy>& entropy) {
     return str;
 }
 
-uint32_t EntropyIndex::get_drrip_victim(uint32_t set) {
+uint32_t EntropyIndex::get_rrip_victim(uint32_t set) {
     // Start from RRPV = 3
     uint32_t lookupRRPV=3;
 
@@ -256,7 +258,7 @@ uint32_t EntropyIndex::get_drrip_victim(uint32_t set) {
     while (1) {
         // look for maxRRPV + RU==0
         for (int i=0; i<LLC_WAY; i++) {
-            if ((rrpv[set][i] == lookupRRPV) && (ru_bit[set][i] == 0))
+            if ((rrpv[set][i] == lookupRRPV))
                 return i;
         }
 
@@ -276,8 +278,9 @@ uint32_t EntropyIndex::get_drrip_victim(uint32_t set) {
     return 0;
 }
 
-void EntropyIndex::drrip_update(uint32_t set, uint32_t way, uint32_t src_age) {
-    rrpv[set][way] = src_age;
+void EntropyIndex::rrip_update(uint32_t set, uint32_t way, uint32_t src_rrpv) {
+    if (rrpv[set][way] > src_rrpv)
+        rrpv[set][way] = src_rrpv;
 }
 
 uint32_t EntropyIndex::get_lru_victim(uint32_t set) {

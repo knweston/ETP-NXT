@@ -1,20 +1,22 @@
-# python3 autobuild.py -i nohash -p true -f nohash
-# python3 autobuild.py -i primeideal -p true -f primeideal
-# python3 autobuild.py -i xorhash -p true -f xorhash
-# python3 autobuild.py -i skewed -p true -f skewed
-# python3 autobuild.py -i entropy -p true -f entropy
+# python3 autobuild.py -i nohash -p true -o nohash
+# python3 autobuild.py -i primeideal -p true -o primeideal
+# python3 autobuild.py -i xorhash -p true -o xorhash
+# python3 autobuild.py -i skewed -p true -o skewed
+# python3 autobuild.py -i entropy -p true -o entropy
 
-# python3 autobuild.py -i nohash -p false -f nohash
-# python3 autobuild.py -i primeideal -p false -f primeideal
-# python3 autobuild.py -i xorhash -p false -f xorhash
-# python3 autobuild.py -i skewed -p false -f skewed
-# python3 autobuild.py -i entropy -p false -f entropy
+# python3 autobuild.py -i nohash -p false -o nohash
+# python3 autobuild.py -i primeideal -p false -o primeideal
+# python3 autobuild.py -i xorhash -p false -o xorhash
+# python3 autobuild.py -i skewed -p false -o skewed
+# python3 autobuild.py -i entropy -p false -o entropy
 
-# python3 autobuild.py -i xorhash -p false -f xorhash-dblru -r dblru
-# python3 autobuild.py -i primeideal -p false -f primeideal-dblru -r dblru
-# python3 autobuild.py -i nohash -p false -f nohash-dblru -r dblru
-# python3 autobuild.py -i entropyv3 -p false -f etp3-dblru -r dblru
+# python3 autobuild.py -i xorhash -p false -o xorhash-dblru -r dblru
+# python3 autobuild.py -i primeideal -p false -o primeideal-dblru -r dblru
+# python3 autobuild.py -i nohash -p false -o nohash-dblru -r dblru
+# python3 autobuild.py -i entropyv3 -p false -o etp3-dblru -r dblru
 
-python3 autobuild.py -i nohash -p false -r ship
-python3 autobuild.py -i xorhash -p false -r ship
-python3 autobuild.py -i entropy -p false -r ship
+# python3 autobuild.py -i nohash -p false -r drrip -o drrip-nohash
+# python3 autobuild.py -i xorhash -p false -r drrip -o drrip-xorhash
+python3 autobuild.py -i entropy -p false -r drrip -o drrip-entropy
+python3 autobuild.py -i entropy -p false -r srrip -o srrip-entropy
+python3 autobuild.py -i entropy -p false -r ship -o ship-entropy

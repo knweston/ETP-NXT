@@ -179,8 +179,8 @@ public:
     virtual void etp_tracker_interval_update();
 
     // replacement policy
-    uint32_t get_drrip_victim(uint32_t set);
-    void     drrip_update(uint32_t set, uint32_t way, uint32_t src_age);
+    uint32_t get_rrip_victim(uint32_t set);
+    void     rrip_update(uint32_t set, uint32_t way, uint32_t src_age);
     uint32_t get_lru_victim(uint32_t set);
     void     lru_update(uint32_t set, uint32_t way, uint32_t src_lru_pos);
 
