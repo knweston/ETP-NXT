@@ -17,6 +17,6 @@
 
 # python3 autobuild.py -i nohash -p false -r drrip -o drrip-nohash
 # python3 autobuild.py -i xorhash -p false -r drrip -o drrip-xorhash
-python3 autobuild.py -i entropy -p false -r drrip -o drrip-entropy
-python3 autobuild.py -i entropy -p false -r srrip -o srrip-entropy
-python3 autobuild.py -i entropy -p false -r ship -o ship-entropy
+# python3 autobuild.py -i nohash -p false -r lru -o nohash
+# python3 autobuild.py -i xorhash -p false -r lru -o xorhash
+python3 autobuild.py -i buddy -p false -r lru -o buddy1t64s1

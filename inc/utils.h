@@ -160,7 +160,8 @@ string arr_to_string(T* array, uint32_t array_size, string split_sym=",") {
     for (uint32_t i=0; i < array_size; ++i) {
         output += to_string(array[i]) + split_sym;
     }
-    output.pop_back();
+    if (output != "")
+        output.pop_back();
     return output;
 }
 
@@ -173,7 +174,8 @@ string vec_to_string(vector<T> &vec, string split_sym=",") {
     for (uint32_t i=0; i < vec.size(); ++i) {
         output += to_string(vec[i]) + split_sym;
     }
-    output.pop_back();
+    if (output != "")
+        output.pop_back();
     return output;
 }
 

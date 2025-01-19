@@ -9,8 +9,9 @@ void CACHE::llc_initialize_replacement()
 // find replacement victim
 uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
 {
-    if (m_index->custom_getvictim)
+    if (m_index && m_index->custom_getvictim) {
         return m_index->get_victim(set);
+    }
     // baseline LRU
     return lru_victim(cpu, instr_id, set, current_set, ip, full_addr, type); 
 }
@@ -40,7 +41,8 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
 
     // uncomment this line to see the LLC accesses
     // cout << "CPU: " << cpu << "  LLC " << setw(9) << TYPE_NAME << " set: " << setw(5) << set << " way: " << setw(2) << way;
-    // cout << hex << " paddr: " << setw(12) << paddr << " ip: " << setw(8) << ip << " victim_addr: " << victim_addr << dec << endl;
+    // cout << hex << " paddr: " << setw(12) << full_addr << " ip: " << setw(8) << ip << " victim_addr: " << victim_addr << dec << endl;
+    // cout << "block_array: " << block[set][way].address << " " << block[set][way].tag << " " << block[set][way].lru << endl;
 
     // baseline LRU
     if (hit && (type == WRITEBACK)) // writeback hit does not update LRU state

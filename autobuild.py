@@ -16,6 +16,7 @@ class INDEX(Enum):
    PRIMEREAL   = 7
    ENTROPYV2   = 8
    ENTROPYV3   = 9
+   BUDDY       = 10
 
 def parse_index_type(str_type):
    if str_type == "nohash":
@@ -38,12 +39,14 @@ def parse_index_type(str_type):
       return INDEX.ENTROPYV2
    elif str_type == "entropyv3":
       return INDEX.ENTROPYV3
+   elif str_type == "buddy":
+      return INDEX.BUDDY
    else:
       print("Index not found: ", str_type)
 
 # From left to right, the latency (in cycles) of:
 # nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, primereal
-LATENCY = [0,0,2,0,0,0,0,5,0,0]
+LATENCY = [0,0,2,0,0,0,0,5,0,0,0]
 
 
 

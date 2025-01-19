@@ -4,9 +4,12 @@ uint32_t BuddyIndex::get_set(uint64_t address) {
    return compute_index(address);
 }
 
+
+
 void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
    uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
-   uint32_t hashed_index   = get_set(address);
+   uint32_t hashed_index   = unhashed_index;
+   // uint32_t hashed_index   = get_set(address);
    N_ACCESS[unhashed_index]++;
    PI_N_ACCESS[unhashed_index]++;
    B_ACCESS[hashed_index]++;
@@ -27,19 +30,15 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
       cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
       cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
       cout << "========================================================================" << endl;
-      print_buddy_interval_stats(PI_EVICTION);
+      print_buddy_interval_stats(PI_N_ACCESS);
       cout << "========================================================================" << endl;
-      vector<uint32_t> replaced_sets = buddy_table_interval_update(PI_EVICTION);
+      vector<uint32_t> replaced_sets = buddy_table_interval_update(PI_N_ACCESS);
 
-      // one-shot cache flush
+      // flush the cache lines of the old mappings
       for (uint32_t i=0; i < replaced_sets.size(); ++i) {
          uint32_t replaced_idx = replaced_sets[i];
-         for (uint32_t way=0; way < NUM_WAY; ++way) {
+         for (uint32_t way=NUM_WAY-NUM_SHARE_WAY; way < NUM_WAY; ++way) {
             BLOCK* replaced_block = &block_array[replaced_idx][way];
-            if (replaced_block->valid && (compute_index(replaced_block->address) == replaced_idx)) {
-               continue;
-            }
-
             if (replaced_block->valid) {
                if (replaced_block->dirty) {
                   bool writeback_success = force_writeback(replaced_block, dram, FILL_LEVEL, CPU_ID);
@@ -52,6 +51,43 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
             }
          }
       }
+
+      for (uint32_t entry=0; entry < LKUP_TABLE_SIZE; ++entry) {
+         int32_t dst_id = m_table.get_entry(entry).dst_id();
+         if (dst_id < 0) { // unused entry
+            continue;
+         }
+
+         for (uint32_t i=NUM_WAY-NUM_SHARE_WAY; i<NUM_WAY; ++i) {
+            // demote the shared way
+            for (uint32_t j=0; j<NUM_WAY; ++j) {
+               if (block_array[dst_id][j].lru > block_array[dst_id][i].lru) {
+                  block_array[dst_id][j].lru--;
+               }
+            }
+            block_array[dst_id][i].lru = NUM_WAY-1;
+
+            // evict the shared way
+            if (block_array[dst_id][i].valid) {
+               if (block_array[dst_id][i].dirty) {
+                  bool writeback_success = force_writeback(&block_array[dst_id][i], dram, FILL_LEVEL, CPU_ID);
+                  num_writeback++;
+               }
+               block_array[dst_id][i].valid = 0;
+            }
+         }
+      }
+
+      // for (uint32_t entry=0; entry < LKUP_TABLE_SIZE; ++entry) {
+      //    int32_t dst_id = m_table.get_entry(entry).dst_id();
+      //    if (dst_id < 0) { // unused entry
+      //       continue;
+      //    }
+      //    for (uint32_t i=NUM_WAY-NUM_SHARE_WAY; i<NUM_WAY; ++i) {
+      //       cout << "block_array lru: " << dst_id << " " << i << " " << block_array[dst_id][i].lru << " " << block_array[dst_id][i].valid << endl;
+      //    }
+      // }
+
       printf("Num replaced sets: %d. Aggregated writebacks: %d. Aggregated buddy hits: %d. Aggregated buddy spills: %d\n", replaced_sets.size(), num_writeback, num_buddy_hit, num_spills);
       m_table.print();
 
@@ -83,6 +119,8 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
    }
 }
 
+
+
 void BuddyIndex::print_stats() {
    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(B_ACCESS, NUM_SET) / compute_mean(B_ACCESS, NUM_SET) << endl;
    cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
@@ -106,12 +144,44 @@ void BuddyIndex::print_buddy_interval_stats(uint64_t* counter_arr) {
          dest_stats.push_back(counter_arr[dst_id]);
       }
    }
-   cout << "src-set evictions: " << vec_to_string(src_stats) << endl;
-   cout << "bud-set evictions: " << vec_to_string(dest_stats) << endl;
+   if (src_stats.size() > 0 && dest_stats.size() > 0) {
+      cout << "src-set evictions: " << vec_to_string(src_stats) << endl;
+      cout << "bud-set evictions: " << vec_to_string(dest_stats) << endl;
+   }
 }
 
 vector<uint32_t> BuddyIndex::buddy_table_interval_update(uint64_t* counter_arr) {
    vector<uint32_t> replaced_indices;
+   // vector<uint32_t> top_access, lowest_access;
+   // vector<uint32_t> top_access_idx, lowest_access_idx;
+   // vector<uint32_t> top_miss, lowest_miss;
+   // vector<uint32_t> top_miss_idx, lowest_miss_idx;
+
+   // if (LKUP_TABLE_SIZE == 0) {
+   //    return replaced_indices;
+   // }
+
+   // // find indices with highest accesses/misses
+   // for (uint32_t i=0; i < CUTOFF_RANK_LEVEL; ++i) {
+   //    uint32_t high_access_idx = find_max_index(PI_N_ACCESS, NUM_SET, top_access_idx);
+   //    uint32_t high_miss_idx = find_max_index(PI_MISS, NUM_SET, top_miss_idx);
+   //    top_access_idx.push_back(high_access_idx);
+   //    top_miss_idx.push_back(high_miss_idx);
+   //    top_access.push_back(PI_N_ACCESS[high_access_idx]);
+   //    top_miss.push_back(PI_MISS[high_miss_idx]);
+   // }
+
+   // // find indices with lowest accesses/misses
+   // for (uint32_t i=0; i < CUTOFF_RANK_LEVEL; ++i) {
+   //    uint32_t low_access_idx = find_min_index(PI_N_ACCESS, NUM_SET, top_access_idx);
+   //    uint32_t low_miss_idx = find_min_index(PI_MISS, NUM_SET, top_miss_idx);
+   //    top_access_idx.push_back(high_access_idx);
+   //    top_miss_idx.push_back(high_miss_idx);
+   //    top_access.push_back(PI_N_ACCESS[high_access_idx]);
+   //    top_miss.push_back(PI_MISS[high_miss_idx]);
+   // }
+
+
    vector<uint32_t> high_indices, low_indices;
    vector<uint64_t> high_evictions, low_evictions;
    if (LKUP_TABLE_SIZE == 0) {
@@ -148,50 +218,10 @@ vector<uint32_t> BuddyIndex::buddy_table_interval_update(uint64_t* counter_arr) 
       table_loaded = true;
    }
 
-   cout << "high-idx evictions: " << vec_to_string(high_evictions) << endl;
-   cout << "low-idx evictions:  " << vec_to_string(low_evictions) << endl;
+   cout << "high-idx counters: " << vec_to_string(high_evictions) << endl;
+   cout << "low-idx counters:  " << vec_to_string(low_evictions) << endl;
    return replaced_indices;
 }
-
-// bool BuddyIndex::lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
-//    /*
-//       search:
-//          - search in the source set
-//          - if hit, return hit index, hit way
-//          - if miss, search buddy set
-//          - if hit buddy set, swap hit way with the LRU way in source set.
-//          - if miss buddy set, return miss.
-//          - currently the function params set_id, way_id not used.
-//    */
-//    bool is_hit = false;
-//    uint32_t src_index = compute_index(address);
-
-//    for (uint32_t way=0; way < NUM_WAY; ++way) {
-//       is_hit = (block_array[src_index][way].valid && (block_array[src_index][way].tag == address));
-//       if (is_hit) {  // hit
-//          break;
-//       }
-//    }
-
-//    if (!is_hit) {    // miss
-//       int32_t bud_index = m_table.find(src_index);
-//       if (bud_index >= 0) {
-//          for (uint32_t way=0; way < NUM_WAY; ++way) {
-//             is_hit = (block_array[bud_index][way].valid && (block_array[bud_index][way].tag == address));
-//             if (is_hit) {  // hit
-//                num_buddy_hit++;
-//                uint32_t src_lru_way = get_lru_victim(src_index);
-//                swap_block(&block_array[bud_index][way], &block_array[src_index][src_lru_way]);
-//                lru_update(bud_index, way);   // move swapped block to the LRU head of the buddy set
-//                break;
-//             }
-//          }
-//       }
-//    }
-
-//    *set_id = src_index;
-//    return is_hit;
-// }
 
 uint32_t BuddyIndex::compute_index(uint64_t address) {
    return (uint32_t) (address & ((1 << lg2(NUM_SET)) - 1));
@@ -221,16 +251,6 @@ uint32_t BuddyIndex::get_lru_victim(uint32_t set, uint32_t num_exclude) {
    return way;
 }
 
-// void BuddyIndex::lru_update(uint32_t set, uint32_t way) {
-//    for (uint32_t i=0; i<NUM_WAY; i++) {
-//       if (block_array[set][i].lru < block_array[set][way].lru) {
-//          block_array[set][i].lru++;
-//       }
-//    }
-//    // insert to the LRU position that the block is currently at
-//    block_array[set][way].lru = 0;
-// }
-
 void BuddyIndex::swap_block(BLOCK* src, BLOCK* des) {
    BLOCK* tmp_blk = new BLOCK();
    override_block(des, tmp_blk); // save dest to temp
@@ -241,12 +261,28 @@ void BuddyIndex::swap_block(BLOCK* src, BLOCK* des) {
 
 int BuddyIndex::check_hit(uint64_t address) {
    uint32_t set = compute_index(address);
+   int src_index = m_table.is_buddy(set);
 
    for (uint32_t way=0; way < NUM_WAY; way++) {
       if (block_array[set][way].valid && (block_array[set][way].tag == address)) {
          return (int)way;
       }
    }
+
+   // if (src_index >= 0) {
+   //    for (uint32_t way=0; way < NUM_WAY-NUM_SHARE_WAY; way++) {
+   //       if (block_array[set][way].valid && (block_array[set][way].tag == address)) {
+   //          return (int)way;
+   //       }
+   //    }
+   // }
+   // else {
+   //    for (uint32_t way=0; way < NUM_WAY; way++) {
+   //       if (block_array[set][way].valid && (block_array[set][way].tag == address)) {
+   //          return (int)way;
+   //       }
+   //    }
+   // }
 
    int match_way = -1;
    int bud_index = m_table.find(set);
@@ -291,13 +327,16 @@ uint32_t BuddyIndex::get_buddy_victim(uint32_t set) {
    }
 
    if (way == NUM_WAY) {
-      for (way=NUM_WAY-NUM_SHARE_WAY; way<NUM_WAY; way++) {
+      for (way=NUM_WAY-NUM_SHARE_WAY; way<NUM_WAY; way++) { 
          if (block_array[set][way].lru == NUM_WAY-1)
             break;
       }
    }
    if (way >= NUM_WAY) {
       cout << "ERROR: way_id out of bound = " << way << endl;
+      // for (uint32_t i=NUM_WAY-NUM_SHARE_WAY; i<NUM_WAY; i++) {
+      //    cout << "shared way lru: " << block_array[set][i].lru << " " << block_array[set][i].address << " " << block_array[set][i].tag << endl;
+      // }
       assert(false);
    }
    return way;
@@ -319,11 +358,19 @@ uint32_t BuddyIndex::get_victim(uint32_t set) {
 
    // this set has a buddy set
    else if (bud_index >= 0) {   
-      uint32_t src_lru_way = get_lru_victim(set);
-      uint32_t bud_lru_way = get_buddy_victim(bud_index);
-      swap_block(&block_array[bud_index][bud_lru_way], &block_array[src_index][src_lru_way]);
-      lru_update_buddy_region(bud_index, bud_lru_way);
-      return src_lru_way;
+      uint32_t target_set_victim = get_lru_victim(set);
+      if (block_array[set][target_set_victim].valid) {
+         uint32_t buddy_set_victim = get_buddy_victim(bud_index);
+         if (block_array[bud_index][buddy_set_victim].valid) {
+            swap_block(&block_array[bud_index][buddy_set_victim], &block_array[set][target_set_victim]);
+         }
+         else {
+            override_block(&block_array[set][target_set_victim], &block_array[bud_index][buddy_set_victim]);
+            block_array[set][target_set_victim].valid = 0;
+         }
+         lru_update_buddy_region(bud_index, buddy_set_victim);
+      }
+      return target_set_victim;
    }
    else {
       // we should not reach here
