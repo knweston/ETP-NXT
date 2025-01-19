@@ -40,7 +40,6 @@ public:
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-
         warmup_access(x_warmup);
     }
 
@@ -57,13 +56,13 @@ public:
     virtual void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
     virtual void     print_stats() = 0;
     virtual void     eviction_update(BLOCK &victim_blk) {}
+    virtual int      check_hit(uint64_t address) { return -1; }
+    virtual uint32_t get_victim(uint32_t set) { assert(false); }
 
     virtual void increment_eviction(uint32_t set) { 
         EVICTION[set]++;
         PI_EVICTION[set]++;
     }
-
-    
 
     void interval_size(uint32_t x_interval_length) {
         INTERVAL_SIZE = x_interval_length;
@@ -79,14 +78,15 @@ public:
     }
 
 public:
-    const uint32_t NUM_SET;
-    const uint32_t NUM_WAY;
 
     // connection config
     static int32_t m_port;
     static int32_t m_sock;
     static int32_t m_bsize;
     static string  m_ipaddr;
+
+    const uint32_t NUM_SET;
+    const uint32_t NUM_WAY;
 
     // runtime stats
     uint64_t* N_ACCESS;     // nohash access (overall)
@@ -99,7 +99,10 @@ public:
     uint64_t access_ctr;
     uint32_t num_interval;
     uint32_t num_warmup_access;
+
     bool idx_warmup_complete;
+    bool custom_checkhit{false};
+    bool custom_getvictim{false};
 };
 
 

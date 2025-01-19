@@ -1174,6 +1174,10 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
 
 int CACHE::check_hit(PACKET *packet)
 {
+    if (m_index && m_index->custom_checkhit) {
+        return m_index->check_hit(packet->address);
+    }
+
     uint32_t set = get_set(packet->address);
     int match_way = -1;
 
@@ -1183,9 +1187,6 @@ int CACHE::check_hit(PACKET *packet)
         cerr << " event: " << packet->event_cycle << endl;
         assert(0);
     }
-
-    // different check_hit algorithm for skewed cache
-    
 
     // hit
     for (uint32_t way=0; way<NUM_WAY; way++) {

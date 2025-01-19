@@ -1,17 +1,7 @@
 #include "index/buddy.h"
 
 uint32_t BuddyIndex::get_set(uint64_t address) {
-   /*
-      search:
-         - iteratively run the perfect shuffle function, find the index of the input address for each way, stop if hit
-      return:
-         - hit set if hit
-         - victim set if missed (victim way is decided here)
-   */ 
-   uint32_t set_id = 0;
-   uint32_t way_id = 0;
-   bool is_hit = lookup(address, &set_id, &way_id);
-   return set_id;
+   return compute_index(address);
 }
 
 void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
@@ -163,64 +153,64 @@ vector<uint32_t> BuddyIndex::buddy_table_interval_update(uint64_t* counter_arr) 
    return replaced_indices;
 }
 
-bool BuddyIndex::lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
-   /*
-      search:
-         - search in the source set
-         - if hit, return hit index, hit way
-         - if miss, search buddy set
-         - if hit buddy set, swap hit way with the LRU way in source set.
-         - if miss buddy set, return miss.
-         - currently the function params set_id, way_id not used.
-   */
-   bool is_hit = false;
-   uint32_t src_index = compute_index(address);
+// bool BuddyIndex::lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
+//    /*
+//       search:
+//          - search in the source set
+//          - if hit, return hit index, hit way
+//          - if miss, search buddy set
+//          - if hit buddy set, swap hit way with the LRU way in source set.
+//          - if miss buddy set, return miss.
+//          - currently the function params set_id, way_id not used.
+//    */
+//    bool is_hit = false;
+//    uint32_t src_index = compute_index(address);
 
-   for (uint32_t way=0; way < NUM_WAY; ++way) {
-      is_hit = (block_array[src_index][way].valid && (block_array[src_index][way].tag == address));
-      if (is_hit) {  // hit
-         break;
-      }
-   }
+//    for (uint32_t way=0; way < NUM_WAY; ++way) {
+//       is_hit = (block_array[src_index][way].valid && (block_array[src_index][way].tag == address));
+//       if (is_hit) {  // hit
+//          break;
+//       }
+//    }
 
-   if (!is_hit) {    // miss
-      int32_t bud_index = m_table.find(src_index);
-      if (bud_index >= 0) {
-         for (uint32_t way=0; way < NUM_WAY; ++way) {
-            is_hit = (block_array[bud_index][way].valid && (block_array[bud_index][way].tag == address));
-            if (is_hit) {  // hit
-               num_buddy_hit++;
-               uint32_t src_lru_way = get_lru_victim(src_index);
-               swap_block(&block_array[bud_index][way], &block_array[src_index][src_lru_way]);
-               lru_update(bud_index, way);   // move swapped block to the LRU head of the buddy set
-               break;
-            }
-         }
-      }
-   }
+//    if (!is_hit) {    // miss
+//       int32_t bud_index = m_table.find(src_index);
+//       if (bud_index >= 0) {
+//          for (uint32_t way=0; way < NUM_WAY; ++way) {
+//             is_hit = (block_array[bud_index][way].valid && (block_array[bud_index][way].tag == address));
+//             if (is_hit) {  // hit
+//                num_buddy_hit++;
+//                uint32_t src_lru_way = get_lru_victim(src_index);
+//                swap_block(&block_array[bud_index][way], &block_array[src_index][src_lru_way]);
+//                lru_update(bud_index, way);   // move swapped block to the LRU head of the buddy set
+//                break;
+//             }
+//          }
+//       }
+//    }
 
-   *set_id = src_index;
-   return is_hit;
-}
+//    *set_id = src_index;
+//    return is_hit;
+// }
 
 uint32_t BuddyIndex::compute_index(uint64_t address) {
    return (uint32_t) (address & ((1 << lg2(NUM_SET)) - 1));
 }
 
-uint32_t BuddyIndex::get_lru_victim(uint32_t set) {
+uint32_t BuddyIndex::get_lru_victim(uint32_t set, uint32_t num_exclude) {
    uint32_t way = 0;
 
    // fill invalid line first
-   for (way=0; way<NUM_WAY; way++) {
+   for (way=0; way<(NUM_WAY-num_exclude); way++) {
       if (block_array[set][way].valid == false)
          break;
    }
    
    // LRU victim
-   if (way == NUM_WAY) {
-      for (way=0; way<NUM_WAY; way++) {
-         if (block_array[set][way].lru == NUM_WAY-1)
-               break;
+   if (way == (NUM_WAY-num_exclude)) {
+      for (way=0; way<NUM_WAY-num_exclude; way++) {
+         if (block_array[set][way].lru == NUM_WAY-1-num_exclude)
+            break;
       }
    }
    
@@ -231,15 +221,15 @@ uint32_t BuddyIndex::get_lru_victim(uint32_t set) {
    return way;
 }
 
-void BuddyIndex::lru_update(uint32_t set, uint32_t way) {
-   for (uint32_t i=0; i<NUM_WAY; i++) {
-      if (block_array[set][i].lru < block_array[set][way].lru) {
-         block_array[set][i].lru++;
-      }
-   }
-   // insert to the LRU position that the block is currently at
-   block_array[set][way].lru = 0;
-}
+// void BuddyIndex::lru_update(uint32_t set, uint32_t way) {
+//    for (uint32_t i=0; i<NUM_WAY; i++) {
+//       if (block_array[set][i].lru < block_array[set][way].lru) {
+//          block_array[set][i].lru++;
+//       }
+//    }
+//    // insert to the LRU position that the block is currently at
+//    block_array[set][way].lru = 0;
+// }
 
 void BuddyIndex::swap_block(BLOCK* src, BLOCK* des) {
    BLOCK* tmp_blk = new BLOCK();
@@ -248,3 +238,96 @@ void BuddyIndex::swap_block(BLOCK* src, BLOCK* des) {
    override_block(tmp_blk, src); // copy temp to src
    delete tmp_blk;
 }
+
+int BuddyIndex::check_hit(uint64_t address) {
+   uint32_t set = compute_index(address);
+
+   for (uint32_t way=0; way < NUM_WAY; way++) {
+      if (block_array[set][way].valid && (block_array[set][way].tag == address)) {
+         return (int)way;
+      }
+   }
+
+   int match_way = -1;
+   int bud_index = m_table.find(set);
+   bool hit_buddy_set = false;
+   if (bud_index >= 0) {
+      for (uint32_t way=NUM_WAY-NUM_SHARE_WAY; way < NUM_WAY; ++way) {
+         if (block_array[bud_index][way].valid && (block_array[bud_index][way].tag == address)) {
+            match_way = way;
+            hit_buddy_set = true;
+            break;
+         }
+      }
+   }
+
+   if (hit_buddy_set) {
+      num_buddy_hit++;
+      uint32_t src_lru_way = get_lru_victim(set);
+      swap_block(&block_array[bud_index][match_way], &block_array[set][src_lru_way]);
+      lru_update_buddy_region(bud_index, match_way);
+      match_way = src_lru_way;
+   }
+
+   return match_way;
+}
+
+void BuddyIndex::lru_update_buddy_region(uint32_t set, uint32_t way) {
+   for (uint32_t i=NUM_WAY-NUM_SHARE_WAY; i < NUM_WAY; ++i) {
+      if (block_array[set][i].lru < block_array[set][way].lru) {
+         block_array[set][i].lru++;
+      }
+   }
+   block_array[set][way].lru = NUM_WAY-NUM_SHARE_WAY;
+}
+
+uint32_t BuddyIndex::get_buddy_victim(uint32_t set) {
+   uint32_t way = 0;
+
+   // fill invalid line first
+   for (way=NUM_WAY-NUM_SHARE_WAY; way<NUM_WAY; way++) {
+      if (block_array[set][way].valid == false)
+         break;
+   }
+
+   if (way == NUM_WAY) {
+      for (way=NUM_WAY-NUM_SHARE_WAY; way<NUM_WAY; way++) {
+         if (block_array[set][way].lru == NUM_WAY-1)
+            break;
+      }
+   }
+   if (way >= NUM_WAY) {
+      cout << "ERROR: way_id out of bound = " << way << endl;
+      assert(false);
+   }
+   return way;
+}
+
+uint32_t BuddyIndex::get_victim(uint32_t set) {
+   int bud_index = m_table.find(set);
+   int src_index = m_table.is_buddy(set);
+
+   // this set does not have a buddy set and is not a buddy of any other set
+   if ((bud_index < 0) && (src_index < 0)) { 
+      return get_lru_victim(set);
+   }
+
+   // this set is a buddy of another set
+   else if (src_index >= 0) {   
+      return get_lru_victim(set, NUM_SHARE_WAY);
+   }
+
+   // this set has a buddy set
+   else if (bud_index >= 0) {   
+      uint32_t src_lru_way = get_lru_victim(set);
+      uint32_t bud_lru_way = get_buddy_victim(bud_index);
+      swap_block(&block_array[bud_index][bud_lru_way], &block_array[src_index][src_lru_way]);
+      lru_update_buddy_region(bud_index, bud_lru_way);
+      return src_lru_way;
+   }
+   else {
+      // we should not reach here
+      assert(false);
+   }
+}
+

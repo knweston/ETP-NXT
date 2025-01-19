@@ -7,6 +7,8 @@
 #define MATCHING_MIN_DIFF 20
 #define ONESHOT_PAIRING 0
 
+#define NUM_SHARE_WAY 1
+
 class LkupEntry {
 public:
    LkupEntry()
@@ -69,6 +71,15 @@ public:
       return -1;
    }
 
+   int32_t is_buddy(uint32_t x_dst) {
+      for (uint32_t i=0; i < m_entries.size(); ++i) {
+         if (m_entries[i].dst_id() == x_dst) {
+            return m_entries[i].src_id();
+         }
+      }
+      return -1;
+   }
+
    LkupEntry get_entry(uint32_t x_id) { return m_entries[x_id]; }
 
 protected:
@@ -84,6 +95,7 @@ public:
    {
       m_table.init(LKUP_TABLE_SIZE);
       IDX_SIZE = lg2(NUM_SET);
+      custom_checkhit = true;
 
       cout << endl;
       cout << "========================================================================" << endl;
@@ -94,6 +106,7 @@ public:
       cout << "Match min diff:   " << MATCHING_MIN_DIFF << " (%)" << endl;
       cout << "Table size:       " << LKUP_TABLE_SIZE << endl;
       cout << "Oneshot pairing:  " << ONESHOT_PAIRING << endl;
+      cout << "Custom Check Hit: " << custom_checkhit << endl;
       cout << "========================================================================" << endl;
 
       B_ACCESS    = new uint64_t [NUM_SET];
@@ -110,13 +123,18 @@ public:
    vector<uint32_t> buddy_table_interval_update(uint64_t* counter_arr);
    void             print_buddy_interval_stats(uint64_t* counter_arr);
    void             swap_block(BLOCK* src, BLOCK* des);
-   void             lru_update(uint32_t set, uint32_t way);
-   uint32_t         get_lru_victim(uint32_t set);
+   // void             lru_update(uint32_t set, uint32_t way);
+   uint32_t         get_lru_victim(uint32_t set, uint32_t num_exclude=0);
    uint32_t         compute_index(uint64_t address);
-   bool             lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id);
-   int32_t          find_buddy(uint32_t x_src) { return m_table.find(x_src); }
+   // bool             lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id);
+   // int32_t          find_buddy(uint32_t x_src) { return m_table.find(x_src); }
    void             increment_writeback() { num_writeback++; }
    void             increment_buddy_spill() { num_spills++; }
+   int              check_hit(uint64_t address);
+   uint32_t         get_victim(uint32_t set);
+
+   uint32_t         get_buddy_victim(uint32_t set);
+   void             lru_update_buddy_region(uint32_t set, uint32_t way);
 
 protected:
    LkupTable m_table;

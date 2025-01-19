@@ -9,6 +9,8 @@ void CACHE::llc_initialize_replacement()
 // find replacement victim
 uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
 {
+    if (m_index->custom_getvictim)
+        return m_index->get_victim(set);
     // baseline LRU
     return lru_victim(cpu, instr_id, set, current_set, ip, full_addr, type); 
 }
