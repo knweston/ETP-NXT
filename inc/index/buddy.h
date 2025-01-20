@@ -3,11 +3,11 @@
 
 #include "index/index.h"
 
-#define LKUP_TABLE_SIZE 64
+#define LKUP_TABLE_SIZE 16
 #define MATCHING_MIN_DIFF 20
-#define ONESHOT_PAIRING 0
+#define ONETIME_PAIRING 0
 
-#define NUM_SHARE_WAY 1
+#define NUM_SHARE_WAY 4
 #define CUTOFF_RANK_LEVEL 100
 
 class LkupEntry {
@@ -82,6 +82,16 @@ public:
    }
 
    LkupEntry get_entry(uint32_t x_id) { return m_entries[x_id]; }
+   
+   void swap_entry(uint32_t x_id_a, uint32_t x_id_b) {
+      int32_t src_idx_a = m_entries[x_id_a].src_id();
+      int32_t dst_idx_a = m_entries[x_id_a].dst_id();
+      m_entries[x_id_a].src_id(m_entries[x_id_b].src_id());
+      m_entries[x_id_a].dst_id(m_entries[x_id_b].dst_id());
+      m_entries[x_id_b].src_id(src_idx_a);
+      m_entries[x_id_b].dst_id(dst_idx_a);
+      return;
+   }
 
 protected:
    vector<LkupEntry> m_entries;
@@ -107,7 +117,7 @@ public:
       cout << "Interval size:       " << INTERVAL_SIZE << endl;
       cout << "Match min diff:      " << MATCHING_MIN_DIFF << " (%)" << endl;
       cout << "Table size:          " << LKUP_TABLE_SIZE << endl;
-      cout << "Oneshot pairing:     " << ONESHOT_PAIRING << endl;
+      cout << "Onetime pairing:     " << ONETIME_PAIRING << endl;
       cout << "Custom Check Hit:    " << custom_checkhit << endl;
       cout << "Custom Get Victim:   " << custom_getvictim << endl;
       cout << "NUM_SHARE_WAY:       " << NUM_SHARE_WAY << endl;
@@ -127,11 +137,8 @@ public:
    vector<uint32_t> buddy_table_interval_update(uint64_t* counter_arr);
    void             print_buddy_interval_stats(uint64_t* counter_arr);
    void             swap_block(BLOCK* src, BLOCK* des);
-   // void             lru_update(uint32_t set, uint32_t way);
    uint32_t         get_lru_victim(uint32_t set, uint32_t num_exclude=0);
    uint32_t         compute_index(uint64_t address);
-   void             increment_writeback() { num_writeback++; }
-   void             increment_buddy_spill() { num_spills++; }
    int              check_hit(uint64_t address);
    uint32_t         get_victim(uint32_t set);
 
@@ -152,7 +159,7 @@ public:
    uint64_t num_writeback = 0;
    uint64_t num_drop      = 0;
    uint64_t num_read      = 0;
-   uint64_t num_buddy_hit = 0;
+   uint64_t num_buddy_hit = 0;   // num hits in buddy set
    uint64_t num_spills    = 0;   // num victim spilled over to buddy set
    bool     table_loaded  = false;
 

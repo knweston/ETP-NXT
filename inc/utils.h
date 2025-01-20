@@ -38,6 +38,15 @@ bool is_existed(uint32_t x_pt, vector<T> array) {
     return false;
 }
 
+template<typename T>
+int32_t linear_search(uint32_t x_pt, vector<T> array) {
+    for (uint32_t i=0; i < array.size(); ++i) {
+        if (x_pt == array[i])
+            return i;
+    }
+    return -1;
+}
+
 /*
    create n-round perfect shuffled vector
 */
@@ -96,6 +105,17 @@ T compute_sum(T* array, uint64_t array_size) {
         sum += array[i];
     }
     return sum;
+}
+
+template<typename T>
+void normalize_array(T* input_arr, double* output_arr, uint64_t array_size) {
+   double mean   = compute_mean(input_arr, array_size);
+   if ((uint32_t)mean == 0)
+      return;
+
+   for (uint32_t i=0; i < array_size; ++i) {
+      output_arr[i] = (input_arr[i]/mean);
+   }
 }
 
 template<typename T>

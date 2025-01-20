@@ -19,10 +19,12 @@
 # python3 autoslurm-1core.py -a nxetp -o nohash -e nohash -w 2 -r nohash -t dpc3-traces
 # python3 autoslurm-1core.py -a nxetp -o xorhash -e xorhash -w 2 -r xorhash -t dpc3-traces
 
-# python3 autoslurm-1core.py -a nxetp -o buddy1t16s1 -e buddy1t16s1 -w 2 -r buddy1t16s1 -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp -o buddy3a -e buddy3a -w 2 -r buddy3a -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp -o buddy2a -e buddy2a -w 2 -r buddy2a -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp -o buddy2b -e buddy2b -w 2 -r buddy2b -t dpc3-traces
 # python3 autoslurm-1core.py -a nxetp -o buddy1t16s2 -e buddy1t16s2 -w 2 -r buddy1t16s2 -t dpc3-traces
 # python3 autoslurm-1core.py -a nxetp -o buddy1t16s4 -e buddy1t16s4 -w 2 -r buddy1t16s4 -t dpc3-traces
 # python3 autoslurm-1core.py -a nxetp -o buddy1t32s1 -e buddy1t32s1 -w 2 -r buddy1t32s1 -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp -o buddy1t32s2 -e buddy1t32s2 -w 2 -r buddy1t32s2 -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp -o buddy1t32s4 -e buddy1t32s4 -w 2 -r buddy1t32s4 -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp -o buddy1t64s1 -e buddy1t64s1 -w 2 -r buddy1t64s1 -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp -o buddy1t32s2 -e buddy1t32s2 -w 2 -r buddy1t32s2 -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp -o buddy1t32s4 -e buddy1t32s4 -w 2 -r buddy1t32s4 -t dpc3-traces
+# python3 autoslurm-1core.py -a nxetp -o buddy1t64s1 -e buddy1t64s1 -w 2 -r buddy1t64s1 -t dpc3-traces
