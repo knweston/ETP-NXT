@@ -19,4 +19,4 @@
 # python3 autobuild.py -i xorhash -p false -r drrip -o drrip-xorhash
 # python3 autobuild.py -i nohash -p false -r lru -o nohash
 # python3 autobuild.py -i xorhash -p false -r lru -o xorhash
-python3 autobuild.py -i buddy -p false -r lru -o buddy3a
+python3 autobuild.py -i buddy -p false -r lru -o buddytest

@@ -7,21 +7,23 @@ uint32_t BuddyIndex::get_set(uint64_t address) {
 
 
 void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
-   if ((type == WRITEBACK) && is_hit) {
-      access_ctr++;
-      return;
-   }
+   // if ((type == WRITEBACK) && is_hit) {
+   //    access_ctr++;
+   //    return;
+   // }
 
    uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
-   uint32_t hashed_index   = unhashed_index;
-   // uint32_t hashed_index   = get_set(address);
+   uint32_t hashed_index   = get_set(address);
    N_ACCESS[unhashed_index]++;
    PI_N_ACCESS[unhashed_index]++;
-   B_ACCESS[hashed_index]++;
-   PI_B_ACCESS[hashed_index]++;
-   if (!is_hit) {
-      MISS[unhashed_index]++;
-      PI_MISS[unhashed_index]++;
+
+   if ((type != WRITEBACK) || !is_hit) {
+      B_ACCESS[hashed_index]++;
+      PI_B_ACCESS[hashed_index]++;
+      if (!is_hit) {
+         MISS[hashed_index]++;
+         PI_MISS[hashed_index]++;
+      }
    }
    access_ctr++;
 
@@ -30,11 +32,11 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
       normalize_array(PI_MISS, MISS_RATE, NUM_SET);
 
       double* ACCESS_RATE = new double [NUM_SET];
-      normalize_array(PI_N_ACCESS, ACCESS_RATE, NUM_SET);
+      normalize_array(PI_B_ACCESS, ACCESS_RATE, NUM_SET);
 
       uint64_t* ACCESS_MISS_CROSSRATE = new uint64_t [NUM_SET];
       for (uint32_t set=0; set < NUM_SET; ++set) {
-         ACCESS_MISS_CROSSRATE[set] = (uint64_t) (ACCESS_RATE[set]*MISS_RATE[set]*1000);
+         ACCESS_MISS_CROSSRATE[set] = (uint64_t) (ACCESS_RATE[set]*MISS_RATE[set]*MISS_RATE[set]*10000);
       }
 
       cout << endl << endl;
@@ -49,7 +51,7 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
       vector<uint32_t> replaced_sets = buddy_table_interval_update(ACCESS_MISS_CROSSRATE);
       cout << "========================================================================" << endl;
       cout << "Accesses:" << endl;
-      print_buddy_interval_stats(PI_N_ACCESS);
+      print_buddy_interval_stats(PI_B_ACCESS);
       cout << "Misses:" << endl;
       print_buddy_interval_stats(PI_MISS);
       cout << "Access-Miss Cross-rate:" << endl;
@@ -170,6 +172,9 @@ void BuddyIndex::print_buddy_interval_stats(uint64_t* counter_arr) {
 }
 
 uint32_t BuddyIndex::compute_index(uint64_t address) {
+   // uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
+   // uint32_t bitmask        = (address >> lg2(NUM_SET)) & ((1 << lg2(NUM_SET)) - 1);
+   // return unhashed_index ^ bitmask;
    return (uint32_t) (address & ((1 << lg2(NUM_SET)) - 1));
 }
 

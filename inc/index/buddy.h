@@ -8,7 +8,6 @@
 #define ONETIME_PAIRING 0
 
 #define NUM_SHARE_WAY 4
-#define CUTOFF_RANK_LEVEL 100
 
 class LkupEntry {
 public:

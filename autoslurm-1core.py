@@ -66,7 +66,8 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
 
     if apps == "xsbench":
         # "fast" xsbench under 8w1r setup
-        requested_apps = ["xs.XL100hash-194B",\
+        requested_apps = [
+                        "xs.XL100hash-194B",\
                         "xs.XL100hash-28B",\
                         "xs.XL100nuclide-185B",\
                         "xs.XL100nuclide-296B",\

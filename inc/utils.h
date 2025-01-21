@@ -144,8 +144,20 @@ void standardize_array(T* input_arr, double* output_arr, uint64_t array_size) {
 
 template<typename T>
 uint32_t find_min_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avoid_idx) {
-   uint32_t min_idx = 0;
-   T min_val        = input_arr[0];
+   uint32_t start_idx = 0;
+   bool start_idx_found = false;
+   for (start_idx; start_idx < array_size; ++start_idx) {
+      if (!is_existed(start_idx, avoid_idx)) {
+         start_idx_found = true;
+         break;
+      }
+   }
+   if (!start_idx_found) {
+      assert(false);
+   }
+
+   uint32_t min_idx = start_idx;
+   T min_val        = input_arr[start_idx];
    for (uint32_t i=1; i < array_size; ++i) {
       if ((min_val > input_arr[i]) && !is_existed(i, avoid_idx)) {
          min_val = input_arr[i];
@@ -157,9 +169,21 @@ uint32_t find_min_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avo
 
 template<typename T>
 uint32_t find_max_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avoid_idx) {
-   uint32_t max_idx = 0;
-   T max_val        = input_arr[0];
-   for (uint32_t i=1; i < array_size; ++i) {
+   uint32_t start_idx = 0;
+   bool start_idx_found = false;
+   for (start_idx; start_idx < array_size; ++start_idx) {
+      if (!is_existed(start_idx, avoid_idx)) {
+         start_idx_found = true;
+         break;
+      }
+   }
+   if (!start_idx_found) {
+      assert(false);
+   }
+
+   uint32_t max_idx = start_idx;
+   T max_val        = input_arr[start_idx];
+   for (uint32_t i=0; i < array_size; ++i) {
       if ((max_val < input_arr[i]) && !is_existed(i, avoid_idx)) {
          max_val = input_arr[i];
          max_idx = i;
