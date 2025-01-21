@@ -38,6 +38,15 @@ bool is_existed(uint32_t x_pt, vector<T> array) {
     return false;
 }
 
+template<typename T>
+int32_t linear_search(uint32_t x_pt, vector<T> array) {
+    for (uint32_t i=0; i < array.size(); ++i) {
+        if (x_pt == array[i])
+            return i;
+    }
+    return -1;
+}
+
 /*
    create n-round perfect shuffled vector
 */
@@ -99,6 +108,17 @@ T compute_sum(T* array, uint64_t array_size) {
 }
 
 template<typename T>
+void normalize_array(T* input_arr, double* output_arr, uint64_t array_size) {
+   double mean   = compute_mean(input_arr, array_size);
+   if ((uint32_t)mean == 0)
+      return;
+
+   for (uint32_t i=0; i < array_size; ++i) {
+      output_arr[i] = (input_arr[i]/mean);
+   }
+}
+
+template<typename T>
 void standardize_array(T* input_arr, uint64_t array_size) {
     double mean   = compute_mean(input_arr, array_size);
     double sig_sd = compute_std_dev(input_arr, array_size);
@@ -124,8 +144,20 @@ void standardize_array(T* input_arr, double* output_arr, uint64_t array_size) {
 
 template<typename T>
 uint32_t find_min_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avoid_idx) {
-   uint32_t min_idx = 0;
-   T min_val        = input_arr[0];
+   uint32_t start_idx = 0;
+   bool start_idx_found = false;
+   for (start_idx; start_idx < array_size; ++start_idx) {
+      if (!is_existed(start_idx, avoid_idx)) {
+         start_idx_found = true;
+         break;
+      }
+   }
+   if (!start_idx_found) {
+      assert(false);
+   }
+
+   uint32_t min_idx = start_idx;
+   T min_val        = input_arr[start_idx];
    for (uint32_t i=1; i < array_size; ++i) {
       if ((min_val > input_arr[i]) && !is_existed(i, avoid_idx)) {
          min_val = input_arr[i];
@@ -137,9 +169,21 @@ uint32_t find_min_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avo
 
 template<typename T>
 uint32_t find_max_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avoid_idx) {
-   uint32_t max_idx = 0;
-   T max_val        = input_arr[0];
-   for (uint32_t i=1; i < array_size; ++i) {
+   uint32_t start_idx = 0;
+   bool start_idx_found = false;
+   for (start_idx; start_idx < array_size; ++start_idx) {
+      if (!is_existed(start_idx, avoid_idx)) {
+         start_idx_found = true;
+         break;
+      }
+   }
+   if (!start_idx_found) {
+      assert(false);
+   }
+
+   uint32_t max_idx = start_idx;
+   T max_val        = input_arr[start_idx];
+   for (uint32_t i=0; i < array_size; ++i) {
       if ((max_val < input_arr[i]) && !is_existed(i, avoid_idx)) {
          max_val = input_arr[i];
          max_idx = i;
@@ -160,7 +204,8 @@ string arr_to_string(T* array, uint32_t array_size, string split_sym=",") {
     for (uint32_t i=0; i < array_size; ++i) {
         output += to_string(array[i]) + split_sym;
     }
-    output.pop_back();
+    if (output != "")
+        output.pop_back();
     return output;
 }
 
@@ -173,7 +218,8 @@ string vec_to_string(vector<T> &vec, string split_sym=",") {
     for (uint32_t i=0; i < vec.size(); ++i) {
         output += to_string(vec[i]) + split_sym;
     }
-    output.pop_back();
+    if (output != "")
+        output.pop_back();
     return output;
 }
 
