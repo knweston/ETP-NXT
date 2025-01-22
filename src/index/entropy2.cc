@@ -1,115 +1,5 @@
 #include "index/entropy2.h"
 
-bool EntropyV2::should_update_trackers(bool is_hit, uint32_t type) {
-   if (UPDATE_MISS_ONLY && is_hit)
-      return false;
-   if (SKIP_UPDATE_PF && (type == PREFETCH))
-      return false;
-   if (SKIP_UPDATE_WB && (type == WRITEBACK))
-      return false;
-   if (SKIP_UPDATE_WB_HIT && (type == WRITEBACK) && is_hit)
-      return false;
-   if (m_should_remap)
-      return false;
-
-   return true;
-}
-
-void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
-   uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
-   uint32_t hashed_index   = get_set(address);
-   N_ACCESS[unhashed_index]++;
-   PI_N_ACCESS[unhashed_index]++;
-   E_ACCESS[hashed_index]++;
-   PI_E_ACCESS[hashed_index]++;
-   if (!is_hit) {
-      MISS[unhashed_index]++;
-      PI_MISS[unhashed_index]++;
-   }
-   access_ctr++;
-   
-   // if (should_update_trackers(is_hit, type))
-   //    etp_tracker_access_update(address);
-   
-   // should remap when last index config != current index config
-   if (m_should_remap) {
-      // if all sets have been remapped, skip this step
-      if ((REMAP_INTERVAL > 0) && (access_ctr % REMAP_INTERVAL == 0) && (map_ptr < NUM_SET)) {
-         move_cache_data(dram);
-         if (map_ptr == NUM_SET)
-            m_should_remap = false; // remapping done
-      }
-   }
-
-   if (INTERVAL_SIZE && (access_ctr >= INTERVAL_SIZE)) {
-      cout << endl << endl;
-      cout << "========================================================================" << endl;
-      cout << "End of interval # " << num_interval << " Summary" << endl;
-      cout << "========================================================================" << endl;
-      cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-      cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_E_ACCESS, NUM_SET) << endl;
-      cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
-      cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
-      cout << "   map_ptr:        " << map_ptr << endl;
-      cout << "========================================================================" << endl;
-
-      // save the current XOR-hash index config
-      m_last_seq_a = m_curr_seq_a;
-      m_last_seq_b = m_curr_seq_b;
-
-      // compute new XOR-hash index config for new interval
-      if (RECONFIG_NO_DELAY) {
-         // update trackers
-         etp_tracker_interval_update();
-         compute_new_config(itv_entropy, m_curr_seq_a, m_curr_seq_b);
-      }
-      else {
-         m_curr_seq_a = m_next_seq_a;
-         m_curr_seq_b = m_next_seq_b;
-
-         // update trackers
-         etp_tracker_interval_update();
-         compute_new_config(itv_entropy, m_next_seq_a, m_next_seq_b);
-      }
-
-      m_should_remap = check_remap();
-
-      cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
-      cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
-      cout << "m_curr_seq_a: " << vec_to_string(m_curr_seq_a) << endl;
-      cout << "m_curr_seq_b: " << vec_to_string(m_curr_seq_b) << endl;
-      if (!RECONFIG_NO_DELAY) {
-         cout << "m_next_seq_a: " << vec_to_string(m_next_seq_a) << endl;
-         cout << "m_next_seq_b: " << vec_to_string(m_next_seq_b) << endl;
-      }
-      cout << "should_remap: " << (m_should_remap ? "Yes" : "No") << endl << endl;
-
-      memcpy(PAST_PI_EVICTION, PI_EVICTION, NUM_SET * sizeof(*PI_N_ACCESS));
-      memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-      memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
-      memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
-      memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-      
-      num_interval++;
-      map_ptr    = 0;
-      access_ctr = 0;
-
-      // reset interval bit entropy
-      for (uint32_t i=0; i < itv_entropy.size(); ++i) {
-         itv_entropy[i].m_entropy = 0;
-      } 
-   }
-   warmup_check();
-}
-
-void EntropyV2::eviction_update(BLOCK &victim_blk) {
-   // bool is_pf_useless = (victim_blk.prefetch && !victim_blk.used);
-   // bool is_unused = !victim_blk.used;
-
-   // if (!is_pf_useless && !m_should_remap && !is_unused)
-   etp_tracker_access_update(victim_blk.address);
-}
-
 void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
    // size of the bit sequence being tracked for entropy must greater than the size of the index sequences
    assert((entropy.size() > x_seq_a.size()) && (entropy.size() > x_seq_b.size()));
@@ -118,18 +8,44 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    sort(entropy.begin(), entropy.end());
    cout << "Sorted ITV:       " << etp_vector_to_string(entropy) << endl;
 
-   for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-      x_seq_a[i] = entropy[entropy.size()-1-i].m_id;
-      
-      if (FIX_SEQUENCE == 0)
-         x_seq_b[i] = entropy[i].m_id;
-      else if (FIX_SEQUENCE == 3)
-         x_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
-   }
-
+   // gather the highest and next highest entropy bits to form sequence A and B
    for (uint32_t i=0; i < x_seq_a.size(); ++i) {
       x_seq_a[i] = entropy[entropy.size()-1-i].m_id;
       x_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
+   }
+
+   // cout << "Correlation table:  " << etp_vector_to_string(correl_table) << endl;
+   // re-order sequence B based on the bitwise correlation counters
+   cout << "x_seq_a (orig): " << vec_to_string(x_seq_a) << endl;
+   cout << "x_seq_b (orig): " << vec_to_string(x_seq_b) << endl;
+
+   vector<uint32_t> reordered_indices = {};
+   for (uint32_t i=0; i < x_seq_a.size(); ++i) {
+      vector<uint32_t> seq_a_bit_correl = {};   // correl btw this bit in A vs every bit in B
+      for (uint32_t j=0; j < x_seq_b.size(); ++j) {
+         vector<uint32_t> pair_id     = {x_seq_a[i],x_seq_b[j]};
+         vector<uint32_t> pair_id_rev = {x_seq_b[j],x_seq_a[i]};
+         for (uint32_t idx=0; idx < correl_table.size(); ++idx) {
+            if (correl_table[idx].is_id_matched(pair_id) || correl_table[idx].is_id_matched(pair_id_rev)) {
+               seq_a_bit_correl.push_back(correl_table[idx].m_entropy);
+            }
+         }
+      }
+      uint32_t min_correl_idx = find_min_index(seq_a_bit_correl, reordered_indices);
+      reordered_indices.push_back(i);
+
+      // pair this bit in A with the least correlated bit in B
+
+      if (min_correl_idx != i)
+         swap(x_seq_b[i], x_seq_b[min_correl_idx]);
+      // cout << "x_seq_b: " << vec_to_string(x_seq_b) << endl;
+      // cout << "seq_a_bit_correl:  " << vec_to_string(seq_a_bit_correl) << endl << endl;
+      // cout << "reordered_indices: " << vec_to_string(reordered_indices) << endl;
+   }
+
+   // reset correlation table after each interval
+   for (uint32_t i=0; i < correl_table.size(); ++i) {
+      correl_table[i].m_entropy = 0;
    }
 
    if (num_interval < WARMUP_INTERVALS) {}
@@ -277,8 +193,22 @@ bool EntropyV2::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
    
    bool overwrite_dest = true;
 
-   // option 1: dirty -> prefetch
-   if (dest->dirty) {
+   // prefetch -> dirty
+   if (!dest->prefetch) {
+      // dest NOT prefetch but the src is, drop the src, regardless of src dirty state
+      if (src->prefetch) {
+         num_drop++;
+         overwrite_dest = false;
+         if (src->dirty) {
+            bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
+            if (writeback_success) {
+               num_writeback++;
+            }
+         }
+      }
+   }
+   else if (dest->dirty) {
+      // dest is prefetch dirty
       if (!src->dirty) {
          // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
          num_drop++;
@@ -291,74 +221,46 @@ bool EntropyV2::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
          }
       }
    }
-
-   else if (!dest->prefetch) {
-      // if destination block is a clean demand and the source block is prefetch, drop the source block, regardless of its dirty state (do not fill)
-      if (src->prefetch) {
-         num_drop++;
-         overwrite_dest = false;
-         if (src->dirty) {
-            bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
-            if (writeback_success) {
-               num_writeback++;
-            }
-         }
-      }
-   }
    else {
       // dest prefetch clean -> just overwrite, no further action
    }
-
-   // option 2: prefetch only
-   // if ((!dest_block->prefetch) && (src_block->prefetch)) {  // demand destination and prefetch source
-   //    num_drop++;
-   //    fill_ready = false;
-   //    if (src_block->dirty) {
-   //       bool writeback_success = force_writeback(src_block, lower_level, FILL_LEVEL, CPU_ID);
-   //       if (writeback_success) {
-   //          num_writeback++;
-   //       }
-   //    }
-   // }
-   // else {
-   //    if (dest_block->dirty) {
-   //       bool writeback_success = force_writeback(dest_block, lower_level, FILL_LEVEL, CPU_ID);
-   //       if (writeback_success) {
-   //          num_writeback++;
-   //       }
-   //    }
-   // }
-
-   // option 3: prefetch -> dirty
-   // if (!dest->prefetch) {
-   //    // dest NOT prefetch but the src is, drop the src, regardless of src dirty state
-   //    if (src->prefetch) {
-   //       num_drop++;
-   //       overwrite_dest = false;
-   //       if (src->dirty) {
-   //          bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
-   //          if (writeback_success) {
-   //             num_writeback++;
-   //          }
-   //       }
-   //    }
-   // }
-   // else if (dest->dirty) {
-   //    // dest is prefetch dirty
-   //    if (!src->dirty) {
-   //       // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
-   //       num_drop++;
-   //       overwrite_dest = false;
-   //    }
-   //    else { // if both blocks are dirty, write back the destination block then move the source block to the destination
-   //       bool writeback_success = force_writeback(dest, lower_level, FILL_LEVEL, CPU_ID);
-   //       if (writeback_success) {
-   //          num_writeback++;    // update extra writeback statistics
-   //       }
-   //    }
-   // }
-   // else {
-   //    // dest prefetch clean -> just overwrite, no further action
-   // }
    return overwrite_dest;
+}
+
+void EntropyV2::etp_tracker_access_update(uint64_t address) {
+
+   /*
+    * update correlation trackers
+    * rules:
+    * - if bit_i and bit_j move in the same fashion (both flip, both not flip): correl_i_j = 1
+    * - else: correl_i_j = 0
+    */ 
+
+   for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+      // do not update the trackers if curr_addr == last_addr
+      if ((m_addr_hist[idx] == 0) || (address == m_addr_hist[idx]))
+         continue;
+
+      uint64_t bit_flips = address ^ m_addr_hist[idx];
+
+      // printf("Address: %012x. Prev.Address: %012x. Bit flips: %012x.\n", address, m_addr_hist[idx], bit_flips);
+      // cout << "Correlation table before: " << etp_vector_to_string(correl_table) << endl;
+
+      uint32_t correl_table_idx = 0;
+      for (uint32_t i=1; i < MAX_ADDRESS_BITS; ++i) {
+         for (uint32_t j=0; j < i; ++j) {
+            
+            uint32_t bit_i_j_flip_correl = ((bit_flips >> i) & 1) ^ ((bit_flips >> j) & 1);
+            if (bit_i_j_flip_correl == 0)
+               correl_table[correl_table_idx].m_entropy++;
+
+            // cout << "index: " << correl_table_idx << ". " << ((bit_flips >> i) & 1) << ". " << ((bit_flips >> j) & 1) << ". " << bit_i_j_flip_correl << endl;
+            correl_table_idx++;
+         }
+      }
+      // cout << "Correlation table after:  " << etp_vector_to_string(correl_table) << endl;
+   }
+
+   // update entropy trackers
+   EntropyIndex::etp_tracker_access_update(address);
 }

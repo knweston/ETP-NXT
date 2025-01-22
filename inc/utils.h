@@ -192,6 +192,32 @@ uint32_t find_max_index(T* input_arr, uint32_t array_size, vector<uint32_t>& avo
    return max_idx; 
 }
 
+template<typename T>
+uint32_t find_min_index(vector<T>& input_arr, vector<uint32_t>& avoid_idx={}) {
+   uint32_t array_size = input_arr.size();
+   uint32_t start_idx  = 0;
+   bool start_idx_found = false;
+   for (start_idx; start_idx < array_size; ++start_idx) {
+      if (!is_existed(start_idx, avoid_idx)) {
+         start_idx_found = true;
+         break;
+      }
+   }
+   if (!start_idx_found) {
+      assert(false);
+   }
+
+   uint32_t min_idx = start_idx;
+   T min_val        = input_arr[start_idx];
+   for (uint32_t i=1; i < array_size; ++i) {
+      if ((min_val > input_arr[i]) && !is_existed(i, avoid_idx)) {
+         min_val = input_arr[i];
+         min_idx = i;
+      }
+   }
+   return min_idx; 
+}
+
 //========================================================================//
 // TO STRING
 //========================================================================//

@@ -8,7 +8,7 @@
 # python3 autobuild.py -i primeideal -p false -o primeideal
 # python3 autobuild.py -i xorhash -p false -o xorhash
 # python3 autobuild.py -i skewed -p false -o skewed
-# python3 autobuild.py -i entropy -p false -o entropy
+python3 autobuild.py -i entropyv2 -p false -o entropyv2
 
 # python3 autobuild.py -i xorhash -p false -o xorhash-dblru -r dblru
 # python3 autobuild.py -i primeideal -p false -o primeideal-dblru -r dblru
@@ -17,6 +17,6 @@
 
 # python3 autobuild.py -i nohash -p false -r drrip -o drrip-nohash
 # python3 autobuild.py -i xorhash -p false -r drrip -o drrip-xorhash
-python3 autobuild.py -i entropy -p false -r drrip -o drrip-entropy
-python3 autobuild.py -i entropy -p false -r srrip -o srrip-entropy
-python3 autobuild.py -i entropy -p false -r ship -o ship-entropy
+# python3 autobuild.py -i entropy -p false -r drrip -o drrip-entropy
+# python3 autobuild.py -i entropy -p false -r srrip -o srrip-entropy
+# python3 autobuild.py -i entropy -p false -r ship -o ship-entropy

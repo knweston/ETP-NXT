@@ -535,8 +535,6 @@ void EntropyIndex::etp_tracker_access_update(uint64_t address) {
         
         // compare curr_addr vs. last_addr bit by bit
         for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
-            // if (!(((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1)))    // A ^ B == 0 => A = B => low entropy => decrement entropy
-            //     itv_entropy[i].m_entropy--;
             if (((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1))    // A ^ B == 1 => A != B => high entropy => increment entropy
                 itv_entropy[i].m_entropy++;
         }
