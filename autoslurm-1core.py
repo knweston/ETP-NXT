@@ -377,6 +377,19 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B"
         ]
 
+    elif apps == "cvp1-extra":
+        requested_apps = [
+            "compute_int_105",\
+            "compute_int_177",\
+            "compute_int_28",\
+            "compute_int_4",\
+            "compute_int_41",\
+            "compute_int_467",\
+            "compute_int_529",\
+            "compute_int_817",\
+            "compute_int_925",\
+        ]
+
     # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 
     # due to "src/ooo_cpu.cc:1653: void O3_CPU::execute_store(uint32_t, uint32_t, uint32_t): Assertion `0' failed."
     # this bug is seen in all indexing types, including nohash
