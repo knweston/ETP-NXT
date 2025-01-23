@@ -924,10 +924,10 @@ void CACHE::handle_prefetch()
                 sim_hit[prefetch_cpu][PQ.entry[index].type]++;
                 sim_access[prefetch_cpu][PQ.entry[index].type]++;
 
-                // [Kevin]
-                if (m_index) {
-                    m_index->update(PQ.entry[index].address, lower_level, true, PQ.entry[index].type);
-                }
+                // Remove to reproduce results in MICRO'24 [Kevin]
+                // if (m_index) {
+                //     m_index->update(PQ.entry[index].address, lower_level, true, PQ.entry[index].type);
+                // }
 
                 // run prefetcher on prefetches from higher caches
                 if (PQ.entry[index].pf_origin_level < fill_level) {

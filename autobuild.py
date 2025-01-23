@@ -69,7 +69,7 @@ def change_idx_in_file(idx_type):
 
 
 
-def build(idx_type, is_pf, filename, repl_policy):
+def build(idx_type, l1d_prefetcher, filename, repl_policy):
    idx_str = str(idx_type).split(".")[-1].lower()
 
    if (filename == ""):
@@ -77,11 +77,11 @@ def build(idx_type, is_pf, filename, repl_policy):
    else:
       exec_name = filename
 
-   if is_pf:
+   if l1d_prefetcher != "":
       if idx_type == INDEX.SKEWED:
-         cmd = "./build_champsim.sh bimodal no next_line spp_dev no skewed 1 " + exec_name + "pf"
+         cmd = "./build_champsim.sh bimodal no " + l1d_prefetcher + " spp_dev no skewed 1 " + exec_name + "pf" + l1d_prefetcher[0]
       else:
-         cmd = "./build_champsim.sh bimodal no next_line spp_dev no " + repl_policy + " 1 " + exec_name + "pf"
+         cmd = "./build_champsim.sh bimodal no " + l1d_prefetcher + " spp_dev no " + repl_policy + " 1 " + exec_name + "pf" + l1d_prefetcher[0]
    else:
       if idx_type == INDEX.SKEWED:
          cmd = "./build_champsim.sh bimodal no no no no skewed 1 " + exec_name
@@ -111,17 +111,10 @@ def main():
    parser.add_argument("-i", "--idx_type", required=True, type=str)
    parser.add_argument("-r", "--replacement_type", required=False, default="lru", type=str)
    parser.add_argument("-o", "--output_filename", required=False, default="", type=str)
-   parser.add_argument("-p", "--is_pf", required=True, type=str)
+   parser.add_argument("-p", "--l1d_prefetcher", required=False, default="", type=str)
    args = parser.parse_args()
-
-   if (args.is_pf == "true"):
-      is_pf = True
-   elif (args.is_pf == "false"):
-      is_pf = False
-   else:
-      print("Invalid option: ", args.is_pf)
    
-   build(parse_index_type(args.idx_type), is_pf, args.output_filename, args.replacement_type)
+   build(parse_index_type(args.idx_type), args.l1d_prefetcher, args.output_filename, args.replacement_type)
 
 if __name__ == "__main__":
    main()

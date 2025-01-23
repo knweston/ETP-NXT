@@ -2,8 +2,8 @@
 
 void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
     // Note: to reproduce MICRO24 results, skip update pref hit (both etp access update and interval access ctr), but keep updating pref miss
-    if ((type == PREFETCH) && is_hit)
-        return;
+    // if ((type == PREFETCH) && is_hit)
+    //     return;
 
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
@@ -155,8 +155,8 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
             }
 
             bool fill_ready = true;
-            // uint32_t dest_way = get_lru_victim(dest_index); // if the cache is using LRU replacement policy
-            uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
+            uint32_t dest_way = get_lru_victim(dest_index); // if the cache is using LRU replacement policy
+            // uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
 
             BLOCK *dest_block = &block_array[dest_index][dest_way];
 
@@ -192,8 +192,8 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
                     increment_eviction(dest_index);
 
                 override_block(src_block, dest_block);
-                // lru_update(dest_index, dest_way, src_block->lru);
-                rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+                lru_update(dest_index, dest_way, src_block->lru);
+                // rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
             }
             
             // invalidate the source block

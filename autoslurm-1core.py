@@ -9,7 +9,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="3:00:00", mem="4G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="4G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
@@ -357,7 +357,15 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "srv776",\
             "srv78",\
             "srv85",\
-            "srv93"
+            "srv93",\
+            "compute_int_105",\
+            "compute_int_177",\
+            "compute_int_28",\
+            "compute_int_4",\
+            "compute_int_467",\
+            "compute_int_529",\
+            "compute_int_817",\
+            "compute_int_925"
         ]
     
     elif apps == "gapmore":
@@ -371,7 +379,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "bfs.urand-161B","bfs.urand-36B","bfs.urand-410B","bfs.urand-60B",\
             "cc.kron-10B","cc.kron-17B","cc.kron-78B","cc.kron-99B",\
             "cc.twitter-10B","cc.twitter-15B","cc.twitter-16B","cc.twitter-17B","cc.twitter-25B",\
-            "pr.kron-90B","pr.twitter-168B",\
             "sssp.twitter-1116B","sssp.twitter-900B",\
             "tc.twitter-2097B","tc.twitter-34B",\
             "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B"
@@ -387,7 +394,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "compute_int_467",\
             "compute_int_529",\
             "compute_int_817",\
-            "compute_int_925",\
+            "compute_int_925"
         ]
 
     # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 

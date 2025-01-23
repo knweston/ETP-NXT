@@ -96,7 +96,10 @@ cp prefetcher/${LLC_PREFETCHER}.llc_pref prefetcher/llc_prefetcher.cc
 cp replacement/${LLC_REPLACEMENT}.llc_repl replacement/llc_replacement.cc
 
 echo -en '\n' >> replacement/llc_replacement.cc
-echo "void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {}" >> replacement/llc_replacement.cc
+
+if [ "$LLC_REPLACEMENT" != "skewed" ]; then
+    echo "void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {}" >> replacement/llc_replacement.cc
+fi
 
 # Build
 mkdir -p bin
