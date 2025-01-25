@@ -1,19 +1,20 @@
-# python3 autobuild.py -i nohash -p true -o nohash
-# python3 autobuild.py -i primeideal -p true -o primeideal
-# python3 autobuild.py -i xorhash -p true -o xorhash
-# python3 autobuild.py -i skewed -p true -o skewed
-# python3 autobuild.py -i entropy -p true -o entropy
-python3 autobuild.py -i entropyv2 -p next_line -o etp2
+# python3 autobuild.py -i nohash -p berti -o nohash
+# python3 autobuild.py -i primeideal -p berti -o primeideal
+# python3 autobuild.py -i xorhash -p berti -o xorhash
+# python3 autobuild.py -i skewed -p berti -o skewed
+# python3 autobuild.py -i entropy -p berti -o entropy
+python3 autobuild.py -i entropyv2 -p next_line -o etp2r9a
+python3 autobuild.py -i entropyv2 -p berti -o etp2r9a
 
-# python3 autobuild.py -i nohash -p false -o nohash
-# python3 autobuild.py -i primeideal -p false -o primeideal
-# python3 autobuild.py -i xorhash -p false -o xorhash
-# python3 autobuild.py -i skewed -p false -o skewed
-# python3 autobuild.py -i entropyv2 -p false -o entropyv2
-# python3 autobuild.py -i entropy -p false -o entropy
+# python3 autobuild.py -i nohash -o nohash
+# python3 autobuild.py -i primeideal -o primeideal
+# python3 autobuild.py -i xorhash -o xorhash
+# python3 autobuild.py -i skewed -o skewed
+python3 autobuild.py -i entropyv2 -o etp2r9a
+# python3 autobuild.py -i entropy -o entropy
 
-# python3 autobuild.py -i nohash -p false -r drrip -o drrip-nohash
-# python3 autobuild.py -i xorhash -p false -r drrip -o drrip-xorhash
-# python3 autobuild.py -i entropy -p false -r drrip -o drrip-entropy
-# python3 autobuild.py -i entropy -p false -r srrip -o srrip-entropy
-# python3 autobuild.py -i entropy -p false -r ship -o ship-entropy
+# python3 autobuild.py -i nohash -r drrip -o drrip-nohash
+# python3 autobuild.py -i xorhash -r drrip -o drrip-xorhash
+# python3 autobuild.py -i entropy -r drrip -o drrip-entropy
+# python3 autobuild.py -i entropy -r srrip -o srrip-entropy
+# python3 autobuild.py -i entropy -r ship -o ship-entropy

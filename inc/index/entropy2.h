@@ -50,9 +50,13 @@ public:
    void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
    void move_cache_data(MEMORY *lower_level);
    bool remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level);
+   uint32_t get_correl(uint32_t bit_a, uint32_t bit_b);
+   uint32_t find_min_correl_bit_from_sequence(uint32_t bit_a, vector<uint32_t>& sequence);
+   uint32_t compute_sum_correl_two_sequences(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
 
 protected:
    vector<BitEntropy> correl_table;
+   uint32_t num_outperformed{0};
 };
 
 #endif // ENTROPY_INDEX_V3_H
