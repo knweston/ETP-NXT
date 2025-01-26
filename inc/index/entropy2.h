@@ -3,6 +3,9 @@
 
 #include "index/entropy.h"
 
+#define ENTROPY_CTR_MAX 1048576    // 20-bit
+#define CORREL_CTR_MAX 1048576     // 20-bit
+
 class EntropyV2 : public EntropyIndex {
 public:
    EntropyV2(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length,
@@ -34,6 +37,8 @@ public:
          cout << "UnhashIdx maxETP:   " << ((NOHASH_IF_SEQ_IDX_HIGHEST_ETP == 1)? "hashing OFF" : "hashing ON") << endl;
          cout << "No-delay reconfig:  " << (RECONFIG_NO_DELAY? "Yes" : "No") << endl;
          cout << "Update Miss Only:   " << (UPDATE_MISS_ONLY? "Yes" : "No") << endl;
+         cout << "ENTROPY_CTR_MAX:    " << ENTROPY_CTR_MAX << endl;
+         cout << "CORREL_CTR_MAX:     " << CORREL_CTR_MAX << endl;
          cout << "========================================================================" << endl;
          cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
          cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
@@ -46,6 +51,7 @@ public:
    }
    ~EntropyV2() {}
 
+   void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
    void etp_tracker_access_update(uint64_t address);
    void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
    void move_cache_data(MEMORY *lower_level);
@@ -56,7 +62,6 @@ public:
 
 protected:
    vector<BitEntropy> correl_table;
-   uint32_t num_outperformed{0};
 };
 
 #endif // ENTROPY_INDEX_V3_H

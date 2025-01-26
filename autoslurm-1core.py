@@ -106,7 +106,7 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
                           "bc.urand-3004B","bc.web-1627B", \
                           "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
                           "cc.road-36B","cc.urand-353B","cc.web-24B", \
-                          "pr.web-3076B", "tc.twitter-4460B",\
+                        #   "pr.web-3076B", "tc.twitter-4460B",\
                           "bodytrack", "canneal", "freqmine", "facesim", "fluidanimate", "streamcluster"]
 
     elif apps == "nxetp-specmore":
@@ -382,19 +382,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "sssp.twitter-1116B","sssp.twitter-900B",\
             "tc.twitter-2097B","tc.twitter-34B",\
             "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B"
-        ]
-
-    elif apps == "cvp1-extra":
-        requested_apps = [
-            "compute_int_105",\
-            "compute_int_177",\
-            "compute_int_28",\
-            "compute_int_4",\
-            "compute_int_41",\
-            "compute_int_467",\
-            "compute_int_529",\
-            "compute_int_817",\
-            "compute_int_925"
         ]
 
     # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 

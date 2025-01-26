@@ -10,18 +10,26 @@
 # python3 autoslurm-1core.py -a gapmore -o gap-etp2b -e etp2b -w 2 -r gap-etp2b -t gaps-traces
 # python3 autoslurm-1core.py -a cvp1 -o cvp-etp2b -e etp2b -w 2 -r cvp-etp2b -t cvp1-traces
 
-python3 autoslurm-1core.py -a nxetp -o etp2r9a -e etp2r9a -w 2 -r etp2r9a -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-bonus -o etp2r9a -e etp2r9a -w 2 -r etp2r9a -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-specmore -o etp2r9a -e etp2r9a -w 2 -r etp2r9a -t more-traces
+python3 autoslurm-1core.py -a nxetp -o etp2r12 -e etp2r12 -w 2 -r etp2r12 -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp2r12 -e etp2r12 -w 2 -r etp2r12 -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp2r12 -e etp2r12 -w 2 -r etp2r12 -t more-traces
 
-# python3 autoslurm-1core.py -a nxetp -o xorhashpfb -e xorhashpfb -w 2 -r xorhashpfb -t dpc3-traces
-# python3 autoslurm-1core.py -a nxetp-bonus -o xorhashpfb -e xorhashpfb -w 2 -r xorhashpfb -t dpc3-traces
-# python3 autoslurm-1core.py -a nxetp-specmore -o xorhashpfb -e xorhashpfb -w 2 -r xorhashpfb -t more-traces
+python3 autoslurm-1core.py -a nxetp -o etp2r12pfn -e etp2r12pfn -w 2 -r etp2r12pfn -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp2r12pfn -e etp2r12pfn -w 2 -r etp2r12pfn -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp2r12pfn -e etp2r12pfn -w 2 -r etp2r12pfn -t more-traces
 
-python3 autoslurm-1core.py -a nxetp -o etp2r9apfn -e etp2r9apfn -w 2 -r etp2r9apfn -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-bonus -o etp2r9apfn -e etp2r9apfn -w 2 -r etp2r9apfn -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-specmore -o etp2r9apfn -e etp2r9apfn -w 2 -r etp2r9apfn -t more-traces
+python3 autoslurm-1core.py -a nxetp -o etp2r12pfb -e etp2r12pfb -w 2 -r etp2r12pfb -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp2r12pfb -e etp2r12pfb -w 2 -r etp2r12pfb -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp2r12pfb -e etp2r12pfb -w 2 -r etp2r12pfb -t more-traces
 
-python3 autoslurm-1core.py -a nxetp -o etp2r9apfb -e etp2r9apfb -w 2 -r etp2r9apfb -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-bonus -o etp2r9apfb -e etp2r9apfb -w 2 -r etp2r9apfb -t dpc3-traces
-python3 autoslurm-1core.py -a nxetp-specmore -o etp2r9apfb -e etp2r9apfb -w 2 -r etp2r9apfb -t more-traces
+python3 autoslurm-1core.py -a nxetp -o etp2r12a -e etp2r12a -w 2 -r etp2r12a -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp2r12a -e etp2r12a -w 2 -r etp2r12a -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp2r12a -e etp2r12a -w 2 -r etp2r12a -t more-traces
+
+python3 autoslurm-1core.py -a nxetp -o etp2r12apfn -e etp2r12apfn -w 2 -r etp2r12apfn -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp2r12apfn -e etp2r12apfn -w 2 -r etp2r12apfn -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp2r12apfn -e etp2r12apfn -w 2 -r etp2r12apfn -t more-traces
+
+python3 autoslurm-1core.py -a nxetp -o etp2r12apfb -e etp2r12apfb -w 2 -r etp2r12apfb -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-bonus -o etp2r12apfb -e etp2r12apfb -w 2 -r etp2r12apfb -t dpc3-traces
+python3 autoslurm-1core.py -a nxetp-specmore -o etp2r12apfb -e etp2r12apfb -w 2 -r etp2r12apfb -t more-traces

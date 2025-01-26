@@ -3,14 +3,14 @@
 # python3 autobuild.py -i xorhash -p berti -o xorhash
 # python3 autobuild.py -i skewed -p berti -o skewed
 # python3 autobuild.py -i entropy -p berti -o entropy
-python3 autobuild.py -i entropyv2 -p next_line -o etp2r9a
-python3 autobuild.py -i entropyv2 -p berti -o etp2r9a
+python3 autobuild.py -i entropyv2 -p next_line -o etp2r12a
+python3 autobuild.py -i entropyv2 -p berti -o etp2r12a
 
 # python3 autobuild.py -i nohash -o nohash
 # python3 autobuild.py -i primeideal -o primeideal
 # python3 autobuild.py -i xorhash -o xorhash
 # python3 autobuild.py -i skewed -o skewed
-python3 autobuild.py -i entropyv2 -o etp2r9a
+python3 autobuild.py -i entropyv2 -o etp2r12a
 # python3 autobuild.py -i entropy -o entropy
 
 # python3 autobuild.py -i nohash -r drrip -o drrip-nohash
