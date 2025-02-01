@@ -193,7 +193,7 @@ uint32_t EntropyV2::find_min_correl_bit_from_sequence(uint32_t bit_a, vector<uin
    return min_correl_idx;
 }
 
-// etp2r12
+// etp2r14
 void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
    // size of the bit sequence being tracked for entropy must greater than the size of the index sequences
    assert((entropy.size() > x_seq_a.size()) && (entropy.size() > x_seq_b.size()));
@@ -202,35 +202,62 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    sort(entropy.begin(), entropy.end());
    cout << "Sorted ITV:       " << etp_vector_to_string(entropy) << endl;
 
-   // ETP2 candidate:
-   vector<uint32_t> c1_seq_a = x_seq_a;
-   vector<uint32_t> c1_seq_b = x_seq_b;
+   // // ETP2 candidate:
+   // vector<uint32_t> c1_seq_a = x_seq_a;
+   // vector<uint32_t> c1_seq_b = x_seq_b;
 
-   // ETP2 candidate: gather the highest and next highest entropy bits to form sequence A and B
-   for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-      c1_seq_a[i] = entropy[entropy.size()-1-i].m_id;
-      c1_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
-   }
+   // // ETP2 candidate: gather the highest and next highest entropy bits to form sequence A and B
+   // for (uint32_t i=0; i < x_seq_a.size(); ++i) {
+   //    c1_seq_a[i] = entropy[entropy.size()-1-i].m_id;
+   //    c1_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
+   // }
 
-   // ETP2 candidate: re-order sequence B based on the bitwise correlation counters
-   vector<uint32_t> reordered_indices = {};
-   for (uint32_t i=0; i < c1_seq_a.size(); ++i) {
-      vector<uint32_t> seq_a_bit_correl = {};   // correl btw this bit in A vs every bit in B
-      for (uint32_t j=0; j < c1_seq_b.size(); ++j) {
-         seq_a_bit_correl.push_back(get_correl(c1_seq_a[i], c1_seq_b[j]));
-      }
-      uint32_t min_correl_idx = find_min_index(seq_a_bit_correl, reordered_indices);
-      reordered_indices.push_back(i);
+   // // ETP2 candidate: re-order sequence B based on the bitwise correlation counters
+   // vector<uint32_t> reordered_indices = {};
+   // for (uint32_t i=0; i < c1_seq_a.size(); ++i) {
+   //    vector<uint32_t> seq_a_bit_correl = {};   // correl btw this bit in A vs every bit in B
+   //    for (uint32_t j=0; j < c1_seq_b.size(); ++j) {
+   //       seq_a_bit_correl.push_back(get_correl(c1_seq_a[i], c1_seq_b[j]));
+   //    }
+   //    uint32_t min_correl_idx = find_min_index(seq_a_bit_correl, reordered_indices);
+   //    reordered_indices.push_back(i);
 
-      // pair this bit in A with the least correlated bit in B
-      if (min_correl_idx != i)
-         swap(c1_seq_b[i], c1_seq_b[min_correl_idx]);
+   //    // pair this bit in A with the least correlated bit in B
+   //    if (min_correl_idx != i)
+   //       swap(c1_seq_b[i], c1_seq_b[min_correl_idx]);
+   // }
+   // cout << endl;
+   // cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
+   // cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
+   // uint32_t c1_corr = compute_sum_correl_two_sequences(c1_seq_a, c1_seq_b);
+   // cout << "CORR c1:   " << c1_corr << endl;
+
+   // ETP2r7 candidate:
+   vector<uint32_t> c2_seq_a(x_seq_a.size(), 0);
+   vector<uint32_t> c2_seq_b(x_seq_b.size(), 0);
+
+   // ETP2r7 candidate: gather the highest entropy bits
+   vector<uint32_t> max_etp_bits;
+   for (uint32_t i=0; i < x_seq_a.size()*2; ++i) {
+      max_etp_bits.push_back(entropy[entropy.size()-1-i].m_id);
    }
    cout << endl;
-   cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
-   cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
-   uint32_t c1_corr = compute_sum_correl_two_sequences(c1_seq_a, c1_seq_b);
-   cout << "CORR c1:   " << c1_corr << endl;
+   cout << "max_etp_bits: " << vec_to_string(max_etp_bits) << endl;
+
+   for (uint32_t idx=0; idx < c2_seq_a.size(); ++idx) {
+      // get the highest entropy bit and and its lowest correlated pair.
+      c2_seq_a[idx] = max_etp_bits[0];             // save it in sequence A
+      max_etp_bits.erase(max_etp_bits.begin());   // erase it in max_etp_bits
+
+      // find its corresponding lowest correlation bit and save in B
+      uint32_t lowest_corr_idx = find_min_correl_bit_from_sequence(c2_seq_a[idx], max_etp_bits);
+      c2_seq_b[idx] = max_etp_bits[lowest_corr_idx];
+      max_etp_bits.erase(max_etp_bits.begin()+lowest_corr_idx);   // erase it in max_etp_bits
+   }
+   cout << "c2_seq_a:  " << vec_to_string(c2_seq_a) << endl;
+   cout << "c2_seq_b:  " << vec_to_string(c2_seq_b) << endl;
+   uint32_t c2_corr = compute_sum_correl_two_sequences(c2_seq_a, c2_seq_b);
+   cout << "CORR c2:   " << c2_corr << endl << endl;
 
    // ETP candidate:
    vector<uint32_t> c3_seq_a = x_seq_a;
@@ -246,15 +273,15 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    uint32_t c3_corr = compute_sum_correl_two_sequences(c3_seq_a, c3_seq_b);
    cout << "CORR c3:   " << c3_corr << endl;
 
-   if (c3_corr <= c1_corr) {
-      x_seq_a = c3_seq_a;
-      x_seq_b = c3_seq_b;
-      cout << "Choose C3" << endl;
+   if (c2_corr <= c3_corr) {
+      x_seq_a = c2_seq_a;
+      x_seq_b = c2_seq_b;
+      cout << "Choose C2" << endl;
    }
    else {
       x_seq_a = c3_seq_a;
       x_seq_b = c3_seq_b;
-      cout << "Choose C1" << endl;
+      cout << "Choose C3" << endl;
    }
    cout << endl;
 
@@ -379,12 +406,9 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
       PI_MISS[unhashed_index]++;
    }
    access_ctr++;
-   
-   if (!UPDATE_MISS_ONLY)
+
+   if (should_update(is_hit, type))
       etp_tracker_access_update(address);
-   else
-      if (!is_hit)
-         etp_tracker_access_update(address);
 
 
    // should remap when last index config != current index config
@@ -452,4 +476,12 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
    }
 
    warmup_check();
+}
+
+bool EntropyV2::should_update(bool is_hit, uint32_t type) {
+   if (UPDATE_MISS_ONLY && is_hit)
+      return false;
+   if (SKIP_UPDATE_PF && (type == PREFETCH))
+      return false;
+   return true;
 }

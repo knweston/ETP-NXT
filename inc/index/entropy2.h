@@ -5,6 +5,7 @@
 
 #define ENTROPY_CTR_MAX 1048576    // 20-bit
 #define CORREL_CTR_MAX 1048576     // 20-bit
+#define SKIP_UPDATE_PF 1
 
 class EntropyV2 : public EntropyIndex {
 public:
@@ -37,6 +38,7 @@ public:
          cout << "UnhashIdx maxETP:   " << ((NOHASH_IF_SEQ_IDX_HIGHEST_ETP == 1)? "hashing OFF" : "hashing ON") << endl;
          cout << "No-delay reconfig:  " << (RECONFIG_NO_DELAY? "Yes" : "No") << endl;
          cout << "Update Miss Only:   " << (UPDATE_MISS_ONLY? "Yes" : "No") << endl;
+         cout << "Skip Prefetch:      " << (SKIP_UPDATE_PF? "Yes" : "No") << endl;
          cout << "ENTROPY_CTR_MAX:    " << ENTROPY_CTR_MAX << endl;
          cout << "CORREL_CTR_MAX:     " << CORREL_CTR_MAX << endl;
          cout << "========================================================================" << endl;
@@ -59,6 +61,7 @@ public:
    uint32_t get_correl(uint32_t bit_a, uint32_t bit_b);
    uint32_t find_min_correl_bit_from_sequence(uint32_t bit_a, vector<uint32_t>& sequence);
    uint32_t compute_sum_correl_two_sequences(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
+   bool should_update(bool is_hit, uint32_t type);
 
 protected:
    vector<BitEntropy> correl_table;
