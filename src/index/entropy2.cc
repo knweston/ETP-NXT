@@ -154,14 +154,14 @@ void EntropyV2::etp_tracker_access_update(uint64_t address) {
    }
 
    if (should_reset_entropy) {
-      cout << "ITV reset" << endl;
+      num_reset_itv++;
       for (uint32_t i=0; i < itv_entropy.size(); ++i) {
          itv_entropy[i].m_entropy /= 2;
       }
    }
 
    if (should_reset_correl) {
-      cout << "Correlation Table reset" << endl;
+      num_reset_cor++;
       for (uint32_t i=0; i < correl_table.size(); ++i) {
          correl_table[i].m_entropy /= 2;
       }
@@ -193,7 +193,7 @@ uint32_t EntropyV2::find_min_correl_bit_from_sequence(uint32_t bit_a, vector<uin
    return min_correl_idx;
 }
 
-// etp2r14
+// etp2r17
 void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
    // size of the bit sequence being tracked for entropy must greater than the size of the index sequences
    assert((entropy.size() > x_seq_a.size()) && (entropy.size() > x_seq_b.size()));
@@ -201,6 +201,10 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    // sort the index bits based on their entropy, from lowest to highest
    sort(entropy.begin(), entropy.end());
    cout << "Sorted ITV:       " << etp_vector_to_string(entropy) << endl;
+
+   vector<BitEntropy> tmp_ovr = ovr_entropy;
+   sort(tmp_ovr.begin(), tmp_ovr.end());
+   cout << "Sorted OVR:       " << etp_vector_to_string(tmp_ovr) << endl;
 
    // // ETP2 candidate:
    // vector<uint32_t> c1_seq_a = x_seq_a;
@@ -431,6 +435,8 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
       cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
       cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
       cout << "   map_ptr:        " << map_ptr << endl;
+      cout << "   num_reset_itv:  " << num_reset_itv << endl;
+      cout << "   num_reset_cor:  " << num_reset_cor << endl;
       cout << "========================================================================" << endl;
 
       // save the current XOR-hash index config
@@ -482,6 +488,8 @@ bool EntropyV2::should_update(bool is_hit, uint32_t type) {
    if (UPDATE_MISS_ONLY && is_hit)
       return false;
    if (SKIP_UPDATE_PF && (type == PREFETCH))
+      return false;
+   if (SKIP_UPDATE_WB && (type == WRITEBACK))
       return false;
    return true;
 }

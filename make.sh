@@ -22,6 +22,10 @@
 # python3 autobuild.py -i entropy -r srrip -o srrip-entropy
 # python3 autobuild.py -i entropy -r ship -o ship-entropy
 
-python3 autobuild.py -i entropyv2 -p berti -o etp2r17
-python3 autobuild.py -i entropyv2 -p next_line -o etp2r17
-python3 autobuild.py -i entropyv2 -o etp2r17
+# python3 autobuild.py -i entropyv2 -o etp2r26
+# python3 autobuild.py -i entropyv2 -p next_line -o etp2r26
+# python3 autobuild.py -i entropyv2 -p berti -o etp2r26
+
+python3 autobuild.py -i entropyv3 -o etp3r11
+python3 autobuild.py -i entropyv3 -p next_line -o etp3r11
+python3 autobuild.py -i entropyv3 -p berti -o etp3r11

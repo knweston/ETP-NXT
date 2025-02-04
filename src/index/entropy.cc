@@ -328,11 +328,15 @@ bool EntropyIndex::check_remap() {
 
 void EntropyIndex::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
     // size of the bit sequence being tracked for entropy must greater than the size of the index sequences
-    assert((entropy.size() > x_seq_a.size()) && (entropy.size() > x_seq_b.size()));
+    // assert((entropy.size() > x_seq_a.size()) && (entropy.size() > x_seq_b.size()));
 
     // sort the index bits based on their entropy, from lowest to highest
     sort(entropy.begin(), entropy.end());
     cout << "Sorted ITV:       " << etp_vector_to_string(entropy) << endl;
+
+    vector<BitEntropy> tmp_ovr = ovr_entropy;
+    sort(tmp_ovr.begin(), tmp_ovr.end());
+    cout << "Sorted OVR:       " << etp_vector_to_string(tmp_ovr) << endl;
 
     // A = unhashed_idx, B = maxETP
     if (FIX_SEQUENCE == 1) {

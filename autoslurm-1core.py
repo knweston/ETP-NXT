@@ -106,7 +106,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
                           "bc.urand-3004B","bc.web-1627B", \
                           "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
                           "cc.road-36B","cc.urand-353B","cc.web-24B", \
-                        #   "pr.web-3076B", "tc.twitter-4460B",\
                           "bodytrack", "canneal", "freqmine", "facesim", "fluidanimate", "streamcluster"]
 
     elif apps == "nxetp-specmore":

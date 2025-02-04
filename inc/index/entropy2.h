@@ -3,9 +3,10 @@
 
 #include "index/entropy.h"
 
-#define ENTROPY_CTR_MAX 1048576    // 20-bit
-#define CORREL_CTR_MAX 1048576     // 20-bit
+#define ENTROPY_CTR_MAX 1048576  // 20-bit
+#define CORREL_CTR_MAX 1048576   // 20-bit
 #define SKIP_UPDATE_PF 1
+#define SKIP_UPDATE_WB 0
 
 class EntropyV2 : public EntropyIndex {
 public:
@@ -39,6 +40,7 @@ public:
          cout << "No-delay reconfig:  " << (RECONFIG_NO_DELAY? "Yes" : "No") << endl;
          cout << "Update Miss Only:   " << (UPDATE_MISS_ONLY? "Yes" : "No") << endl;
          cout << "Skip Prefetch:      " << (SKIP_UPDATE_PF? "Yes" : "No") << endl;
+         cout << "Skip Writeback:     " << (SKIP_UPDATE_WB? "Yes" : "No") << endl;
          cout << "ENTROPY_CTR_MAX:    " << ENTROPY_CTR_MAX << endl;
          cout << "CORREL_CTR_MAX:     " << CORREL_CTR_MAX << endl;
          cout << "========================================================================" << endl;
@@ -65,6 +67,8 @@ public:
 
 protected:
    vector<BitEntropy> correl_table;
+   uint32_t num_reset_cor{0};
+   uint32_t num_reset_itv{0};
 };
 
 #endif // ENTROPY_INDEX_V3_H
