@@ -69,7 +69,7 @@ def change_idx_in_file(idx_type):
 
 
 
-def build(idx_type, l1d_prefetcher, filename, repl_policy):
+def build(idx_type, l1d_prefetcher, l1i_prefetcher, l2_prefetcher, filename, repl_policy):
    idx_str = str(idx_type).split(".")[-1].lower()
 
    if (filename == ""):
@@ -77,16 +77,24 @@ def build(idx_type, l1d_prefetcher, filename, repl_policy):
    else:
       exec_name = filename
 
-   if l1d_prefetcher != "":
-      if idx_type == INDEX.SKEWED:
-         cmd = "./build_champsim.sh bimodal no " + l1d_prefetcher + " spp_dev no skewed 1 " + exec_name + "pf" + l1d_prefetcher[0]
-      else:
-         cmd = "./build_champsim.sh bimodal no " + l1d_prefetcher + " spp_dev no " + repl_policy + " 1 " + exec_name + "pf" + l1d_prefetcher[0]
+   cmd = "./build_champsim.sh bimodal " + l1i_prefetcher + " " + l1d_prefetcher + " " + l2_prefetcher + " no "
+   # cmd = "./build_champsim.sh bimodal " + l1i_prefetcher + " " + l1d_prefetcher + " " + l2_prefetcher + " next_line "    # test: LLC next-line prefetcher
+   if idx_type == INDEX.SKEWED:
+      cmd += "skewed 1 "
    else:
-      if idx_type == INDEX.SKEWED:
-         cmd = "./build_champsim.sh bimodal no no no no skewed 1 " + exec_name
-      else:
-         cmd = "./build_champsim.sh bimodal no no no no " + repl_policy + " 1 " + exec_name
+      cmd += repl_policy + " 1 "
+
+   cmd += exec_name
+
+   if l1d_prefetcher != "no" or l1i_prefetcher != "no" or l2_prefetcher != "no":
+      cmd += "pf"
+      if l1d_prefetcher != "no":
+         cmd += "_d" + l1d_prefetcher[0]
+      if l1i_prefetcher != "no":
+         cmd += "_i" + l1i_prefetcher[0]
+      if l2_prefetcher != "no":
+         cmd += "_2" + l2_prefetcher[0]
+
    change_idx_in_file(idx_type)
    os.system(cmd)
 
@@ -111,10 +119,12 @@ def main():
    parser.add_argument("-i", "--idx_type", required=True, type=str)
    parser.add_argument("-r", "--replacement_type", required=False, default="lru", type=str)
    parser.add_argument("-o", "--output_filename", required=False, default="", type=str)
-   parser.add_argument("-p", "--l1d_prefetcher", required=False, default="", type=str)
+   parser.add_argument("-p", "--l1d_prefetcher", required=False, default="no", type=str)
+   parser.add_argument("-f", "--l1i_prefetcher", required=False, default="no", type=str)
+   parser.add_argument("-d", "--l2_prefetcher", required=False, default="no", type=str)
    args = parser.parse_args()
    
-   build(parse_index_type(args.idx_type), args.l1d_prefetcher, args.output_filename, args.replacement_type)
+   build(parse_index_type(args.idx_type), args.l1d_prefetcher, args.l1i_prefetcher, args.l2_prefetcher, args.output_filename, args.replacement_type)
 
 if __name__ == "__main__":
    main()

@@ -28,7 +28,8 @@ void EntropyV2::move_cache_data(MEMORY *lower_level) {
             assert(false);
          }
 
-         uint32_t dest_way = get_lru_victim(dest_index);
+         // uint32_t dest_way = get_lru_victim(dest_index);
+         uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
          BLOCK *dest_block = &block_array[dest_index][dest_way];
          bool fill_ready = remap_tie_break(src_block, dest_block, lower_level);
 
@@ -39,7 +40,8 @@ void EntropyV2::move_cache_data(MEMORY *lower_level) {
                increment_eviction(dest_index);
 
             override_block(src_block, dest_block);
-            lru_update(dest_index, dest_way, src_block->lru);
+            // lru_update(dest_index, dest_way, src_block->lru);
+            rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
          }
          
          // invalidate the source block
@@ -277,6 +279,50 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    uint32_t c3_corr = compute_sum_correl_two_sequences(c3_seq_a, c3_seq_b);
    cout << "CORR c3:   " << c3_corr << endl;
 
+   // // ETP2c4 candidate:
+   // vector<uint32_t> c4_seq_a(x_seq_a.size(), 0);
+   // vector<uint32_t> c4_seq_b(x_seq_b.size(), 0);
+
+   // // ETP2c4 candidate: gather the highest entropy bits
+   // max_etp_bits.resize(0);
+   // for (uint32_t i=entropy.size()-x_seq_a.size()*2; i < entropy.size(); ++i) {
+   //    max_etp_bits.push_back(entropy[i].m_id);
+   // }
+   // cout << endl;
+   // cout << "max_etp_bits: " << vec_to_string(max_etp_bits) << endl;
+
+   // for (uint32_t idx=0; idx < c4_seq_a.size(); ++idx) {
+   //    // get the highest entropy bit and and its lowest correlated pair.
+   //    c4_seq_a[idx] = max_etp_bits[0];             // save it in sequence A
+   //    max_etp_bits.erase(max_etp_bits.begin());   // erase it in max_etp_bits
+
+   //    // find its corresponding lowest correlation bit and save in B
+   //    uint32_t lowest_corr_idx = find_min_correl_bit_from_sequence(c4_seq_a[idx], max_etp_bits);
+   //    c4_seq_b[idx] = max_etp_bits[lowest_corr_idx];
+   //    max_etp_bits.erase(max_etp_bits.begin()+lowest_corr_idx);   // erase it in max_etp_bits
+   // }
+   // cout << "c4_seq_a:  " << vec_to_string(c4_seq_a) << endl;
+   // cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
+   // uint32_t c4_corr = compute_sum_correl_two_sequences(c4_seq_a, c4_seq_b);
+   // cout << "CORR c4:   " << c4_corr << endl << endl;
+
+   // if (c2_corr <= c3_corr && c2_corr <= c4_corr) {
+   //    x_seq_a = c2_seq_a;
+   //    x_seq_b = c2_seq_b;
+   //    cout << "Choose C2" << endl;
+   // }
+   // else if (c3_corr <= c2_corr && c3_corr <= c4_corr) {
+   //    x_seq_a = c3_seq_a;
+   //    x_seq_b = c3_seq_b;
+   //    cout << "Choose C3" << endl;
+   // }
+   // else {
+   //    x_seq_a = c4_seq_a;
+   //    x_seq_b = c4_seq_b;
+   //    cout << "Choose C4" << endl;
+   // }
+   // cout << endl;
+
    if (c2_corr <= c3_corr) {
       x_seq_a = c2_seq_a;
       x_seq_b = c2_seq_b;
@@ -298,6 +344,52 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    cout << "CORR Next Cfg:   " << next_corr << endl;
    cout << "CORR difference: " << corr_diff << endl;
 
+   // if (num_interval < WARMUP_INTERVALS && !is_zero_segment(m_last_seq_b)) {
+   //    // compute next_etp
+   //    double next_etp = 0;
+   //    for (uint32_t i=0; i < x_seq_a.size(); ++i) {
+   //       next_etp += itv_entropy[x_seq_a[i]].m_entropy;
+   //    }
+      
+   //    for (uint32_t i=0; i < x_seq_b.size(); ++i) {
+   //       next_etp += itv_entropy[x_seq_b[i]].m_entropy;
+   //    }
+      
+   //    // compute last_etp
+   //    double last_etp = 0;
+   //    for (uint32_t i=0; i < m_last_seq_a.size(); ++i) {
+   //       last_etp += itv_entropy[m_last_seq_a[i]].m_entropy;
+   //    }
+      
+   //    for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
+   //       last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
+   //    }
+      
+   //    // compute etp difference
+   //    double etp_diff = (next_etp-last_etp)*100/abs(last_etp);
+
+   //    // compare with threshold
+   //    cout << "seq_A last:   " << vec_to_string(m_last_seq_a) << endl;
+   //    cout << "seq_B last:   " << vec_to_string(m_last_seq_b) << endl;
+   //    cout << "seq_A candidate: " << vec_to_string(x_seq_a) << endl;
+   //    cout << "seq_B candidate: " << vec_to_string(x_seq_b) << endl;
+   //    cout << std::setprecision(0) << "Last Cfg ETP: " << last_etp << endl;
+   //    cout << std::setprecision(0) << "Next Cfg ETP: " << next_etp << endl;
+   //    if (etp_diff > 0 && corr_diff > 0) {
+   //       cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% > 0%. CORR difference: " << corr_diff << "% > 0%. Switch to new candidate (warmup)." << endl;
+   //    }
+   //    else {
+   //       if (etp_diff <= 0)
+   //          cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% <= 0%." << endl;
+   //       if (corr_diff <= 0)
+   //          cout << std::setprecision(2) << "CORR difference: " << corr_diff << "% <= 0%." << endl;
+   //       cout << "Keep last candidate (warmup).\n";
+
+   //       x_seq_a = m_last_seq_a;
+   //       x_seq_b = m_last_seq_b;
+   //    }
+   //    cout << std::setprecision(5);
+   // }
    if (num_interval < WARMUP_INTERVALS) {}
    // exceed the threshold + not decided to revert to nohash + not previously nohash (is_zero_segment(m_curr_seq_b))
    else if (!RECONFIG_NO_DELAY && (SENSE_THRESHOLD >= 0) && !is_zero_segment(m_curr_seq_b)) {
@@ -413,6 +505,7 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
 
    if (should_update(is_hit, type))
       etp_tracker_access_update(address);
+      // etp_tracker_access_update(is_hit, type, address);
 
 
    // should remap when last index config != current index config
@@ -421,7 +514,7 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
       if ((REMAP_INTERVAL > 0) && (access_ctr % REMAP_INTERVAL == 0) && (map_ptr < NUM_SET)) {
          move_cache_data(dram);
          if (map_ptr == NUM_SET)
-               m_should_remap = false; // remapping done
+            m_should_remap = false; // remapping done
       }
    }
 
@@ -485,11 +578,17 @@ void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
 }
 
 bool EntropyV2::should_update(bool is_hit, uint32_t type) {
-   if (UPDATE_MISS_ONLY && is_hit)
+   if ((UPDATE_HITMISS_SETTING == 1) && is_hit)
+      return false;
+   if ((UPDATE_HITMISS_SETTING == 2) && !is_hit)
       return false;
    if (SKIP_UPDATE_PF && (type == PREFETCH))
       return false;
    if (SKIP_UPDATE_WB && (type == WRITEBACK))
+      return false;
+   if (SKIP_UPDATE_WB_HIT && (type == WRITEBACK) && is_hit)
+      return false;
+   if (SKIP_UPDATE_DURING_REMAP && m_should_remap)
       return false;
    return true;
 }

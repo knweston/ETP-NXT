@@ -7,6 +7,9 @@
 #define CORREL_CTR_MAX 1048576   // 20-bit
 #define SKIP_UPDATE_PF 1
 #define SKIP_UPDATE_WB 0
+#define SKIP_UPDATE_WB_HIT 0
+#define UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
+#define SKIP_UPDATE_DURING_REMAP 0
 
 class EntropyV2 : public EntropyIndex {
 public:
@@ -38,9 +41,11 @@ public:
          cout << "ETP match option:   " << matching_option_to_string(FIX_SEQUENCE) << endl;
          cout << "UnhashIdx maxETP:   " << ((NOHASH_IF_SEQ_IDX_HIGHEST_ETP == 1)? "hashing OFF" : "hashing ON") << endl;
          cout << "No-delay reconfig:  " << (RECONFIG_NO_DELAY? "Yes" : "No") << endl;
-         cout << "Update Miss Only:   " << (UPDATE_MISS_ONLY? "Yes" : "No") << endl;
+         cout << "Update Hit/Miss:    " << (UPDATE_HITMISS_SETTING==1? "MISS ONLY" : (UPDATE_HITMISS_SETTING==2? "HIT ONLY" : "BOTH HIT/MISS")) << endl;
          cout << "Skip Prefetch:      " << (SKIP_UPDATE_PF? "Yes" : "No") << endl;
          cout << "Skip Writeback:     " << (SKIP_UPDATE_WB? "Yes" : "No") << endl;
+         cout << "Skip Writeback Hit: " << (SKIP_UPDATE_WB_HIT? "Yes" : "No") << endl;
+         cout << "Skip During Remap:  " << (SKIP_UPDATE_DURING_REMAP? "Yes" : "No") << endl;
          cout << "ENTROPY_CTR_MAX:    " << ENTROPY_CTR_MAX << endl;
          cout << "CORREL_CTR_MAX:     " << CORREL_CTR_MAX << endl;
          cout << "========================================================================" << endl;
@@ -57,6 +62,7 @@ public:
 
    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
    void etp_tracker_access_update(uint64_t address);
+   // void etp_tracker_access_update(bool is_hit, uint32_t type, uint64_t address);
    void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
    void move_cache_data(MEMORY *lower_level);
    bool remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level);
