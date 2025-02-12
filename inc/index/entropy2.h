@@ -4,7 +4,7 @@
 #include "index/entropy.h"
 
 #define ENTROPY_CTR_MAX 1048576  // 20-bit
-#define CORREL_CTR_MAX 1048576   // 20-bit
+#define CORREL_CTR_MAX 65536    // 20-bit
 #define SKIP_UPDATE_PF 1
 #define SKIP_UPDATE_WB 0
 #define SKIP_UPDATE_WB_HIT 0

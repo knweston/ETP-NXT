@@ -20,6 +20,8 @@ void EntropyV3::etp_tracker_access_update(bool is_hit, uint32_t type, uint64_t a
          // if there is a conflict => increment the entropy counter
          for (uint32_t idx=0; idx < index_hist.size(); ++idx) {
             if ((address != m_addr_hist[idx]) && (curr_index == index_hist[idx])) {
+               m_seq_a[i].m_entropy++;
+               m_seq_b[i].m_entropy++;
                // if (is_hit) {
                //    m_seq_a[i].m_entropy++;
                //    m_seq_b[i].m_entropy++;
@@ -28,14 +30,14 @@ void EntropyV3::etp_tracker_access_update(bool is_hit, uint32_t type, uint64_t a
                //    m_seq_a[i].m_entropy += 2;
                //    m_seq_b[i].m_entropy += 2;
                // }
-               if (type == PREFETCH && type == WRITEBACK) {
-                  m_seq_a[i].m_entropy++;
-                  m_seq_b[i].m_entropy++;
-               }
-               else {
-                  m_seq_a[i].m_entropy += 2;
-                  m_seq_b[i].m_entropy += 2;
-               }
+               // if (type == PREFETCH && type == WRITEBACK) {
+               //    m_seq_a[i].m_entropy++;
+               //    m_seq_b[i].m_entropy++;
+               // }
+               // else {
+               //    m_seq_a[i].m_entropy += 2;
+               //    m_seq_b[i].m_entropy += 2;
+               // }
             }
          }
       }

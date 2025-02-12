@@ -9,7 +9,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="4G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="1G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
@@ -101,11 +101,8 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
 
     elif apps == "nxetp":
         # MPKI > 1 under config 64/8-2,256/8-8,2048/16-20, rank1, DRAM=24
-        requested_apps = ["410", "433", "450", "459", "470", "471", "473", "482", \
-                          "605", "607", "620", "621", "623", "627", "628", "649", \
-                          "bc.urand-3004B","bc.web-1627B", \
-                          "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
-                          "cc.road-36B","cc.urand-353B","cc.web-24B", \
+        requested_apps = ["410","433","436","437","450","459","462","470","471","473","481","482",\
+                          "605","607","620","621","623","627","628","649","654",\
                           "bodytrack", "canneal", "freqmine", "facesim", "fluidanimate", "streamcluster"]
 
     elif apps == "nxetp-specmore":
@@ -117,11 +114,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
             "625.x264_s-39B",\
             "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B"
-        ]
-
-    elif apps == "nxetp-bonus":
-        requested_apps = [
-            "429", "436", "437", "462", "481", "619", "654", "657"
         ]
 
     elif apps == "cvp1":
@@ -381,6 +373,28 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             "sssp.twitter-1116B","sssp.twitter-900B",\
             "tc.twitter-2097B","tc.twitter-34B",\
             "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B"
+        ]
+
+    elif apps == "dpc3-simpoint":
+        # MPKI >= 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
+        requested_apps = [
+            "403","410","433","436","437","450","459","462","470","471","473","481","482",\
+            "602","605","607","620","621","623","627","628","649","654",\
+            "bodytrack","canneal","facesim","ferret","fluidanimate","freqmine","streamcluster","vips",\
+            "cassandra","http","tomcat"
+        ]
+    
+    elif apps == "dpc3-specmore":
+        # MPKI > 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
+        requested_apps = [
+            "401.bzip2-226B","401.bzip2-277B",\
+            "403.gcc-16B","403.gcc-48B",\
+            "434.zeusmp-10B",\
+            "456.hmmer-327B",\
+            "483.xalancbmk-127B","483.xalancbmk-716B",\
+            "602.gcc_s-1850B","602.gcc_s-2226B",\
+            "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
+            "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B","654.roms_s-294B",\
         ]
 
     # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 

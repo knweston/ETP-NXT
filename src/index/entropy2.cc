@@ -28,8 +28,8 @@ void EntropyV2::move_cache_data(MEMORY *lower_level) {
             assert(false);
          }
 
-         // uint32_t dest_way = get_lru_victim(dest_index);
-         uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
+         uint32_t dest_way = get_lru_victim(dest_index);
+         // uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
          BLOCK *dest_block = &block_array[dest_index][dest_way];
          bool fill_ready = remap_tie_break(src_block, dest_block, lower_level);
 
@@ -40,8 +40,8 @@ void EntropyV2::move_cache_data(MEMORY *lower_level) {
                increment_eviction(dest_index);
 
             override_block(src_block, dest_block);
-            // lru_update(dest_index, dest_way, src_block->lru);
-            rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+            lru_update(dest_index, dest_way, src_block->lru);
+            // rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
          }
          
          // invalidate the source block
@@ -158,14 +158,14 @@ void EntropyV2::etp_tracker_access_update(uint64_t address) {
    if (should_reset_entropy) {
       num_reset_itv++;
       for (uint32_t i=0; i < itv_entropy.size(); ++i) {
-         itv_entropy[i].m_entropy /= 2;
+         itv_entropy[i].m_entropy /= 8;
       }
    }
 
    if (should_reset_correl) {
       num_reset_cor++;
       for (uint32_t i=0; i < correl_table.size(); ++i) {
-         correl_table[i].m_entropy /= 2;
+         correl_table[i].m_entropy /= 8;
       }
    }
 }
@@ -185,7 +185,7 @@ uint32_t EntropyV2::get_correl(uint32_t bit_a, uint32_t bit_b) {
 uint32_t EntropyV2::find_min_correl_bit_from_sequence(uint32_t bit_a, vector<uint32_t>& sequence) {
    uint32_t min_correl = get_correl(bit_a, sequence[0]);
    uint32_t min_correl_idx = 0;
-   for (uint32_t i=1; i < sequence.size(); ++i) {\
+   for (uint32_t i=1; i < sequence.size(); ++i) {
       uint32_t bitpair_correl = get_correl(bit_a, sequence[i]);
       if (bitpair_correl < min_correl) {
          min_correl = bitpair_correl;
@@ -208,35 +208,35 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    sort(tmp_ovr.begin(), tmp_ovr.end());
    cout << "Sorted OVR:       " << etp_vector_to_string(tmp_ovr) << endl;
 
-   // // ETP2 candidate:
-   // vector<uint32_t> c1_seq_a = x_seq_a;
-   // vector<uint32_t> c1_seq_b = x_seq_b;
+   // ETP2 candidate:
+   vector<uint32_t> c1_seq_a = x_seq_a;
+   vector<uint32_t> c1_seq_b = x_seq_b;
 
-   // // ETP2 candidate: gather the highest and next highest entropy bits to form sequence A and B
-   // for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-   //    c1_seq_a[i] = entropy[entropy.size()-1-i].m_id;
-   //    c1_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
-   // }
+   // ETP2 candidate: gather the highest and next highest entropy bits to form sequence A and B
+   for (uint32_t i=0; i < x_seq_a.size(); ++i) {
+      c1_seq_a[i] = entropy[entropy.size()-1-i].m_id;
+      c1_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
+   }
 
-   // // ETP2 candidate: re-order sequence B based on the bitwise correlation counters
-   // vector<uint32_t> reordered_indices = {};
-   // for (uint32_t i=0; i < c1_seq_a.size(); ++i) {
-   //    vector<uint32_t> seq_a_bit_correl = {};   // correl btw this bit in A vs every bit in B
-   //    for (uint32_t j=0; j < c1_seq_b.size(); ++j) {
-   //       seq_a_bit_correl.push_back(get_correl(c1_seq_a[i], c1_seq_b[j]));
-   //    }
-   //    uint32_t min_correl_idx = find_min_index(seq_a_bit_correl, reordered_indices);
-   //    reordered_indices.push_back(i);
+   // ETP2 candidate: re-order sequence B based on the bitwise correlation counters
+   vector<uint32_t> reordered_indices = {};
+   for (uint32_t i=0; i < c1_seq_a.size(); ++i) {
+      vector<uint32_t> seq_a_bit_correl = {};   // correl btw this bit in A vs every bit in B
+      for (uint32_t j=0; j < c1_seq_b.size(); ++j) {
+         seq_a_bit_correl.push_back(get_correl(c1_seq_a[i], c1_seq_b[j]));
+      }
+      uint32_t min_correl_idx = find_min_index(seq_a_bit_correl, reordered_indices);
+      reordered_indices.push_back(i);
 
-   //    // pair this bit in A with the least correlated bit in B
-   //    if (min_correl_idx != i)
-   //       swap(c1_seq_b[i], c1_seq_b[min_correl_idx]);
-   // }
-   // cout << endl;
-   // cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
-   // cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
-   // uint32_t c1_corr = compute_sum_correl_two_sequences(c1_seq_a, c1_seq_b);
-   // cout << "CORR c1:   " << c1_corr << endl;
+      // pair this bit in A with the least correlated bit in B
+      if (min_correl_idx != i)
+         swap(c1_seq_b[i], c1_seq_b[min_correl_idx]);
+   }
+   cout << endl;
+   cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
+   cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
+   uint32_t c1_corr = compute_sum_correl_two_sequences(c1_seq_a, c1_seq_b);
+   cout << "CORR c1:   " << c1_corr << endl;
 
    // ETP2r7 candidate:
    vector<uint32_t> c2_seq_a(x_seq_a.size(), 0);
@@ -279,32 +279,37 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    uint32_t c3_corr = compute_sum_correl_two_sequences(c3_seq_a, c3_seq_b);
    cout << "CORR c3:   " << c3_corr << endl;
 
-   // // ETP2c4 candidate:
-   // vector<uint32_t> c4_seq_a(x_seq_a.size(), 0);
-   // vector<uint32_t> c4_seq_b(x_seq_b.size(), 0);
+   // ETP2c4 candidate:
+   vector<uint32_t> c4_seq_a(x_seq_a.size(), 0);
+   vector<uint32_t> c4_seq_b(x_seq_b.size(), 0);
 
-   // // ETP2c4 candidate: gather the highest entropy bits
-   // max_etp_bits.resize(0);
-   // for (uint32_t i=entropy.size()-x_seq_a.size()*2; i < entropy.size(); ++i) {
-   //    max_etp_bits.push_back(entropy[i].m_id);
-   // }
-   // cout << endl;
-   // cout << "max_etp_bits: " << vec_to_string(max_etp_bits) << endl;
+   // ETP2c4 candidate: gather the highest entropy bits
+   max_etp_bits.resize(0);
+   for (uint32_t i=entropy.size()-x_seq_a.size()*2; i < entropy.size(); ++i) {
+      max_etp_bits.push_back(entropy[i].m_id);
+   }
+   cout << endl;
+   cout << "max_etp_bits: " << vec_to_string(max_etp_bits) << endl;
 
-   // for (uint32_t idx=0; idx < c4_seq_a.size(); ++idx) {
-   //    // get the highest entropy bit and and its lowest correlated pair.
-   //    c4_seq_a[idx] = max_etp_bits[0];             // save it in sequence A
-   //    max_etp_bits.erase(max_etp_bits.begin());   // erase it in max_etp_bits
+   for (uint32_t idx=0; idx < c4_seq_a.size(); ++idx) {
+      // get the highest entropy bit and and its lowest correlated pair.
+      c4_seq_a[idx] = max_etp_bits[0];             // save it in sequence A
+      max_etp_bits.erase(max_etp_bits.begin());   // erase it in max_etp_bits
 
-   //    // find its corresponding lowest correlation bit and save in B
-   //    uint32_t lowest_corr_idx = find_min_correl_bit_from_sequence(c4_seq_a[idx], max_etp_bits);
-   //    c4_seq_b[idx] = max_etp_bits[lowest_corr_idx];
-   //    max_etp_bits.erase(max_etp_bits.begin()+lowest_corr_idx);   // erase it in max_etp_bits
-   // }
-   // cout << "c4_seq_a:  " << vec_to_string(c4_seq_a) << endl;
-   // cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
-   // uint32_t c4_corr = compute_sum_correl_two_sequences(c4_seq_a, c4_seq_b);
-   // cout << "CORR c4:   " << c4_corr << endl << endl;
+      // find its corresponding lowest correlation bit and save in B
+      uint32_t lowest_corr_idx = find_min_correl_bit_from_sequence(c4_seq_a[idx], max_etp_bits);
+      c4_seq_b[idx] = max_etp_bits[lowest_corr_idx];
+      max_etp_bits.erase(max_etp_bits.begin()+lowest_corr_idx);   // erase it in max_etp_bits
+   }
+   cout << "c4_seq_a:  " << vec_to_string(c4_seq_a) << endl;
+   cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
+   uint32_t c4_corr = compute_sum_correl_two_sequences(c4_seq_a, c4_seq_b);
+   cout << "CORR c4:   " << c4_corr << endl << endl;
+
+   // hard-coded config
+   // x_seq_a = c1_seq_a;
+   // x_seq_b = c1_seq_b;
+   // cout << "Choose C1" << endl;
 
    // if (c2_corr <= c3_corr && c2_corr <= c4_corr) {
    //    x_seq_a = c2_seq_a;
@@ -323,15 +328,16 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    // }
    // cout << endl;
 
-   if (c2_corr <= c3_corr) {
+   // duo dueling
+   if (c2_corr <= c1_corr) {
       x_seq_a = c2_seq_a;
       x_seq_b = c2_seq_b;
       cout << "Choose C2" << endl;
    }
    else {
-      x_seq_a = c3_seq_a;
-      x_seq_b = c3_seq_b;
-      cout << "Choose C3" << endl;
+      x_seq_a = c1_seq_a;
+      x_seq_b = c1_seq_b;
+      cout << "Choose C1" << endl;
    }
    cout << endl;
 
@@ -344,52 +350,6 @@ void EntropyV2::compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>&
    cout << "CORR Next Cfg:   " << next_corr << endl;
    cout << "CORR difference: " << corr_diff << endl;
 
-   // if (num_interval < WARMUP_INTERVALS && !is_zero_segment(m_last_seq_b)) {
-   //    // compute next_etp
-   //    double next_etp = 0;
-   //    for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-   //       next_etp += itv_entropy[x_seq_a[i]].m_entropy;
-   //    }
-      
-   //    for (uint32_t i=0; i < x_seq_b.size(); ++i) {
-   //       next_etp += itv_entropy[x_seq_b[i]].m_entropy;
-   //    }
-      
-   //    // compute last_etp
-   //    double last_etp = 0;
-   //    for (uint32_t i=0; i < m_last_seq_a.size(); ++i) {
-   //       last_etp += itv_entropy[m_last_seq_a[i]].m_entropy;
-   //    }
-      
-   //    for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
-   //       last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
-   //    }
-      
-   //    // compute etp difference
-   //    double etp_diff = (next_etp-last_etp)*100/abs(last_etp);
-
-   //    // compare with threshold
-   //    cout << "seq_A last:   " << vec_to_string(m_last_seq_a) << endl;
-   //    cout << "seq_B last:   " << vec_to_string(m_last_seq_b) << endl;
-   //    cout << "seq_A candidate: " << vec_to_string(x_seq_a) << endl;
-   //    cout << "seq_B candidate: " << vec_to_string(x_seq_b) << endl;
-   //    cout << std::setprecision(0) << "Last Cfg ETP: " << last_etp << endl;
-   //    cout << std::setprecision(0) << "Next Cfg ETP: " << next_etp << endl;
-   //    if (etp_diff > 0 && corr_diff > 0) {
-   //       cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% > 0%. CORR difference: " << corr_diff << "% > 0%. Switch to new candidate (warmup)." << endl;
-   //    }
-   //    else {
-   //       if (etp_diff <= 0)
-   //          cout << std::setprecision(2) << "ETP difference: " << etp_diff << "% <= 0%." << endl;
-   //       if (corr_diff <= 0)
-   //          cout << std::setprecision(2) << "CORR difference: " << corr_diff << "% <= 0%." << endl;
-   //       cout << "Keep last candidate (warmup).\n";
-
-   //       x_seq_a = m_last_seq_a;
-   //       x_seq_b = m_last_seq_b;
-   //    }
-   //    cout << std::setprecision(5);
-   // }
    if (num_interval < WARMUP_INTERVALS) {}
    // exceed the threshold + not decided to revert to nohash + not previously nohash (is_zero_segment(m_curr_seq_b))
    else if (!RECONFIG_NO_DELAY && (SENSE_THRESHOLD >= 0) && !is_zero_segment(m_curr_seq_b)) {

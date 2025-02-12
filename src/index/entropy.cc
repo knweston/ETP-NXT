@@ -155,8 +155,8 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
             }
 
             bool fill_ready = true;
-            // uint32_t dest_way = get_lru_victim(dest_index); // if the cache is using LRU replacement policy
-            uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
+            uint32_t dest_way = get_lru_victim(dest_index); // if the cache is using LRU replacement policy
+            // uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
 
             BLOCK *dest_block = &block_array[dest_index][dest_way];
 
@@ -192,8 +192,8 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
                     increment_eviction(dest_index);
 
                 override_block(src_block, dest_block);
-                // lru_update(dest_index, dest_way, src_block->lru);
-                rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+                lru_update(dest_index, dest_way, src_block->lru);
+                // rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
             }
             
             // invalidate the source block
