@@ -65,8 +65,8 @@ void main_loop(Replacement *replacement_policy, Index *indexing) {
         } 
 
         // get current address
-        // uint64_t current_addr = GLOBAL_HISTORY[CURRENT_PTR].address;
-        uint64_t current_addr = translate_addr(GLOBAL_HISTORY[CURRENT_PTR].address);
+        uint64_t current_addr = GLOBAL_HISTORY[CURRENT_PTR].address;
+        // uint64_t current_addr = translate_addr(GLOBAL_HISTORY[CURRENT_PTR].address);
 
         // print simulation progress
         if (PRINT_INTERVAL && (CURRENT_PTR % PRINT_INTERVAL == 0)) {
@@ -155,6 +155,8 @@ Index* init_indexing_scheme() {
     Index* indexing;
     if (INDEXING_SCHEME == "FBI") 
         indexing = new FrequencyIndex();
+    else if (INDEXING_SCHEME == "PATTERN") 
+        indexing = new PatternIndex();
     else if (INDEXING_SCHEME == "NORMAL")
         indexing = new NormalIndex();
     else if (INDEXING_SCHEME == "NEURAL")
@@ -175,6 +177,16 @@ Index* init_indexing_scheme() {
         indexing = new PrimeHashIndex();
     else if (INDEXING_SCHEME == "PROFILE") {
         indexing->profile(GLOBAL_HISTORY);
+        cout << "Index Profiling complete" << endl;
+        return 0;   // Profile addresses then finish simulation
+    }
+    else if (INDEXING_SCHEME == "PROFILEC") {
+        indexing->profile(GLOBAL_HISTORY, true, false);
+        cout << "Index Profiling complete" << endl;
+        return 0;   // Profile addresses then finish simulation
+    }
+    else if (INDEXING_SCHEME == "PROFILECM") {
+        indexing->profile(GLOBAL_HISTORY, true, true);
         cout << "Index Profiling complete" << endl;
         return 0;   // Profile addresses then finish simulation
     }
@@ -243,10 +255,14 @@ int main(int argc, char *argv[]) {
 
     // initialize global history using provided trace
     init_global_history();   
-    init_global_page_table();
+    
     cout << "Global History initialization complete" << endl;
     cout << "Global History size:    " << GLOBAL_HISTORY.size() << endl;
-    cout << "Global Page Table size: " << GLOBAL_PAGETABLE.size() << endl;
+
+    if (TRANSLATION_ENABLE) {
+        init_global_page_table();
+        cout << "Global Page Table size: " << GLOBAL_PAGETABLE.size() << endl;
+    }
 
 
     if (INDEXING_SCHEME == "GENETIC" || INDEXING_SCHEME == "FIXED_IDX_GENETIC") {
@@ -396,7 +412,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    else if (INDEXING_SCHEME == "PROFILE") {
+    else if (INDEXING_SCHEME == "PROFILE" || INDEXING_SCHEME == "PROFILEC" || INDEXING_SCHEME == "PROFILECM") {
         Index* indexing = init_indexing_scheme();
     }
 

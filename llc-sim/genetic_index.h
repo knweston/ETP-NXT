@@ -91,22 +91,6 @@ public:
     }
 
     void compute_fitness_score() {
-        // // average score
-        // double sum_score = 0;
-        // for (uint32_t i=0; i< m_score_hist.size(); ++i)
-        //     sum_score += m_score_hist[i];
-        // m_score = sum_score/m_score_hist.size();
-
-        // geomean score
-        // if (m_score_hist.size() > 0) {
-        //     double geomean = 1;
-        //     for (uint32_t i=0; i< m_score_hist.size(); ++i)
-        //         geomean *= m_score_hist[i];
-        //     m_score = pow(geomean, (double)1/m_score_hist.size());
-        // }
-        // else
-        //     m_score = 0;
-
         // average score with average of past dropped scores
         double sum_score = 0;
         for (uint32_t i=0; i < m_score_hist.size(); ++i)

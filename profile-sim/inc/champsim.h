@@ -57,8 +57,8 @@
 // DRAM
 #define DRAM_CHANNELS 1      // default: assuming one DIMM per one channel 4GB * 1 => 4GB off-chip memory
 #define LOG2_DRAM_CHANNELS 0
-#define DRAM_RANKS 1         // 512MB * 8 ranks => 4GB per DIMM
-#define LOG2_DRAM_RANKS 0
+#define DRAM_RANKS 2         // 512MB * 8 ranks => 4GB per DIMM
+#define LOG2_DRAM_RANKS 1
 #define DRAM_BANKS 8         // 64MB * 8 banks => 512MB per rank
 #define LOG2_DRAM_BANKS 3
 #define DRAM_ROWS 65536      // 2KB * 32K rows => 64MB per bank

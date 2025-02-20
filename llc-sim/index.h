@@ -6,11 +6,15 @@
 //========================================================================================================================//
 // INDEX BASE CLASS
 //========================================================================================================================//
+
 class Index {
 public:
     Index() {}
     virtual ~Index() {}
-    void profile(vector<Access>& history);
+    void     profile(vector<Access>& history, bool keep_cycle_info=false, bool export_mapping=false);
+    void     map_index(vector<Record>& x_table);
+    uint32_t compute_overlap_score(vector<Record>& x_table, uint32_t mapping_addr_idx, vector<uint32_t>& mapped_addr_idx);
+
     int64_t find_addr(uint64_t address, vector<Record>& profile_table);
     virtual uint32_t get_set(uint64_t address) = 0;
     virtual void initialize(vector<Access>& history) = 0;

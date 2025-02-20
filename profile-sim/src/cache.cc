@@ -67,7 +67,7 @@ void CACHE::handle_fill()
           if (NAME == "LLC" && (all_warmup_complete > NUM_CPUS)) {  // [Kevin]
             SmartIndex* smart_index = SmartIndex::get_instance(LLC_SET, LLC_WAY);
             if (smart_index->EXEC_MODE == PROFILE)
-                smart_index->add_to_trace(MSHR.entry[mshr_index].address, MSHR.entry[mshr_index].type, MSHR.entry[mshr_index].ip);
+                smart_index->add_to_trace(MSHR.entry[mshr_index].address, MSHR.entry[mshr_index].type, MSHR.entry[mshr_index].ip, current_core_cycle[fill_cpu]);
           }
 
           MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -206,7 +206,7 @@ void CACHE::handle_fill()
             if (NAME == "LLC" && (all_warmup_complete > NUM_CPUS)) { // [Kevin]
                 SmartIndex* smart_index = SmartIndex::get_instance(LLC_SET, LLC_WAY);
                 if (smart_index->EXEC_MODE == PROFILE)
-                    smart_index->add_to_trace(MSHR.entry[mshr_index].address, MSHR.entry[mshr_index].type, MSHR.entry[mshr_index].ip);
+                    smart_index->add_to_trace(MSHR.entry[mshr_index].address, MSHR.entry[mshr_index].type, MSHR.entry[mshr_index].ip, current_core_cycle[fill_cpu]);
             }
 
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -277,7 +277,7 @@ void CACHE::handle_writeback() {
             if (NAME == "LLC" && (all_warmup_complete > NUM_CPUS)) { // [Kevin]
                 SmartIndex* smart_index = SmartIndex::get_instance(LLC_SET, LLC_WAY);
                 if (smart_index->EXEC_MODE == PROFILE)
-                    smart_index->add_to_trace(WQ.entry[index].address, WQ.entry[index].type, WQ.entry[index].ip);
+                    smart_index->add_to_trace(WQ.entry[index].address, WQ.entry[index].type, WQ.entry[index].ip, current_core_cycle[writeback_cpu]);
             }
 
             // remove this entry from WQ
@@ -496,7 +496,7 @@ void CACHE::handle_writeback() {
                     if (NAME == "LLC" && (all_warmup_complete > NUM_CPUS)) { // [Kevin]
                         SmartIndex* smart_index = SmartIndex::get_instance(LLC_SET, LLC_WAY);
                         if (smart_index->EXEC_MODE == PROFILE)
-                            smart_index->add_to_trace(WQ.entry[index].address, WQ.entry[index].type, WQ.entry[index].ip);
+                            smart_index->add_to_trace(WQ.entry[index].address, WQ.entry[index].type, WQ.entry[index].ip, current_core_cycle[writeback_cpu]);
                     }
 
                     // remove this entry from WQ
@@ -606,7 +606,7 @@ void CACHE::handle_read() {
                 if (NAME == "LLC" && (all_warmup_complete > NUM_CPUS)) {    // [Kevin]
                     SmartIndex* smart_index = SmartIndex::get_instance(LLC_SET, LLC_WAY);
                     if (smart_index->EXEC_MODE == PROFILE)
-                        smart_index->add_to_trace(RQ.entry[index].address, RQ.entry[index].type, RQ.entry[index].ip);
+                        smart_index->add_to_trace(RQ.entry[index].address, RQ.entry[index].type, RQ.entry[index].ip, current_core_cycle[read_cpu]);
                 }
 
                 // remove this entry from RQ

@@ -56,6 +56,7 @@ public:
     uint64_t address = 0;
     uint64_t ip      = 0;
     uint32_t type    = 0;
+    uint64_t cycle   = 0;
 };
 
 class Record {
@@ -63,6 +64,7 @@ public:
     uint64_t address   = 0;
     uint64_t frequency = 1;
     uint32_t set_id    = 0;
+    vector<uint64_t> accessed_cycles;
 
     Record() {}
     bool static compare_frequency(const Record &r1, const Record &r2);
@@ -125,24 +127,24 @@ public:
 //========================================================================================================================//
 // HELPER FUNCTIONS
 //========================================================================================================================//
-void init_global_history();
-int check_hit(uint64_t address, uint32_t set_index);
-void print_final_stats();
-int lg2(int n);
+void  init_global_history();
+int   check_hit(uint64_t address, uint32_t set_index);
+void  print_final_stats();
+int   lg2(int n);
 void* compute_distance(void* arg);
-void create_checkpoint(ofstream& cp_file);
-void load_checkpoint(ifstream& cp_file);
-void export_eviction_result();
+void  create_checkpoint(ofstream& cp_file);
+void  load_checkpoint(ifstream& cp_file);
+void  export_eviction_result();
 
 int32_t createSocket();
 int32_t readPortConfig(string filename);
-string readIPConfig(string filename);
+string  readIPConfig(string filename);
 
-void normalize_array(uint64_t* input_arr, double* output_arr, uint64_t array_size);
-void standardize_array(uint64_t* input_arr, double* output_arr, uint64_t array_size);
-void standardize_array(double* input_arr, uint64_t array_size);
+void   normalize_array(uint64_t* input_arr, double* output_arr, uint64_t array_size);
+void   standardize_array(uint64_t* input_arr, double* output_arr, uint64_t array_size);
+void   standardize_array(double* input_arr, uint64_t array_size);
 string flatten(double* array, uint64_t end_pt, uint64_t start_pt=0);
-void reset_statistics(bool is_warmup=false);
+void   reset_statistics(bool is_warmup=false);
 
 
 template<typename T>
@@ -241,6 +243,37 @@ T sum(T* array, uint64_t array_size) {
     return sum;
 }
 
+template<typename T>
+T find_min_in_vector(vector<T>& input_vec) {
+    if (input_vec.size() == 0)
+        return 0;
+    
+    uint32_t min_idx = 0;
+    T min_val = input_vec[0];
+    for (uint32_t i=1; i < input_vec.size(); ++i) {
+        if (input_vec[i] < min_val) {
+            min_val = input_vec[i];
+            min_idx = i;
+        }
+    }
+    return min_val;
+}
+
+template<typename T>
+T find_min_idx_in_vector(vector<T>& input_vec) {
+    if (input_vec.size() == 0)
+        return 0;
+    
+    uint32_t min_idx = 0;
+    T min_val = input_vec[0];
+    for (uint32_t i=1; i < input_vec.size(); ++i) {
+        if (input_vec[i] < min_val) {
+            min_val = input_vec[i];
+            min_idx = i;
+        }
+    }
+    return min_idx;
+}
 
 /*
  * VA-PA translation strategy:

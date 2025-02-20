@@ -14,8 +14,9 @@ struct Access {
     uint64_t address;
     uint32_t type;
     uint64_t ip;
-    Access(uint64_t _addr, uint32_t _type, uint64_t _ip)
-        :address(_addr), type(_type), ip(_ip) {}
+    uint64_t cycle;
+    Access(uint64_t _addr, uint32_t _type, uint64_t _ip, uint32_t _cycle)
+        :address(_addr), type(_type), ip(_ip), cycle(_cycle) {}
 };
 
 class SmartIndex {
@@ -50,7 +51,7 @@ public:
     void create_model(vector<uint32_t> &_model_arch);
 
     void profile_addr(uint64_t address);
-    void add_to_trace(uint64_t address, uint32_t type, uint64_t ip);
+    void add_to_trace(uint64_t address, uint32_t type, uint64_t ip, uint64_t cycle);
     void export_stats();
     void export_trace();
     bool import_stats();

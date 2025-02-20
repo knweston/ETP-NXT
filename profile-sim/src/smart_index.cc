@@ -60,9 +60,9 @@ void SmartIndex::profile_addr(uint64_t address) {
     }
 }
 
-void SmartIndex::add_to_trace(uint64_t address, uint32_t type, uint64_t ip) {
+void SmartIndex::add_to_trace(uint64_t address, uint32_t type, uint64_t ip, uint64_t cycle) {
     // add address to belady trace
-    access_trace.push_back(Access(address, type, ip));
+    access_trace.push_back(Access(address, type, ip, cycle));
 }
 
 void SmartIndex::export_stats() {
@@ -75,8 +75,9 @@ void SmartIndex::export_trace() {
         string filename = trace_name+"-LLC-TRACE.txt";
         ofstream file(filename);
         for (uint64_t i=0; i < access_trace.size(); ++i) {
-            file << std::hex << std::setw(12) << std::setfill('0') << access_trace[i].address;
+            file << access_trace[i].address;
             file << " " << access_trace[i].ip;
+            file << " " << access_trace[i].cycle;
             if (access_trace[i].type == 0) 
                 file << " LOAD" << endl;
             else if (access_trace[i].type == 1) 
@@ -114,7 +115,6 @@ void SmartIndex::print_exec_mode() {
         default:
             cout << "UNKNOWN" << endl;
     }
-    
 }
 
 void SmartIndex::print_final_stats() {

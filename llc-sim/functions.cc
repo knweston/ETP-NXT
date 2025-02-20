@@ -21,11 +21,13 @@ void init_global_history() {
             string line;
             uint64_t address=0;
             uint64_t ip=0;
+            uint64_t cycle=0;
             string type="";
             getline(trace_file, line);
             stringstream ss(line);
             ss >> hex >> address;
             ss >> hex >> ip;
+            ss >> hex >> cycle;
             ss >> type;
 
             // skip zero address
@@ -36,6 +38,7 @@ void init_global_history() {
             Access new_access;
             new_access.address = address;
             new_access.ip      = ip;
+            new_access.cycle   = cycle;
             
             if (type == "LOAD")
                 new_access.type = 0;
@@ -323,13 +326,9 @@ void init_global_page_table() {
         while(!trace_file.eof()) {
             string line;
             uint64_t address=0;
-            uint64_t ip=0;
-            string type="";
             getline(trace_file, line);
             stringstream ss(line);
-            ss >> address;
-            ss >> ip;
-            ss >> type;
+            ss >> hex >> address;
 
             // skip zero address
             if (!address)
