@@ -25,9 +25,9 @@ void init_global_history() {
             string type="";
             getline(trace_file, line);
             stringstream ss(line);
-            ss >> hex >> address;
-            ss >> hex >> ip;
-            ss >> hex >> cycle;
+            ss >> address;
+            ss >> ip;
+            ss >> cycle;
             ss >> type;
 
             // skip zero address
@@ -328,7 +328,7 @@ void init_global_page_table() {
             uint64_t address=0;
             getline(trace_file, line);
             stringstream ss(line);
-            ss >> hex >> address;
+            ss >> address;
 
             // skip zero address
             if (!address)

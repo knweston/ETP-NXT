@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
     }
 
     // initialize global history using provided trace
-    init_global_history();   
+    init_global_history();
     
     cout << "Global History initialization complete" << endl;
     cout << "Global History size:    " << GLOBAL_HISTORY.size() << endl;
@@ -263,7 +263,6 @@ int main(int argc, char *argv[]) {
         init_global_page_table();
         cout << "Global Page Table size: " << GLOBAL_PAGETABLE.size() << endl;
     }
-
 
     if (INDEXING_SCHEME == "GENETIC" || INDEXING_SCHEME == "FIXED_IDX_GENETIC") {
         // initialize indexing
