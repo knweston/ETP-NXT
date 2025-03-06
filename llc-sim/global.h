@@ -57,6 +57,8 @@ public:
     uint64_t ip      = 0;
     uint32_t type    = 0;
     uint64_t cycle   = 0;
+    bool static compare_cycle(const Access &r1, const Access &r2);
+    string to_string();
 };
 
 class Record {
@@ -68,6 +70,7 @@ public:
 
     Record() {}
     bool static compare_frequency(const Record &r1, const Record &r2);
+    bool static compare_first_appearance(const Record &r1, const Record &r2);
 
     friend bool operator== (const Record &r1, const Record &r2) { return r1.address == r2.address; }
     friend bool operator!= (const Record &r1, const Record &r2) { return r1.address != r2.address; }

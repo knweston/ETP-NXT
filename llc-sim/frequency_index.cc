@@ -16,11 +16,12 @@ void FrequencyIndex::initialize(vector<Access>& history) {
     if (file) {
         while(!file.eof()) {
             string line;
-            uint64_t address, frequency;
+            uint64_t address, frequency, index;
             getline(file, line);
             stringstream ss(line);
             ss >> address;
             ss >> frequency;
+            ss >> index;
             Record new_record;
             new_record.address   = address;
             new_record.frequency = frequency;
@@ -96,7 +97,7 @@ uint32_t FrequencyIndex::get_set(uint64_t address) {
     int64_t addr_index = find_addr(address, profile_table);
 
     if (addr_index < 0)
-        cout << "Address not found " << std::hex << address << endl;
+        cout << "Address not found " << address << endl;
 
     // sanity check
     assert(addr_index >= 0);
@@ -127,6 +128,7 @@ void PatternIndex::initialize(vector<Access>& history) {
             new_record.set_id    = index;
             if (index >= LLC_SET) {
                 cout << "Invalid set_id: " << index << ". address: " << address << ". frequency: " << frequency << endl;
+                assert(false);
             }
             for (uint32_t i=0; i < new_record.frequency; ++i) {
                 getline(file, line);
@@ -150,7 +152,7 @@ uint32_t PatternIndex::get_set(uint64_t address) {
     int64_t addr_index = find_addr(address, profile_table);
 
     if (addr_index < 0)
-        cout << "Address not found " << std::hex << address << endl;
+        cout << "Address not found " << address << endl;
 
     // sanity check
     assert(addr_index >= 0);

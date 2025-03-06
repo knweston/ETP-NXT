@@ -3,11 +3,34 @@
 //========================================================================================================================//
 // HELPER CLASSES
 //========================================================================================================================//
+bool Access::compare_cycle(const Access &r1, const Access &r2) {
+    if (r1.cycle == r2.cycle)
+        return r1.address < r2.address;
+    else
+        return r1.cycle < r2.cycle;
+}
+
+string Access::to_string() {
+    string str = "";
+    str += "addr: " + std::to_string(address) + ". ";
+    // str += "ip: " + std::to_string(ip) + ". ";
+    // str += "type: " + std::to_string(type) + ". ";
+    str += "cycle: " + std::to_string(cycle) + ". ";
+    return str;
+}
+
 bool Record::compare_frequency(const Record &r1, const Record &r2) {
     if (r1.frequency == r2.frequency)
         return r1.address < r2.address;
     else
         return r1.frequency > r2.frequency;
+}
+
+bool Record::compare_first_appearance(const Record &r1, const Record &r2) {
+    if (r1.accessed_cycles[0] == r2.accessed_cycles[0])
+        return r1.address < r2.address;
+    else
+        return r1.accessed_cycles[0] < r2.accessed_cycles[0];
 }
 
 //========================================================================================================================//

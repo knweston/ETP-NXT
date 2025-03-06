@@ -34,4 +34,4 @@
 # python3 autoslurm-1core.py -a gapmore -o gap-skewedpfn -e skewedpfn -w 2 -r gap-skewedpfn -t gaps-traces
 # ======================================================================================================================== #
 # python3 autoslurm-profile.py -a dpc3-simpoint -o profile-2w2rlru -e 2w2rlru -t dpc3-traces
-python3 autoslurm-profile.py -a dpc3-specmore -o profile-2w2rlru -e 2w2rlru -t more-traces
+# python3 autoslurm-profile.py -a dpc3-specmore -o profile-2w2rlru -e 2w2rlru -t more-traces

@@ -83,8 +83,12 @@ void Index::profile(vector<Access>& history, bool keep_cycle_info, bool export_m
 
     // profile mapping
     if (export_mapping) {
+        // std::reverse(sorted_table.begin(), sorted_table.end());
+        sort(sorted_table.begin(), sorted_table.end(), Record::compare_first_appearance);
         cout << "Starting the mapping process..." << endl;
         map_index(sorted_table);
+        // std::reverse(sorted_table.begin(), sorted_table.end());
+        sort(sorted_table.begin(), sorted_table.end(), Record::compare_frequency);
     }
 
     // export to file
@@ -95,7 +99,8 @@ void Index::profile(vector<Access>& history, bool keep_cycle_info, bool export_m
 
     ofstream export_file(filename);
     for (uint64_t i=0; i < sorted_table.size(); ++i) {
-        export_file << std::hex << std::setw(12) << std::setfill('0') << sorted_table[i].address << " " << std::dec << sorted_table[i].frequency;
+        // export_file << std::hex << std::setw(12) << std::setfill('0') << sorted_table[i].address << " " << std::dec << sorted_table[i].frequency;
+        export_file << sorted_table[i].address << " " << sorted_table[i].frequency;
         
         if (export_mapping) {
             export_file << " " << sorted_table[i].set_id;
@@ -125,72 +130,109 @@ int64_t Index::find_addr(uint64_t address, vector<Record>& profile_table) {
     }
 }
 
+// uint32_t Index::compute_overlap_score(vector<Record>& x_table, uint32_t mapping_addr_idx, vector<uint32_t>& mapped_addr_idx) {
+//     uint32_t total_overlap_score = 0;
+//     // cout << "mapping_addr: " << x_table[mapping_addr_idx].address << endl;
+//     // cout << "mapping_addr_life_events: " << vec_to_string(x_table[mapping_addr_idx].accessed_cycles) << endl;
+
+//     for (uint32_t i=0; i < mapped_addr_idx.size(); ++i) {
+//         vector<uint64_t> mapping_addr_life_events = x_table[mapping_addr_idx].accessed_cycles;
+//         vector<uint64_t> mapped_addr_life_events  = x_table[mapped_addr_idx[i]].accessed_cycles;
+
+//         if ((mapped_addr_life_events[mapped_addr_life_events.size()-1] < mapping_addr_life_events[0])
+//          || (mapping_addr_life_events[mapping_addr_life_events.size()-1] < mapped_addr_life_events[0])) 
+//         {
+//             // cout << "   mapped_addr: " << std::hex << x_table[mapped_addr_idx[i]].address << ": " << total_overlap_score << endl;
+//             continue;
+//         }
+
+//         // merge mapping address and mapped address lifetime events. 0: mapping_addr event, 1: mapped_addr event
+//         vector<uint32_t> timeline;
+//         uint32_t mapping_curr_ptr = 0;
+//         uint32_t mapped_curr_ptr  = 0;
+
+//         while ((mapping_curr_ptr < mapping_addr_life_events.size()) || (mapped_curr_ptr < mapped_addr_life_events.size())) {
+//             if (mapping_curr_ptr == mapping_addr_life_events.size()) {
+//                 timeline.push_back(1);
+//                 mapped_curr_ptr++;
+//             }
+//             else if (mapped_curr_ptr == mapped_addr_life_events.size()) {
+//                 timeline.push_back(0);
+//                 mapping_curr_ptr++;
+//             }
+//             else if (mapping_addr_life_events[mapping_curr_ptr] < mapped_addr_life_events[mapped_curr_ptr]) {
+//                 timeline.push_back(0);
+//                 mapping_curr_ptr++;
+//             }
+//             else if (mapping_addr_life_events[mapping_curr_ptr] > mapped_addr_life_events[mapped_curr_ptr]) {
+//                 timeline.push_back(1);
+//                 mapped_curr_ptr++;
+//             }
+//             else if (mapping_addr_life_events[mapping_curr_ptr] == mapped_addr_life_events[mapped_curr_ptr]) {
+//                 if ((timeline.size() > 0) && (timeline[timeline.size()-1] == 0)) {
+//                     timeline.push_back(1);
+//                     timeline.push_back(0);
+//                 }
+//                 else {
+//                     timeline.push_back(0);
+//                     timeline.push_back(1);
+//                 }
+//                 mapped_curr_ptr++;
+//                 mapping_curr_ptr++;
+//             }
+//             else {
+//                 // we should not reach here
+//                 assert(false);
+//             }
+//         }
+
+//         // cout << "timeline: " << vec_to_string(timeline) << endl;
+//         for (uint32_t i=1; i < timeline.size(); ++i) {
+//             if (timeline[i] != timeline[i-1]) {
+//                 total_overlap_score += 1;
+//             }
+//         }
+//         // cout << "   mapped_addr: " << std::hex << x_table[mapped_addr_idx[i]].address << ": " << total_overlap_score << endl;
+//         // cout << "   mapped_addr_life_events: " << vec_to_string(mapped_addr_life_events) << endl;
+//     }
+//     // cout << "total_overlap_score: " << total_overlap_score << endl;
+//     // assert(false);
+//     return total_overlap_score;
+// }
+
 uint32_t Index::compute_overlap_score(vector<Record>& x_table, uint32_t mapping_addr_idx, vector<uint32_t>& mapped_addr_idx) {
     uint32_t total_overlap_score = 0;
-    // cout << "mapping_addr: " << x_table[mapping_addr_idx].address << endl;
-    // cout << "mapping_addr_life_events: " << vec_to_string(x_table[mapping_addr_idx].accessed_cycles) << endl;
+    vector<Access> life_events;
+
+    for (uint32_t i=0; i < x_table[mapping_addr_idx].accessed_cycles.size(); ++i) {
+        Access new_event = Access();
+        new_event.address = x_table[mapping_addr_idx].address;
+        new_event.cycle = x_table[mapping_addr_idx].accessed_cycles[i];
+        life_events.push_back(new_event);
+    }
 
     for (uint32_t i=0; i < mapped_addr_idx.size(); ++i) {
-        vector<uint64_t> mapping_addr_life_events = x_table[mapping_addr_idx].accessed_cycles;
-        vector<uint64_t> mapped_addr_life_events  = x_table[mapped_addr_idx[i]].accessed_cycles;
-
-        if ((mapped_addr_life_events[mapped_addr_life_events.size()-1] < mapping_addr_life_events[0])
-         || (mapping_addr_life_events[mapping_addr_life_events.size()-1] < mapped_addr_life_events[0])) 
-        {
-            // cout << "   mapped_addr: " << std::hex << x_table[mapped_addr_idx[i]].address << ": " << total_overlap_score << endl;
-            continue;
+        for (uint32_t j=0; j < x_table[mapped_addr_idx[i]].accessed_cycles.size(); ++j) {
+            Access new_event = Access();
+            new_event.address = x_table[mapped_addr_idx[i]].address;
+            new_event.cycle = x_table[mapped_addr_idx[i]].accessed_cycles[j];
+            life_events.push_back(new_event);
         }
-
-        // merge mapping address and mapped address lifetime events. 0: mapping_addr event, 1: mapped_addr event
-        vector<uint32_t> timeline;
-        uint32_t mapping_curr_ptr = 0;
-        uint32_t mapped_curr_ptr  = 0;
-
-        while ((mapping_curr_ptr < mapping_addr_life_events.size()) || (mapped_curr_ptr < mapped_addr_life_events.size())) {
-            if (mapping_curr_ptr == mapping_addr_life_events.size()) {
-                timeline.push_back(1);
-                mapped_curr_ptr++;
-            }
-            else if (mapped_curr_ptr == mapped_addr_life_events.size()) {
-                timeline.push_back(0);
-                mapping_curr_ptr++;
-            }
-            else if (mapping_addr_life_events[mapping_curr_ptr] < mapped_addr_life_events[mapped_curr_ptr]) {
-                timeline.push_back(0);
-                mapping_curr_ptr++;
-            }
-            else if (mapping_addr_life_events[mapping_curr_ptr] > mapped_addr_life_events[mapped_curr_ptr]) {
-                timeline.push_back(1);
-                mapped_curr_ptr++;
-            }
-            else if (mapping_addr_life_events[mapping_curr_ptr] == mapped_addr_life_events[mapped_curr_ptr]) {
-                if ((timeline.size() > 0) && (timeline[timeline.size()-1] == 0)) {
-                    timeline.push_back(1);
-                    timeline.push_back(0);
-                }
-                else {
-                    timeline.push_back(0);
-                    timeline.push_back(1);
-                }
-                mapped_curr_ptr++;
-                mapping_curr_ptr++;
-            }
-            else {
-                // we should not reach here
-                assert(false);
-            }
-        }
-
-        // cout << "timeline: " << vec_to_string(timeline) << endl;
-        for (uint32_t i=1; i < timeline.size(); ++i) {
-            if (timeline[i] != timeline[i-1]) {
-                total_overlap_score += 1;
-            }
-        }
-        // cout << "   mapped_addr: " << std::hex << x_table[mapped_addr_idx[i]].address << ": " << total_overlap_score << endl;
-        // cout << "   mapped_addr_life_events: " << vec_to_string(mapped_addr_life_events) << endl;
     }
-    // cout << "total_overlap_score: " << total_overlap_score << endl;
+    sort(life_events.begin(), life_events.end(), Access::compare_cycle);
+
+    // cout << "sorted life events: " << endl;
+    // for (uint32_t i=0; i < life_events.size(); ++i) {
+    //     cout << life_events[i].to_string() << endl;
+    // }
+
+    for (uint32_t i=1; i < life_events.size(); ++i) {
+        if (life_events[i].address != life_events[i-1].address) {
+            total_overlap_score += 1;
+        }
+    }
+
+    // cout << "total_overlap_score: " << total_overlap_score << endl << endl;
     // assert(false);
     return total_overlap_score;
 }
@@ -200,18 +242,22 @@ void Index::map_index(vector<Record>& x_table) {
     vector<vector<uint32_t>> mapped_addr_idx_per_set;
     mapped_addr_idx_per_set.resize(LLC_SET);
 
-    for (uint32_t i=0; i < LLC_SET; ++i) {
-        x_table[i].set_id = i;
-        mapped_addr_idx_per_set[i].push_back(i);
-    }
+    // for (uint32_t i=0; i < LLC_SET; ++i) {
+    //     x_table[i].set_id = i;
+    //     mapped_addr_idx_per_set[i].push_back(i);
+    // }
 
     uint32_t print_interval = 1;
     // from here on: assign index base on overlapping score
-    for (uint32_t addr_idx=LLC_SET; addr_idx < x_table.size(); ++addr_idx) {
+    // for (uint32_t addr_idx=LLC_SET; addr_idx < x_table.size(); ++addr_idx) {
+    for (uint32_t addr_idx=0; addr_idx < x_table.size(); ++addr_idx) {
         int32_t min_score=-1;
         int32_t min_index=-1;
+        // cout << "addr: " << x_table[addr_idx].address << endl;
+        // cout << "score: ";
         for (uint32_t i=0; i < LLC_SET; ++i) {
             uint32_t score = compute_overlap_score(x_table, addr_idx, mapped_addr_idx_per_set[i]);
+            // cout << score << ",";
             if (((score < min_score) && (min_score >= 0)) || (min_score < 0)) {
                 min_score = score;
                 min_index = i;
@@ -219,12 +265,13 @@ void Index::map_index(vector<Record>& x_table) {
         }
         x_table[addr_idx].set_id = min_index;
         mapped_addr_idx_per_set[min_index].push_back(addr_idx);
-        if ((addr_idx*100/x_table.size()) == print_interval) {
-            printf(" ...%d%% completed\n", addr_idx*100/x_table.size());
-            print_interval++;
+        if ((addr_idx*100/x_table.size()) >= print_interval) {
+            printf(" ...%d%%\n", addr_idx*100/x_table.size());
+            print_interval = addr_idx*100/x_table.size() + 1;
         }
-        // cout << "min_index: " << min_index << ". min_score: " << min_score << endl;
-        // assert(false);
+        // cout << "\nmin_index: " << min_index << ". min_score: " << min_score << endl;
+        // if (addr_idx == LLC_SET*4)
+        //     assert(false);
     }
     printf(" ...100%% completed\n");
 }
