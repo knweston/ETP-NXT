@@ -13,8 +13,8 @@
 # python3 autobuild.py -i skewed -p next_line -d ip_stride -o skewed
 # python3 autobuild.py -i entropyv2 -p next_line -d ip_stride -o etp2r17
 
-python3 autobuild.py -i entropyv2 -o etp2r48
-python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o etp2r48
+# python3 autobuild.py -i entropyv2 -o etp2r48
+# python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o etp2r48
 
 # python3 autobuild.py -i nohash -p next_line -d spp_dev -o nohash
 # python3 autobuild.py -i xorhash -p next_line -d spp_dev -o xorhash
@@ -22,3 +22,11 @@ python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o etp2r48
 # python3 autobuild.py -i entropy -p next_line -d spp_dev -o entropy
 # python3 autobuild.py -i skewed -p next_line -d spp_dev -o skewed
 
+python3 autobuild.py -i nohash -o noftr
+python3 autobuild.py -i xorhash -o xorftr
+# python3 autobuild.py -i primeideal -o primeideal
+# python3 autobuild.py -i entropy -o entropy
+# python3 autobuild.py -i skewed -o skewed
+
+# python3 autobuild.py -i entropyv2 -o etp2v4
+# python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o etp2v4

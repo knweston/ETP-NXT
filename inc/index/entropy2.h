@@ -37,6 +37,7 @@ public:
          cout << "Remap interval:     " << REMAP_INTERVAL << endl;
          cout << "Interval size:      " << INTERVAL_SIZE << endl;
          cout << "History length:     " << HISTORY_LENGTH << endl;
+         cout << "Max address bits:   " << MAX_ADDRESS_BITS << endl;
          cout << "Sensitivity:        " << SENSE_THRESHOLD << " (%)" << endl;
          cout << "ETP match option:   " << matching_option_to_string(FIX_SEQUENCE) << endl;
          cout << "UnhashIdx maxETP:   " << ((NOHASH_IF_SEQ_IDX_HIGHEST_ETP == 1)? "hashing OFF" : "hashing ON") << endl;

@@ -22,8 +22,6 @@ public:
 
     PatternIndex() {};
     ~PatternIndex() {};
-    // static void     map_index(vector<Record>& x_table);
-    // static uint32_t compute_overlap_score(vector<Record>& x_table, uint32_t mapping_addr_idx, vector<uint32_t>& mapped_addr_idx);
 
     void initialize(vector<Access>& history);
     uint32_t get_set(uint64_t address);
