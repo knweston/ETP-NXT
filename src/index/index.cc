@@ -47,6 +47,7 @@ bool force_writeback(BLOCK* block, MEMORY *lower_level, uint32_t fill_lvl, uint3
         writeback_packet.event_cycle = current_core_cycle[cpu_id];
         lower_level->add_wq(&writeback_packet);
     }
+    return true;
 }
 
 vector<uint64_t> get_significant_indices(uint64_t* array, uint32_t array_size, double mean, uint32_t num_select) {

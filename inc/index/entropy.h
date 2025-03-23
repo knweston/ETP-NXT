@@ -14,7 +14,7 @@
 
 // common params
 #define HISTORY_LENGTH  1
-#define SENSE_THRESHOLD 3
+#define SENSE_THRESHOLD 4
 #define RECONFIG_NO_DELAY 1
 #define UPDATE_MISS_ONLY 1
 

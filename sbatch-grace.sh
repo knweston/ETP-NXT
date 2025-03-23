@@ -1,12 +1,9 @@
 # ================================================================================================================================================ #
 # entropy-next
 # ================================================================================================================================================ #
-python3 autoslurm-1core.py -a gapmore -o gap-entropyv2 -e entropyv2 -w 2 -r gap-entropyv2 -t gaps-traces
-python3 autoslurm-1core.py -a gapmore -o gap-etp2a -e etp2a -w 2 -r gap-etp2a -t gaps-traces
-# python3 autoslurm-1core.py -a gapmore -o gap-etp2r1 -e etp2r1 -w 2 -r gap-etp2r1 -t gaps-traces
-# python3 autoslurm-1core.py -a gapmore -o gap-etp2r1a -e etp2r1a -w 2 -r gap-etp2r1a -t gaps-traces
-
-# python3 autoslurm-1core.py -a xsbench -o xsbm-entropyv2 -e entropyv2 -w 2 -r xsbm-entropyv2 -t xsbm-traces
-# python3 autoslurm-1core.py -a xsbench -o xsbm-etp2a -e etp2a -w 2 -r xsbm-etp2a -t xsbm-traces
-# python3 autoslurm-1core.py -a xsbench -o xsbm-etp2r1 -e etp2r1 -w 2 -r xsbm-etp2r1 -t xsbm-traces
-# python3 autoslurm-1core.py -a xsbench -o xsbm-etp2r1a -e etp2r1a -w 2 -r xsbm-etp2r1a -t xsbm-traces
+python3 autoslurm-1core.py -a dpc3-simpoint -o ptn -e ptn -w 2 -r ptn -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o ptn -e ptn -w 2 -r ptn -t more-traces
+python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen4 -e ptn-sen4 -w 2 -r ptn-sen4 -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen4 -e ptn-sen4 -w 2 -r ptn-sen4 -t more-traces
+python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen3 -e ptn-sen3 -w 2 -r ptn-sen3 -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen3 -e ptn-sen3 -w 2 -r ptn-sen3 -t more-traces

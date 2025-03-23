@@ -9,10 +9,15 @@
 # python3 autoslurm-1core.py -a dpc3-simpoint -o etp2c5pf_dn_2s -e etp2c5pf_dn_2s -w 2 -r etp2c5pf_dn_2s -t dpc3-traces
 # python3 autoslurm-1core.py -a dpc3-specmore -o etp2c5pf_dn_2s -e etp2c5pf_dn_2s -w 2 -r etp2c5pf_dn_2s -t more-traces
 
-python3 autoslurm-1core.py -a dpc3-specmore -o etp2v4 -e etp2v4 -w 2 -r etp2v4 -t more-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o etp2v4pf_dn_2s -e etp2v4pf_dn_2s -w 2 -r etp2v4pf_dn_2s -t more-traces
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp2v4 -e etp2v4 -w 2 -r etp2v4 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp2v4pf_dn_2s -e etp2v4pf_dn_2s -w 2 -r etp2v4pf_dn_2s -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen20 -e ptn-sen20 -w 2 -r ptn-sen20 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen20 -e ptn-sen20 -w 2 -r ptn-sen20 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen4 -e ptn-sen4 -w 2 -r ptn-sen4 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen4 -e ptn-sen4 -w 2 -r ptn-sen4 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen3 -e ptn-sen3 -w 2 -r ptn-sen3 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen3 -e ptn-sen3 -w 2 -r ptn-sen3 -t more-traces
+
+python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen4pf_dn_2s -e ptn-sen4pf_dn_2s -w 2 -r ptn-sen4pf_dn_2s -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen4pf_dn_2s -e ptn-sen4pf_dn_2s -w 2 -r ptn-sen4pf_dn_2s -t more-traces
 
 # python3 autoslurm-1core.py -a llama -o nohash -e nohash -w 2 -r nohash -t more-traces
 # python3 autoslurm-1core.py -a llama -o nohashpf_dn_2s -e nohashpf_dn_2s -w 2 -r nohashpf_dn_2s -t more-traces

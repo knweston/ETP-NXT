@@ -32,7 +32,7 @@ objects := $(patsubst %.$(srcExt),$(objDir)/%.o,$(sources))
 ifeq ($(srcExt),cc)
 	CC = $(CXX)
 else
-	CFlags += -std=gnu99
+	CFlags += 
 endif
 
 .phony: all clean distclean
