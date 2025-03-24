@@ -1,341 +1,455 @@
 #include "index/etpv3.h"
 
-void EntropyV3::etp_tracker_access_update(bool is_hit, uint32_t type, uint64_t address) {
-   /*
-    * update correlation trackers
-    * rules:
-    * - if bit_i and bit_j move in the same fashion (both flip, both not flip): correl_i_j = 1
-    * - else: correl_i_j = 0
-    */
-   if (current_phase == Phase::DUEL) {
-      for (uint32_t i=0; i < m_seq_a.size(); ++i) {
-         int num_conflicts = 0;
-         uint32_t curr_index = compute_index(address, m_seq_a[i].m_segid, m_seq_b[i].m_segid);
-         vector<uint32_t> index_hist;
-         
-         for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-            index_hist.push_back(compute_index(m_addr_hist[idx], m_seq_a[i].m_segid, m_seq_b[i].m_segid));
-         }
-         
-         // if there is a conflict => increment the entropy counter
-         for (uint32_t idx=0; idx < index_hist.size(); ++idx) {
-            if ((address != m_addr_hist[idx]) && (curr_index == index_hist[idx])) {
-               m_seq_a[i].m_entropy++;
-               m_seq_b[i].m_entropy++;
-               // if (is_hit) {
-               //    m_seq_a[i].m_entropy++;
-               //    m_seq_b[i].m_entropy++;
-               // }
-               // else {
-               //    m_seq_a[i].m_entropy += 2;
-               //    m_seq_b[i].m_entropy += 2;
-               // }
-               // if (type == PREFETCH && type == WRITEBACK) {
-               //    m_seq_a[i].m_entropy++;
-               //    m_seq_b[i].m_entropy++;
-               // }
-               // else {
-               //    m_seq_a[i].m_entropy += 2;
-               //    m_seq_b[i].m_entropy += 2;
-               // }
+void EntropyV3::move_cache_data(MEMORY *lower_level) {
+    for (uint32_t way=0; way < NUM_WAY; ++way) {
+        BLOCK *src_block = &block_array[map_ptr][way];
+
+        // initiate a move if the source block is valid
+        if (src_block->valid) {
+            // compute new index
+            uint32_t dest_index = compute_index(src_block->address, m_curr_seq_a, m_curr_seq_b);
+            uint32_t last_index = compute_index(src_block->address, m_last_seq_a, m_last_seq_b);
+
+            // if new index == map_ptr => this src_block is already in the new position => skip
+            if (dest_index == map_ptr)
+                continue;
+
+            // sanity check
+            uint32_t curr_index = get_set(src_block->address);
+            if (curr_index != map_ptr) {
+                cout << "ERROR: curr_index != map_ptr" << endl;
+                cout << "address:  " << src_block->address << endl;
+                cout << "cpu:      " << CPU_ID << endl;
+                cout << "curr_idx: " << curr_index << endl;
+                cout << "map_ptr:  " << map_ptr << endl;
+                cout << "dest_idx: " << dest_index << endl;
+                cout << "last_idx: " << last_index << endl;
+                assert(false);
             }
-         }
-      }
-   }
+            uint32_t dest_way = get_lru_victim(dest_index);
+            // uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
+            BLOCK *dest_block = &block_array[dest_index][dest_way];
 
-   bool should_reset_correl = false;
-   for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-      // do not update the trackers if curr_addr == last_addr
-      if ((m_addr_hist[idx] == 0) || (address == m_addr_hist[idx]))
-         continue;
+            bool fill_ready = remap_tie_break(src_block, dest_block, lower_level);
+            // overwrite destination block with source block
+            // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
+            if (fill_ready) {
+                if (dest_block->valid)
+                increment_eviction(dest_index);
 
-      uint64_t bit_flips = address ^ m_addr_hist[idx];
-      uint32_t correl_table_idx = 0;
-      for (uint32_t i=1; i < MAX_ADDRESS_BITS; ++i) {
-         for (uint32_t j=0; j < i; ++j) {
-            uint32_t bit_i_j_flip_correl = ((bit_flips >> i) & 1) ^ ((bit_flips >> j) & 1);
-            if (bit_i_j_flip_correl == 0) {
-               correl_table[correl_table_idx].m_entropy++;
-               if (correl_table[correl_table_idx].m_entropy == CORREL_CTR_MAX)
-                  should_reset_correl = true;
+                override_block(src_block, dest_block);
+                lru_update(dest_index, dest_way, src_block->lru);
+                // rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
             }
-            correl_table_idx++;
-         }
-      }
-   }
 
-   // update entropy trackers
-   bool should_reset_entropy = false;
-   for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-      // do not update the trackers if curr_addr == last_addr
-      if (address == m_addr_hist[idx])
-         continue;
-      
-      // compare curr_addr vs. last_addr bit by bit
-      for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
-         if (((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1)) {    // A ^ B == 1 => A != B => high entropy => increment entropy
-            itv_entropy[i].m_entropy++;
-            if (itv_entropy[i].m_entropy == ENTROPY_CTR_MAX) {
-               should_reset_entropy = true;
+            // invalidate the source block
+            src_block->valid = 0;
+            // update extra read statistics
+            num_read++;
+        }
+    }
+    map_ptr++;
+}
+
+bool EntropyV3::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
+    if (!dest->valid)
+        return true;
+    bool overwrite_dest = true;
+
+    // prefetch -> dirty
+    if (!dest->prefetch) {
+        // dest NOT prefetch but the src is, drop the src, regardless of src dirty state
+        if (src->prefetch) {
+            num_drop++;
+            overwrite_dest = false;
+            if (src->dirty) {
+                bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
+                if (writeback_success) {
+                num_writeback++;
+                }
             }
-         }
-      }
-   }
+        }
+    }
+    else if (dest->dirty) {
+        // dest is prefetch dirty
+        if (!src->dirty) {
+            // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
+            num_drop++;
+            overwrite_dest = false;
+        }
+        else { // if both blocks are dirty, write back the destination block then move the source block to the destination
+            bool writeback_success = force_writeback(dest, lower_level, FILL_LEVEL, CPU_ID);
+            if (writeback_success) {
+                num_writeback++;    // update extra writeback statistics
+            }
+        }
+    }
+    else {
+        // dest prefetch clean -> just overwrite, no further action
+    }
+    return overwrite_dest;
+}
 
-   if (should_reset_entropy) {
-      num_reset_itv++;
-      for (uint32_t i=0; i < itv_entropy.size(); ++i) {
-         itv_entropy[i].m_entropy /= 2;
-      }
-   }
+bool EntropyV3::should_update(bool is_hit, uint32_t type) {
+    if ((V3_UPDATE_HITMISS_SETTING == 1) && is_hit)
+        return false;
+    if ((V3_UPDATE_HITMISS_SETTING == 2) && !is_hit)
+        return false;
+    if (V3_SKIP_UPDATE_PF && (type == PREFETCH))
+        return false;
+    if (V3_SKIP_UPDATE_WB && (type == WRITEBACK))
+        return false;
+    if (V3_SKIP_UPDATE_WB_HIT && (type == WRITEBACK) && is_hit)
+        return false;
+    return true;
+}
 
-   if (should_reset_correl) {
-      num_reset_cor++;
-      for (uint32_t i=0; i < correl_table.size(); ++i) {
-         correl_table[i].m_entropy /= 2;
-      }
-   }
+// return the correlation counter between bit A and bit B in the correlation table
+uint32_t EntropyV3::get_correl(uint32_t bit_a, uint32_t bit_b) {
+    uint32_t index = compute_pair_table_idx(bit_a, bit_b);
+    return correl_table[index].m_entropy;
+}
 
-   bool duplicate_addr = false;
-   for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-      if (address == m_addr_hist[idx])
-         duplicate_addr = true;
-   }
-
-   // save curr_addr
-   if (!duplicate_addr) {
-      m_addr_hist.push_back(address);
-      while (m_addr_hist.size() > HISTORY_LENGTH)
-         m_addr_hist.erase(m_addr_hist.begin());
-   }
+uint32_t EntropyV3::compute_sum_correl_two_sequences(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
+    uint32_t sum_correl = 0;
+    for (uint32_t i=0; i < x_seq_a.size(); ++i) {
+        sum_correl += get_correl(x_seq_a[i], x_seq_b[i]);
+    }
+    return sum_correl;
 }
 
 
+uint32_t EntropyV3::compute_pair_table_idx(uint32_t bit_a, uint32_t bit_b) {
+    if (bit_a > bit_b) {
+        return (bit_b*(MAX_ADDRESS_BITS-IDX_SIZE) + (bit_a-IDX_SIZE));
+    }
+    else {
+        return (bit_a*(MAX_ADDRESS_BITS-IDX_SIZE) + (bit_b-IDX_SIZE));
+    }
+}
 
 void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
-   uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
-   uint32_t hashed_index   = get_set(address);
-   N_ACCESS[unhashed_index]++;
-   PI_N_ACCESS[unhashed_index]++;
-   E_ACCESS[hashed_index]++;
-   PI_E_ACCESS[hashed_index]++;
-   if (!is_hit) {
-      MISS[unhashed_index]++;
-      PI_MISS[unhashed_index]++;
-   }
-   access_ctr++;
+    uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
+    uint32_t hashed_index   = get_set(address);
+    N_ACCESS[unhashed_index]++;
+    PI_N_ACCESS[unhashed_index]++;
+    E_ACCESS[hashed_index]++;
+    PI_E_ACCESS[hashed_index]++;
+    if (!is_hit) {
+        MISS[unhashed_index]++;
+        PI_MISS[unhashed_index]++;
+    }
+    access_ctr++;
 
-   if (should_update(is_hit, type))
-      etp_tracker_access_update(is_hit, type, address);
+    if (should_update(is_hit, type))
+        etp_tracker_access_update(address);
 
 
-   // should remap when last index config != current index config
-   if (m_should_remap) {
-      // if all sets have been remapped, skip this step
-      if ((REMAP_INTERVAL > 0) && (access_ctr % REMAP_INTERVAL == 0) && (map_ptr < NUM_SET)) {
-         move_cache_data(dram);
-         if (map_ptr == NUM_SET)
-            m_should_remap = false; // remapping done
-      }
-   }
+    // should remap when last index config != current index config
+    if (m_should_remap) {
+        // if all sets have been remapped, skip this step
+        if ((REMAP_INTERVAL > 0) && (access_ctr % REMAP_INTERVAL == 0) && (map_ptr < NUM_SET)) {
+            move_cache_data(dram);
+            if (map_ptr == NUM_SET)
+                m_should_remap = false; // remapping done
+        }
+    }
 
-   if ((current_phase == Phase::PROFILE) && (access_ctr > INTERVAL_SIZE*PROFILE_PHASE_RATIO)) {
-      compute_candidate_config(itv_entropy, m_curr_seq_a, m_curr_seq_b);
-      current_phase = Phase::DUEL;
-      for (uint32_t i=0; i < m_seq_a.size(); ++i) {
-         m_seq_a[i].m_entropy = 0;
-         m_seq_b[i].m_entropy = 0;
-      }
-      cout << "\nEntering Dueling Phase" << endl;
-   }
+    if (INTERVAL_SIZE && (access_ctr >= INTERVAL_SIZE)) {
+        cout << endl << endl;
+        cout << "========================================================================" << endl;
+        cout << "End of interval # " << num_interval << " Summary" << endl;
+        cout << "========================================================================" << endl;
+        cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
+        cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_E_ACCESS, NUM_SET) << endl;
+        cout << "   eviction_count: " << std::fixed << compute_sum(PI_EVICTION, NUM_SET) << "(" 
+                                                    << compute_sum(PI_EVICTION, NUM_SET)*100/INTERVAL_SIZE 
+                                                    << "%)" << endl;
+        cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
+        cout << "   num_reset_itv:         " << num_reset_itv << endl;
+        cout << "   num_reset_cor:         " << num_reset_cor << endl;
+        cout << "   num_reset_bitpair_etp: " << num_reset_bitpair_etp << endl;
+        cout << "   num_reset_bitpair_ptn: " << num_reset_bitpair_ptn << endl;
+        cout << "========================================================================" << endl;
 
-   if (INTERVAL_SIZE && (access_ctr >= INTERVAL_SIZE)) {
-      cout << endl << endl;
-      cout << "========================================================================" << endl;
-      cout << "End of interval # " << num_interval << " Summary" << endl;
-      cout << "========================================================================" << endl;
-      cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-      cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_E_ACCESS, NUM_SET) << endl;
-      cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
-      cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
-      cout << "   map_ptr:        " << map_ptr << endl;
-      cout << "   num_reset_itv:  " << num_reset_itv << endl;
-      cout << "   num_reset_cor:  " << num_reset_cor << endl;
-      cout << "========================================================================" << endl;
+        // save the current XOR-hash index config
+        m_last_seq_a = m_curr_seq_a;
+        m_last_seq_b = m_curr_seq_b;
 
-      // save the current XOR-hash index config
-      m_last_seq_a = m_curr_seq_a;
-      m_last_seq_b = m_curr_seq_b;
+        // compute new XOR-hash index config for new interval
+        etp_tracker_interval_update();
+        compute_new_config(m_curr_seq_a, m_curr_seq_b);
 
-      // compute new XOR-hash index config for new interval
-      if (RECONFIG_NO_DELAY) {
-         // update trackers
-         etp_tracker_interval_update();
-         compute_new_config(m_curr_seq_a, m_curr_seq_b);
-      }
-      else {
-         m_curr_seq_a = m_next_seq_a;
-         m_curr_seq_b = m_next_seq_b;
+        m_should_remap = check_remap();
 
-         // update trackers
-         etp_tracker_interval_update();
-         compute_new_config(m_next_seq_a, m_next_seq_b);
-      }
+        cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
+        cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
+        cout << "m_curr_seq_a: " << vec_to_string(m_curr_seq_a) << endl;
+        cout << "m_curr_seq_b: " << vec_to_string(m_curr_seq_b) << endl;
+        cout << "should_remap: " << (m_should_remap ? "Yes" : "No") << endl << endl;
 
-      m_should_remap = check_remap();
-
-      cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
-      cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
-      cout << "m_curr_seq_a: " << vec_to_string(m_curr_seq_a) << endl;
-      cout << "m_curr_seq_b: " << vec_to_string(m_curr_seq_b) << endl;
-      if (!RECONFIG_NO_DELAY) {
-         cout << "m_next_seq_a: " << vec_to_string(m_next_seq_a) << endl;
-         cout << "m_next_seq_b: " << vec_to_string(m_next_seq_b) << endl;
-      }
-      cout << "should_remap: " << (m_should_remap ? "Yes" : "No") << endl << endl;
-
-      memcpy(PAST_PI_EVICTION, PI_EVICTION, NUM_SET * sizeof(*PI_N_ACCESS));
-      memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-      memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
-      memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
-      memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-      
-      num_interval++;
-      map_ptr    = 0;
-      access_ctr = 0;
-
-      current_phase = Phase::PROFILE;
-      cout << "Entering Profiling Phase" << endl;
-   }
-
-   warmup_check();
+        memcpy(PAST_PI_EVICTION, PI_EVICTION, NUM_SET * sizeof(*PI_N_ACCESS));
+        memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+        memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
+        memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
+        memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
+        
+        num_interval++;
+        map_ptr    = 0;
+        access_ctr = 0;
+    }
+    warmup_check();
 }
 
 
 
-void EntropyV3::compute_candidate_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
-   // size of the bit sequence being tracked for entropy must greater than the size of the index sequences
-   assert((entropy.size() > x_seq_a.size()) && (entropy.size() > x_seq_b.size()));
+void EntropyV3::etp_tracker_access_update(uint64_t address) {
+    /*
+     * update correlation trackers
+     * rules:
+     * - if bit_i and bit_j move in the same fashion (both flip, both not flip): correl_i_j = 1
+     * - else: correl_i_j = 0
+     */
 
-   // sort the index bits based on their entropy, from lowest to highest
-   sort(entropy.begin(), entropy.end());
-   cout << "\nSorted ITV: " << etp_vector_to_string(entropy) << endl;
+    // update correlation counters
+    bool should_reset_correl = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        // do not update the trackers if curr_addr == last_addr
+        if ((m_addr_hist[idx] == 0) || (address == m_addr_hist[idx]))
+            continue;
 
-   // ETP2r7 candidate:
-   vector<uint32_t> c2_seq_a(x_seq_a.size(), 0);
-   vector<uint32_t> c2_seq_b(x_seq_b.size(), 0);
+        uint64_t bit_flips = address ^ m_addr_hist[idx];
+        uint32_t correl_table_idx = 0;
+        
+        for (uint32_t i=0; i < IDX_SIZE; ++i) {
+            for (uint32_t j=IDX_SIZE; j < MAX_ADDRESS_BITS; ++j) {
+                uint32_t bit_i_j_flip_correl = ((bit_flips >> i) & 1) ^ ((bit_flips >> j) & 1);
+                if (bit_i_j_flip_correl == 0) {
+                    correl_table[correl_table_idx].m_entropy++;
+                    if (correl_table[correl_table_idx].m_entropy >= V3_COR_CTR_MAX) {
+                        should_reset_correl = true;
+                    }
+                }
+                correl_table_idx++;
+            }
+        }
+    }
 
-   // ETP2r7 candidate: gather the highest entropy bits
-   vector<uint32_t> max_etp_bits;
-   for (uint32_t i=0; i < x_seq_a.size()*2; ++i) {
-      max_etp_bits.push_back(entropy[entropy.size()-1-i].m_id);
-   }
-   cout << endl;
-   cout << "max_etp_bits: " << vec_to_string(max_etp_bits) << endl;
+    // update entropy trackers
+    bool should_reset_entropy = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        // do not update the trackers if curr_addr == last_addr
+        if (address == m_addr_hist[idx])
+            continue;
+        
+        // compare curr_addr vs. last_addr bit by bit
+        for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
+            if (((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1)) {    // A ^ B == 1 => A != B => high entropy => increment entropy
+                itv_entropy[i].m_entropy++;
+                if (itv_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
+                should_reset_entropy = true;
+                }
+            }
+        }
+    }
 
-   for (uint32_t idx=0; idx < c2_seq_a.size(); ++idx) {
-      // get the highest entropy bit and and its lowest correlated pair.
-      c2_seq_a[idx] = max_etp_bits[0];             // save it in sequence A
-      max_etp_bits.erase(max_etp_bits.begin());    // erase it in max_etp_bits
+    // update bit-pair entropy trackers
+    bool should_reset_bitpair_entropy = false;
+    bool should_reset_bitpair_pattern = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        // do not update the trackers if curr_addr == last_addr
+        if (address == m_addr_hist[idx])
+            continue;
 
-      // find its corresponding lowest correlation bit and save in B
-      uint32_t lowest_corr_idx = find_min_correl_bit_from_sequence(c2_seq_a[idx], max_etp_bits);
-      c2_seq_b[idx] = max_etp_bits[lowest_corr_idx];
-      max_etp_bits.erase(max_etp_bits.begin()+lowest_corr_idx);   // erase it in max_etp_bits
-   }
-   cout << "c2_seq_a:  " << vec_to_string(c2_seq_a) << endl;
-   cout << "c2_seq_b:  " << vec_to_string(c2_seq_b) << endl;
-   uint32_t c2_corr = compute_sum_correl_two_sequences(c2_seq_a, c2_seq_b);
-   cout << "CORR c2:   " << c2_corr << endl << endl;
+        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
+            uint32_t curr_addr_bitpair_xor_output = ((address >> bitpair_entropy[i].m_segid[0]) & 1) ^ ((address >> bitpair_entropy[i].m_segid[1]) & 1);
+            uint32_t last_addr_bitpair_xor_output = ((m_addr_hist[idx] >> bitpair_entropy[i].m_segid[0]) & 1) ^ ((m_addr_hist[idx] >> bitpair_entropy[i].m_segid[1]) & 1);
+            bool bitpair_flip = (bool) (curr_addr_bitpair_xor_output ^ last_addr_bitpair_xor_output);
+            if (bitpair_flip) {
+                bitpair_entropy[i].m_entropy++;
+                if (bitpair_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
+                should_reset_bitpair_entropy = true;
+                }
+            }
+            bitpair_ptn_ctr[i].m_entropy += (bitpair_flip ^ last_access_flip_behavior[i]);
+            last_access_flip_behavior[i] = bitpair_flip;
+            if (bitpair_ptn_ctr[i].m_entropy >= V3_ETP_CTR_MAX) {
+                should_reset_bitpair_pattern = true;
+            }
+        }
+    }
 
-   // ETP candidate:
-   vector<uint32_t> c3_seq_a = x_seq_a;
-   vector<uint32_t> c3_seq_b = x_seq_b;
+    bool duplicate_addr = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        if (address == m_addr_hist[idx])
+            duplicate_addr = true;
+    }
 
-   // ETP candidate: gather the highest and next highest entropy bits to form sequence A and B
-   for (uint32_t i=0; i < x_seq_a.size(); ++i) {
-      c3_seq_a[i] = entropy[entropy.size()-1-i].m_id;
-      c3_seq_b[i] = entropy[entropy.size()-1-IDX_SIZE-i].m_id;
-   }
-   cout << "c3_seq_a:  " << vec_to_string(c3_seq_a) << endl;
-   cout << "c3_seq_b:  " << vec_to_string(c3_seq_b) << endl;
-   uint32_t c3_corr = compute_sum_correl_two_sequences(c3_seq_a, c3_seq_b);
-   cout << "CORR c3:   " << c3_corr << endl;
+    // save curr_addr
+    if (!duplicate_addr) {
+        m_addr_hist.push_back(address);
+        while (m_addr_hist.size() > HISTORY_LENGTH)
+            m_addr_hist.erase(m_addr_hist.begin());
+    }
 
-   // save the candidates to m_seq_a and m_seq_b vectors
-   m_seq_a.push_back(c2_seq_a);
-   m_seq_a.push_back(c3_seq_a);
-   m_seq_b.push_back(c2_seq_b);
-   m_seq_b.push_back(c3_seq_b);
+    if (should_reset_entropy) {
+        num_reset_itv++;
+        for (uint32_t i=0; i < itv_entropy.size(); ++i) {
+            itv_entropy[i].m_entropy /= 4;
+        }
+    }
 
-   return;
+    if (should_reset_correl) {
+        num_reset_cor++;
+        for (uint32_t i=0; i < correl_table.size(); ++i) {
+            correl_table[i].m_entropy /= 4;
+        }
+    }
+
+    if (should_reset_bitpair_entropy) {
+        num_reset_bitpair_etp++;
+        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
+            bitpair_entropy[i].m_entropy /= 4;
+        }
+    }
+
+    if (should_reset_bitpair_pattern) {
+        num_reset_bitpair_ptn++;
+        for (uint32_t i=0; i < bitpair_ptn_ctr.size(); ++i) {
+            bitpair_ptn_ctr[i].m_entropy /= 2;
+        }
+    }
 }
 
 
 
 void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
-   sort(m_seq_a.begin(), m_seq_a.end());
-   sort(m_seq_b.begin(), m_seq_b.end());
+    // sort the index bits based on their entropy, from lowest to highest
+    vector<BitEntropy> sorted_ovr = ovr_entropy;
+    sort(sorted_ovr.begin(), sorted_ovr.end());
+    std::reverse(sorted_ovr.begin(), sorted_ovr.end());
+    cout << "Sorted OVR:   " << etp_vector_to_string(sorted_ovr) << endl;
 
-   cout << "Sorted CONFLICT_CTR SEQ_A: " << etp_vector_to_string(m_seq_a) << endl;
-   cout << "Sorted CONFLICT_CTR SEQ_B: " << etp_vector_to_string(m_seq_b) << endl;
+    vector<BitEntropy> sorted_itv = itv_entropy;
+    sort(sorted_itv.begin(), sorted_itv.end());
+    std::reverse(sorted_itv.begin(), sorted_itv.end());
+    cout << "Sorted ITV:   " << etp_vector_to_string(sorted_itv) << endl;
 
-   // assign A and B to be the sequences with lowest conflicts
-   if (num_interval < WARMUP_INTERVALS) {
-      x_seq_a = m_seq_a.front().m_segid;
-      x_seq_b = m_seq_b.front().m_segid;
-   }
+    vector<BitEntropy> sorted_bitpair_etp = bitpair_entropy;
+    sort(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
+    std::reverse(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
+    cout << "Sorted BPE:   " << etp_vector_to_string(sorted_bitpair_etp) << endl;
+ 
+    vector<BitEntropy> sorted_bitpair_pattern = bitpair_ptn_ctr;
+    sort(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
+    std::reverse(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
+    cout << "Sorted BPP:   " << etp_vector_to_string(sorted_bitpair_pattern) << endl;
 
-   else if (SENSE_THRESHOLD > 0) {
-      double next_conflicts = m_seq_a.front().m_entropy;
-      double curr_conflicts = 0;
-      for (uint32_t i=0; i < m_seq_a.size(); ++i) {
-         if (m_seq_a[i].is_id_matched(x_seq_a) && m_seq_b[i].is_id_matched(x_seq_b))
-            curr_conflicts = m_seq_a[i].m_entropy;
-      }
-      double conflict_diff = (curr_conflicts-next_conflicts)*100/curr_conflicts;
-      bool conflict_diff_significant = (curr_conflicts - next_conflicts) >= SENSE_DIFFLEVEL;
-      cout << std::setprecision(0) << "Current Cfg Conflicts:  " << curr_conflicts << endl;
-      cout << std::setprecision(0) << "Next Cfg Conflicts:     " << next_conflicts << endl;
-      if ((conflict_diff >= SENSE_THRESHOLD) && conflict_diff_significant) {
-         cout << std::setprecision(2) << "Conflict difference: " << conflict_diff << "% >= " << SENSE_THRESHOLD << "%" << " => Switch to new candidate." << endl;
-         x_seq_a = m_seq_a.front().m_segid;
-         x_seq_b = m_seq_b.front().m_segid;
-      }
-      else {
-         if (conflict_diff < SENSE_THRESHOLD)
-            cout << std::setprecision(2) << "Conflict difference: " << conflict_diff << "% < " << SENSE_THRESHOLD << "%";
-         else
-            cout << std::setprecision(2) << "Conflict difference: " << conflict_diff << "% >= " << SENSE_THRESHOLD << "%";
+    vector<BitEntropy> sorted_corr = correl_table;
+    sort(sorted_corr.begin(), sorted_corr.end());
+    cout << "Sorted COR:   " << etp_vector_to_string(sorted_corr) << endl;
+    cout << endl;
 
-         if (conflict_diff_significant)
-            cout << ". |Conflict difference| > SENSE_DIFFLEVEL => Keep current candidate." << endl;
-         else
-            cout << ". |Conflict difference| <= SENSE_DIFFLEVEL => Keep current candidate." << endl;
-      }
-      cout << std::setprecision(5);
-   }
+    vector<uint32_t> c1_seq_a;
+    vector<uint32_t> c1_seq_b;
+    get_cfg_1(x_seq_a, x_seq_b, c1_seq_a, c1_seq_b);
+    cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
+    cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
+    x_seq_b = c1_seq_b;
 
-   else {
-      x_seq_a = m_seq_a.front().m_segid;
-      x_seq_b = m_seq_b.front().m_segid;
-   }
+    // compute next_etp
+    double etp_diff = 0;
+    double next_etp = 0;
+    double last_etp = 0;
+    for (uint32_t i=0; i < x_seq_b.size(); ++i) {
+        next_etp += itv_entropy[x_seq_b[i]].m_entropy;
+    }
+    if (num_interval>0) {
+        for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
+            last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
+        }
+        etp_diff = (next_etp-last_etp)*100/abs(last_etp);  // compute etp difference
+    }
+    cout << endl;
 
-   m_seq_a.resize(0);
-   m_seq_b.resize(0);
-   m_seq_a.push_back(x_seq_a);
-   m_seq_b.push_back(x_seq_b);
-   return;
+    cout << "seq_A last:      " << vec_to_string(m_last_seq_a) << endl;
+    cout << "seq_B last:      " << vec_to_string(m_last_seq_b) << endl;
+    cout << "seq_A candidate: " << vec_to_string(x_seq_a) << endl;
+    cout << "seq_B candidate: " << vec_to_string(x_seq_b) << endl;
+    cout << "ETP Last Cfg:    " << std::setprecision(0) << last_etp << endl;
+    cout << "ETP Next Cfg:    " << next_etp << endl;
+    cout << "ETP diff:        " << std::setprecision(2) << etp_diff << std::setprecision(5) << "%" << endl;
+
+    double next_corr = (double)compute_sum_correl_two_sequences(x_seq_a, x_seq_b);
+    double last_corr = (num_interval>0)? (double)compute_sum_correl_two_sequences(m_last_seq_a, m_last_seq_b) : 0;
+    double corr_diff = (num_interval>0)? (last_corr-next_corr)*100/last_corr : 0;
+
+    cout << "CORR Last Cfg: " << std::setprecision(0) << last_corr << endl;
+    cout << "CORR Next Cfg: " << next_corr << endl;
+    cout << "CORR diff:     " << std::setprecision(2) << corr_diff << std::setprecision(5) << "%" << endl << endl;
+
+    if (num_interval < WARMUP_INTERVALS) {}
+    else if ((SENSE_THRESHOLD >= 0) && !is_zero_segment(m_last_seq_b)) {
+        if ((etp_diff+corr_diff) > SENSE_THRESHOLD) {
+            cout << "Switch to new candidate." << endl;
+        }
+        else {
+            x_seq_a = m_last_seq_a;
+            x_seq_b = m_last_seq_b;
+            cout << "Keep current candidate." << endl;
+        }
+    }
+    return;
 }
 
-bool EntropyV3::should_update(bool is_hit, uint32_t type) {
-   // if (current_phase == Phase::DUEL && is_hit)
-   //    return false;
-   if (UPDATE_MISS_ONLY && is_hit)
-      return false;
-   if (SKIP_UPDATE_PF && (type == PREFETCH))
-      return false;
-   if (SKIP_UPDATE_WB && (type == WRITEBACK))
-      return false;
-   return true;
+void EntropyV3::get_cfg_1(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    
+    vector<BitEntropy> sorted_itv = itv_entropy;
+    sort(sorted_itv.begin(), sorted_itv.end());
+    std::reverse(sorted_itv.begin(), sorted_itv.end());
+    c_seq_a = x_seq_a;    // one sequence must be the nohash index
+
+    uint32_t i=0;
+    while (c_seq_b.size() < c_seq_a.size()) {
+        if (sorted_itv[i].m_id >= IDX_SIZE) {
+            c_seq_b.push_back(sorted_itv[i].m_id);
+        }
+        ++i;
+    }
+    cout << "c_seq_b og:  " << vec_to_string(c_seq_b) << endl;
+
+    vector<uint32_t> reordered_indices = {};
+    for (int32_t i=c_seq_a.size()-1; i >= 0; --i) {
+        vector<uint32_t> seq_a_bit_correl = {};   // correl btw this bit in A vs every bit in B
+        for (uint32_t j=0; j < c_seq_b.size(); ++j) {
+            seq_a_bit_correl.push_back(get_correl(c_seq_a[i], c_seq_b[j]));
+        }
+        uint32_t min_correl_idx = find_min_index(seq_a_bit_correl, reordered_indices);
+        reordered_indices.push_back(i);
+
+        // pair this bit in A with the least correlated bit in B
+        if (min_correl_idx != i) {
+            swap(c_seq_b[i], c_seq_b[min_correl_idx]);
+        }
+    }
+
+    return;
+}
+
+void EntropyV3::get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) 
+{
+    vector<BitEntropy> sorted_bitpair_etp = bitpair_entropy;
+    sort(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
+    std::reverse(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
+
+    vector<BitEntropy> sorted_bitpair_pattern = bitpair_ptn_ctr;
+    sort(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
+    std::reverse(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
+
+    c_seq_a = x_seq_a;    // one sequence must be the nohash index
+    
+
+    return;
 }

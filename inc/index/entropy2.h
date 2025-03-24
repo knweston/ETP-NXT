@@ -5,10 +5,10 @@
 
 #define ENTROPY_CTR_MAX 1048576  // 20-bit
 #define CORREL_CTR_MAX 1048576   // 20-bit
-#define SKIP_UPDATE_PF 1
+#define SKIP_UPDATE_PF 0
 #define SKIP_UPDATE_WB 0
-#define SKIP_UPDATE_WB_HIT 0
-#define UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
+#define SKIP_UPDATE_WB_HIT 1
+#define UPDATE_HITMISS_SETTING 0 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define SKIP_UPDATE_DURING_REMAP 0
 
 class EntropyV2 : public EntropyIndex {

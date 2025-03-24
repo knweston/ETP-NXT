@@ -25,4 +25,4 @@
 # python3 autobuild.py -i entropy -o entropy
 # python3 autobuild.py -i skewed -o skewed
 
-python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o ptn-sen3
+python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o ptn
