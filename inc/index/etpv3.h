@@ -80,6 +80,8 @@ public:
     uint32_t compute_pair_table_idx(uint32_t bit_a, uint32_t bit_b);
     void     get_cfg_1(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+    void     get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
 
 
 protected:
@@ -91,7 +93,7 @@ protected:
    vector<BitEntropy> bitpair_entropy;
    vector<BitEntropy> bitpair_ptn_ctr;
 
-   vector<uint32_t> last_interval_bpe_ids;
+//    vector<uint32_t> last_interval_bpe_ids;
    vector<bool> last_access_flip_behavior;
 
 //    vector<BitEntropy> sorted_ovr;
