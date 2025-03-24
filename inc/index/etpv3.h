@@ -10,6 +10,7 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define V3_SENSE_THRESHOLD 4
+#define CORR_PRORATE 0.75
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -82,7 +83,8 @@ public:
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
-
+    void     get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
 
 protected:
    vector<BitEntropy>  correl_table;

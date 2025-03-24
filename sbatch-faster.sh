@@ -16,9 +16,6 @@
 # python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen3 -e ptn-sen3 -w 2 -r ptn-sen3 -t dpc3-traces
 # python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen3 -e ptn-sen3 -w 2 -r ptn-sen3 -t more-traces
 
-python3 autoslurm-1core.py -a dpc3-simpoint -o ptn-sen4pf_dn_2s -e ptn-sen4pf_dn_2s -w 2 -r ptn-sen4pf_dn_2s -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen4pf_dn_2s -e ptn-sen4pf_dn_2s -w 2 -r ptn-sen4pf_dn_2s -t more-traces
-
 # python3 autoslurm-1core.py -a llama -o nohash -e nohash -w 2 -r nohash -t more-traces
 # python3 autoslurm-1core.py -a llama -o nohashpf_dn_2s -e nohashpf_dn_2s -w 2 -r nohashpf_dn_2s -t more-traces
 # python3 autoslurm-1core.py -a llama -o entropy -e entropy -w 2 -r entropy -t more-traces
@@ -41,3 +38,5 @@ python3 autoslurm-1core.py -a dpc3-specmore -o ptn-sen4pf_dn_2s -e ptn-sen4pf_dn
 # ======================================================================================================================== #
 # python3 autoslurm-profile.py -a dpc3-simpoint -o profile-2w2rlru -e 2w2rlru -t dpc3-traces
 # python3 autoslurm-profile.py -a dpc3-specmore -o profile-2w2rlru -e 2w2rlru -t more-traces
+
+python3 autoslurm-1core.py -a bodytrack_streamcluster -o etp3 -e etp3 -w 2 -r etp3 -t dpc3-traces
