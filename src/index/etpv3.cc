@@ -517,15 +517,17 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     cout << "sorted_nohash_idx_sequence_corr_based: " << vec_to_string(sorted_nohash_idx_sequence_corr_based) << endl;
 
     vector<uint32_t> used_bits;
-    uint32_t next_cutoff_corr=sorted_corr[0].m_entropy;
+    uint32_t next_cutoff_corr=sorted_corr[0].m_entropy;  // start from max correlation
     for (uint32_t i=0; i < sorted_nohash_idx_sequence_corr_based.size(); ++i) {
         bool found = false;
         uint32_t start_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_corr_based[i],IDX_SIZE);
         uint32_t end_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_corr_based[i],MAX_ADDRESS_BITS-1)+1;
+        cout << "next_cutoff_corr: " << next_cutoff_corr << endl;
+        cout << "start_search_idx: " << start_search_idx << ". end_search_idx: " << end_search_idx << endl;
 
         vector<BitEntropy> extracted_bit_correl_table;
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-            if (extracted_bit_correl_table[j].m_entropy <= next_cutoff_corr)
+            if (correl_table[j].m_entropy <= next_cutoff_corr)
                 extracted_bit_correl_table.push_back(correl_table[j]);
         }
         sort(extracted_bit_correl_table.begin(), extracted_bit_correl_table.end());
@@ -542,7 +544,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         if (!found) {
             extracted_bit_correl_table.resize(0);
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-                if (extracted_bit_correl_table[j].m_entropy > next_cutoff_corr)
+                if (correl_table[j].m_entropy > next_cutoff_corr)
                     extracted_bit_correl_table.push_back(correl_table[j]);
             }
             sort(extracted_bit_correl_table.begin(), extracted_bit_correl_table.end());
@@ -560,11 +562,28 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                 assert(false);  // we should not reach here
             }
         }
+
+        cout << "extracted_bit_correl_table: " << endl;
+        for (uint32_t i=0; i < extracted_bit_correl_table.size(); ++i) {
+            cout << extracted_bit_correl_table[i].to_string() << endl;
+        }
+        cout << "used_bits: " << vec_to_string(used_bits) << endl << endl;
     }
 
-    cout << "CORR: " << endl;
-    for (uint32_t i=0; i < correl_table.size(); ++i) {
-        cout << correl_table[i].to_string() << endl;
+    // cout << "CORR: " << endl;
+    // for (uint32_t i=0; i < correl_table.size(); ++i) {
+    //     cout << correl_table[i].to_string() << endl;
+    // }
+
+    cout << endl;
+    cout << "sorted_nohash_idx_sequence_corr_based: " << vec_to_string(sorted_nohash_idx_sequence_corr_based) << endl;
+    cout << "used_bits:                             " << vec_to_string(used_bits) << endl;
+
+    for (uint32_t i=0; i < c_seq_a.size(); ++i) {
+        for (uint32_t j=0; j < sorted_nohash_idx_sequence_corr_based.size(); ++j) {
+            if (sorted_nohash_idx_sequence_corr_based[j] == c_seq_a[i])
+                c_seq_b.push_back(used_bits[j]);
+        }
     }
     return;
 }

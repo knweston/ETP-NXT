@@ -10,7 +10,7 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define V3_SENSE_THRESHOLD 4
-#define CORR_PRORATE 0.75
+#define CORR_PRORATE 1.25
 
 class EntropyV3 : public EntropyIndex {
 public:
