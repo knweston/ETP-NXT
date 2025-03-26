@@ -573,7 +573,7 @@ void EntropyIndex::etp_tracker_interval_update() {
     cout << "ITV tracker:      " << etp_vector_to_string(itv_entropy) << endl;
     for (uint32_t i=0; i < ovr_entropy.size(); ++i)
         ovr_entropy[i].m_entropy += itv_entropy[i].m_entropy;
-    cout << "OVR tracker:      " << etp_vector_to_string(ovr_entropy) << endl;
+    // cout << "OVR tracker:      " << etp_vector_to_string(ovr_entropy) << endl;
 
     // compute mean entropy
     for (uint32_t i=0; i < ovr_entropy.size(); ++i) {
@@ -591,11 +591,11 @@ void EntropyIndex::etp_tracker_interval_update() {
     var_ovr_entropy = sqrt(var_ovr_entropy/ovr_entropy.size());
     var_itv_entropy = sqrt(var_itv_entropy/itv_entropy.size());
 
-    cout << "Standardized OVR: ";
-    for (uint32_t i=0; i < ovr_entropy.size(); ++i) {
-        cout << ovr_entropy[i].get_str_id() << (ovr_entropy[i].m_entropy - avg_ovr_entropy)/var_ovr_entropy << ", ";
-    }
-    cout << endl;
+    // cout << "Standardized OVR: ";
+    // for (uint32_t i=0; i < ovr_entropy.size(); ++i) {
+    //     cout << ovr_entropy[i].get_str_id() << (ovr_entropy[i].m_entropy - avg_ovr_entropy)/var_ovr_entropy << ", ";
+    // }
+    // cout << endl;
 
     cout << "Standardized ITV: ";
     for (uint32_t i=0; i < itv_entropy.size(); ++i) {

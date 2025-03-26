@@ -325,11 +325,11 @@ void EntropyV3::etp_tracker_access_update(uint64_t address) {
 
 void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
     // sort the index bits based on their entropy, from lowest to highest
-    vector<BitEntropy> sorted_ovr = ovr_entropy;
-    sort(sorted_ovr.begin(), sorted_ovr.end());
-    std::reverse(sorted_ovr.begin(), sorted_ovr.end());
-    cout << "Sorted OVR:   " << etp_vector_to_string(sorted_ovr) << endl;
-
+    // vector<BitEntropy> sorted_ovr = ovr_entropy;
+    // sort(sorted_ovr.begin(), sorted_ovr.end());
+    // std::reverse(sorted_ovr.begin(), sorted_ovr.end());
+    // cout << "Sorted OVR:   " << etp_vector_to_string(sorted_ovr) << endl;
+    cout << endl;
     vector<BitEntropy> sorted_itv = itv_entropy;
     sort(sorted_itv.begin(), sorted_itv.end());
     std::reverse(sorted_itv.begin(), sorted_itv.end());
@@ -427,10 +427,31 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     cout << "BPETP Next Cfg:  " << bp_etp_next << endl;
     cout << "BPETP imprv:     " << std::setprecision(2) << bp_etp_diff << std::setprecision(5) << "%" << endl << endl;
 
-    if (num_interval < WARMUP_INTERVALS) {}
+    if (num_interval < WARMUP_INTERVALS) {
+        cout << "Reset counters on warmup intervals\n";
+        num_reset_itv++;
+        for (uint32_t i=0; i < itv_entropy.size(); ++i) {
+            itv_entropy[i].m_entropy = 0;
+        }
+
+        num_reset_cor++;
+        for (uint32_t i=0; i < correl_table.size(); ++i) {
+            correl_table[i].m_entropy = 0;
+        }
+
+        num_reset_bitpair_etp++;
+        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
+            bitpair_entropy[i].m_entropy = 0;
+        }
+
+        num_reset_bitpair_ptn++;
+        for (uint32_t i=0; i < bitpair_ptn_ctr.size(); ++i) {
+            bitpair_ptn_ctr[i].m_entropy = 0;
+        }
+    }
     else if ((SENSE_THRESHOLD >= 0) && !is_zero_segment(m_last_seq_b)) {
         // if ((etp_diff+corr_diff) > SENSE_THRESHOLD) {
-        if (bp_etp_diff > SENSE_THRESHOLD) {
+        if (corr_diff > SENSE_THRESHOLD) {
             cout << "Switch to new candidate." << endl;
         }
         else {
@@ -514,7 +535,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
             sorted_nohash_idx_sequence_corr_based.push_back(sorted_corr[i].m_segid[0]);
         }
     }
-    cout << "sorted_nohash_idx_sequence_corr_based: " << vec_to_string(sorted_nohash_idx_sequence_corr_based) << endl;
+    // cout << "sorted_nohash_idx_sequence_corr_based: " << vec_to_string(sorted_nohash_idx_sequence_corr_based) << endl;
 
     vector<uint32_t> used_bits;
     uint32_t next_cutoff_corr=sorted_corr[0].m_entropy;  // start from max correlation
@@ -522,8 +543,8 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         bool found = false;
         uint32_t start_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_corr_based[i],IDX_SIZE);
         uint32_t end_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_corr_based[i],MAX_ADDRESS_BITS-1)+1;
-        cout << "next_cutoff_corr: " << next_cutoff_corr << endl;
-        cout << "start_search_idx: " << start_search_idx << ". end_search_idx: " << end_search_idx << endl;
+        cout << "\nnext_cutoff_corr: " << next_cutoff_corr << endl;
+        // cout << "start_search_idx: " << start_search_idx << ". end_search_idx: " << end_search_idx << endl;
 
         vector<BitEntropy> extracted_bit_correl_table;
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
@@ -567,7 +588,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         for (uint32_t i=0; i < extracted_bit_correl_table.size(); ++i) {
             cout << extracted_bit_correl_table[i].to_string() << endl;
         }
-        cout << "used_bits: " << vec_to_string(used_bits) << endl << endl;
+        cout << "used_bits: " << vec_to_string(used_bits) << endl;
     }
 
     // cout << "CORR: " << endl;
@@ -576,8 +597,8 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     // }
 
     cout << endl;
-    cout << "sorted_nohash_idx_sequence_corr_based: " << vec_to_string(sorted_nohash_idx_sequence_corr_based) << endl;
-    cout << "used_bits:                             " << vec_to_string(used_bits) << endl;
+    // cout << "sorted_nohash_idx_sequence_corr_based: " << vec_to_string(sorted_nohash_idx_sequence_corr_based) << endl;
+    // cout << "used_bits:                             " << vec_to_string(used_bits) << endl;
 
     for (uint32_t i=0; i < c_seq_a.size(); ++i) {
         for (uint32_t j=0; j < sorted_nohash_idx_sequence_corr_based.size(); ++j) {

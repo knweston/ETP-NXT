@@ -57,7 +57,7 @@
 #define LLC_LATENCY 32
 
 #define VARIABLE_ADDRESS_TRANSLATION 0
-#define MAX_ADDRESS_BITS 38
+#define MAX_ADDRESS_BITS 42
 
 extern bool ru_bit[LLC_SET][LLC_WAY];
 extern uint32_t rrpv[LLC_SET][LLC_WAY];
