@@ -36,7 +36,9 @@
 # python3 autoslurm-1core.py -a gapmore -o gap-primeideal -e primeideal -w 2 -r gap-primeideal -t gaps-traces
 # python3 autoslurm-1core.py -a gapmore -o gap-skewedpfn -e skewedpfn -w 2 -r gap-skewedpfn -t gaps-traces
 # ======================================================================================================================== #
-# python3 autoslurm-profile.py -a dpc3-simpoint -o profile-2w2rlru -e 2w2rlru -t dpc3-traces
-# python3 autoslurm-profile.py -a dpc3-specmore -o profile-2w2rlru -e 2w2rlru -t more-traces
-
-python3 autoslurm-1core.py -a bodytrack_streamcluster -o etp3 -e etp3 -w 2 -r etp3 -t dpc3-traces
+python3 autoslurm-1core.py -a llama -o nohash -e nohash -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a llama -o xorhash -e xorhash -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a llama -o entropy -e entropy -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a llama -o fis_etp -e fis_etp -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-simpoint -o etp3a1 -e etp3a1 -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o etp3a1 -e etp3a1 -w 2 -t more-traces

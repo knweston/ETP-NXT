@@ -119,7 +119,7 @@ def main():
     parser.add_argument("-c", "--cluster_name", required=False, default="grace", type=str)
     parser.add_argument("-f", "--config", required=False, default="none", type=str)
     parser.add_argument("-l", "--num_loops", required=False, default=1, type=int)
-    parser.add_argument("-w", "--num_warmup", required=False, default=1, type=int)
+    parser.add_argument("-w", "--num_warmup", required=True, type=int)
     parser.add_argument("-s", "--num_simulate", required=False, default=1000, type=int)
     parser.add_argument("-t", "--trace_folder", required=False, default="dpc3-traces", type=str)
     parser.add_argument("-r", "--result_folder", required=False, default="", type=str)

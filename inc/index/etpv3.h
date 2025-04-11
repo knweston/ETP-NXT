@@ -10,7 +10,7 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define V3_SENSE_THRESHOLD 4
-#define CORR_PRORATE 1.10
+#define CUTOFF_PRORATE 1.10
 #define ETP_CUTOFF_STARTRATE 0.05
 
 class EntropyV3 : public EntropyIndex {
@@ -64,7 +64,7 @@ public:
             cout << "Skip Writeback Hit:   " << (V3_SKIP_UPDATE_WB_HIT? "Yes" : "No") << endl;
             cout << "V3_ETP_CTR_MAX:       " << V3_ETP_CTR_MAX << endl;
             cout << "V3_COR_CTR_MAX:       " << V3_COR_CTR_MAX << endl;
-            cout << "CORR_PRORATE:         " << CORR_PRORATE << endl;
+            cout << "CUTOFF_PRORATE:       " << CUTOFF_PRORATE << endl;
             cout << "ETP_CUTOFF_STARTRATE: " << ETP_CUTOFF_STARTRATE << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;

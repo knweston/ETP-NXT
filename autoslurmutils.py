@@ -319,7 +319,7 @@ def parse_apps(apps):
          "403","410","433","436","437","450","459","462","470","471","473","481","482",\
          "602","605","607","620","621","623","627","628","649","654",\
          "bodytrack","canneal","facesim","ferret","fluidanimate","freqmine","streamcluster","vips",\
-         "cassandra","http","tomcat"
+         "cassandra","http","tomcat","llama"
       ]
    
    elif apps == "dpc3-specmore":
