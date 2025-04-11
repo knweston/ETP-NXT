@@ -374,7 +374,7 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     get_cfg_1(x_seq_a, x_seq_b, c1_seq_a, c1_seq_b);
     cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
     cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
-    x_seq_b = c1_seq_b;
+    // x_seq_b = c1_seq_b;
 
     vector<uint32_t> c2_seq_a;
     vector<uint32_t> c2_seq_b;
@@ -403,6 +403,13 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     cout << "c4_seq_a:  " << vec_to_string(c4_seq_a) << endl;
     cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
     // x_seq_b = c4_seq_b;
+
+    vector<uint32_t> c5_seq_a;
+    vector<uint32_t> c5_seq_b;
+    get_cfg_5(x_seq_a, x_seq_b, c5_seq_a, c5_seq_b);
+    cout << "c5_seq_a:  " << vec_to_string(c5_seq_a) << endl;
+    cout << "c5_seq_b:  " << vec_to_string(c5_seq_b) << endl;
+    x_seq_b = c5_seq_b;
 
     // compute ETP
     double etp_diff = 0;
@@ -818,6 +825,7 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
 
     vector<uint32_t> used_bits;
     uint32_t next_cutoff_bpe=sorted_bitpair_etp[0].m_entropy;  // start from max BPE
+
     for (uint32_t i=0; i < sorted_nohash_idx_sequence_bpe_based.size(); ++i) {
         bool found = false;
         uint32_t start_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],IDX_SIZE);
@@ -837,53 +845,58 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                  << endl;
         }
         cout << endl;
-    }
 
-    for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-        if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)) {
-            extracted_bpe_table.push_back(bitpair_entropy[j]);
-        }
-    }
-    sort(extracted_bpe_table.begin(), extracted_bpe_table.end());
-
-    if (extracted_bpe_table.size() > 0) {
-        used_bits.push_back(extracted_bpe_table[extracted_bpe_table.size()-1].m_segid[1]);
-        next_cutoff_bpe = extracted_bpe_table[extracted_bpe_table.size()-1].m_entropy * CUTOFF_PRORATE;
-        found = true;
-    }
-
-    if (!found) {
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-            if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)) {
+            if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
+                                                                  && (itv_ptn_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) 
+            {
                 extracted_bpe_table.push_back(bitpair_entropy[j]);
             }
         }
         sort(extracted_bpe_table.begin(), extracted_bpe_table.end());
 
         if (extracted_bpe_table.size() > 0) {
-            used_bits.push_back(extracted_bpe_table[0].m_segid[1]);
-            next_cutoff_bpe = extracted_bpe_table[0].m_entropy * CUTOFF_PRORATE;
+            used_bits.push_back(extracted_bpe_table[extracted_bpe_table.size()-1].m_segid[1]);
+            next_cutoff_bpe = extracted_bpe_table[extracted_bpe_table.size()-1].m_entropy * CUTOFF_PRORATE;
             found = true;
         }
 
         if (!found) {
-            assert(false);
+            for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
+                if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
+                                                                     && (itv_ptn_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
+                    extracted_bpe_table.push_back(bitpair_entropy[j]);
+                }
+            }
+            sort(extracted_bpe_table.begin(), extracted_bpe_table.end());
+
+            if (extracted_bpe_table.size() > 0) {
+                used_bits.push_back(extracted_bpe_table[0].m_segid[1]);
+                next_cutoff_bpe = extracted_bpe_table[0].m_entropy * CUTOFF_PRORATE;
+                found = true;
+            }
+
+            if (!found) {
+                assert(false);
+            }
         }
+
+        cout << "extracted_bpe_table: " << endl;
+        for (uint32_t i=0; i < extracted_bpe_table.size(); ++i) {
+            uint32_t index = compute_pair_table_idx(extracted_bpe_table[i].m_segid[0], extracted_bpe_table[i].m_segid[1]);
+            cout << extracted_bpe_table[i].to_string() 
+                << ". BPE: " << bitpair_entropy[index].to_string() 
+                << ". BPP: " << bitpair_ptn_ctr[index].to_string()
+                << ". ETP["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
+                << ". ETP["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
+                << ". PTN["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
+                << ". PTN["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
+                << endl;
+        }
+        cout << "used_bits: " << vec_to_string(used_bits) << endl;
     }
 
-    cout << "extracted_bpe_table: " << endl;
-    for (uint32_t i=0; i < extracted_bpe_table.size(); ++i) {
-        uint32_t index = compute_pair_table_idx(extracted_bpe_table[i].m_segid[0], extracted_bpe_table[i].m_segid[1]);
-        cout << extracted_bpe_table[i].to_string() 
-            << ". BPE: " << bitpair_entropy[index].to_string() 
-            << ". BPP: " << bitpair_ptn_ctr[index].to_string()
-            << ". ETP[" << extracted_bpe_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
-            << ". ETP[" << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
-            << endl;
-    }
-    cout << "used_bits: " << vec_to_string(used_bits) << endl;
-
-    cout << "\nGETCFG3 Candidate Stats:\n";
+    cout << "\nGETCFG5 Candidate Stats:\n";
     for (uint32_t i=0; i < used_bits.size(); ++i) {
         uint32_t index = compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],used_bits[i]);
         cout << "CORR: "  << correl_table[index].to_string()
@@ -896,4 +909,11 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
              << endl;
     }
     cout << endl;
+    for (uint32_t i=0; i < c_seq_a.size(); ++i) {
+        for (uint32_t j=0; j < sorted_nohash_idx_sequence_bpe_based.size(); ++j) {
+            if (sorted_nohash_idx_sequence_bpe_based[j] == c_seq_a[i])
+                c_seq_b.push_back(used_bits[j]);
+        }
+    }
+    return;
 }

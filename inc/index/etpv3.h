@@ -10,7 +10,7 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define V3_SENSE_THRESHOLD 4
-#define CUTOFF_PRORATE 1.10
+#define CUTOFF_PRORATE 0.8
 #define ETP_CUTOFF_STARTRATE 0.05
 
 class EntropyV3 : public EntropyIndex {
@@ -97,6 +97,8 @@ public:
     void     get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_4(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+    void     get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
 
 protected:
