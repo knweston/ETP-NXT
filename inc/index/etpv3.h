@@ -10,7 +10,8 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define V3_SENSE_THRESHOLD 4
-#define CORR_PRORATE 1.15
+#define CORR_PRORATE 1.10
+#define ETP_CUTOFF_STARTRATE 0.05
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -39,25 +40,32 @@ public:
                 bitpair_ptn_ctr.push_back(BitEntropy(bit_pair));
             }
         }
-        last_access_flip_behavior.resize(bitpair_ptn_ctr.size());
+        last_access_bitpair_flip_behavior.resize(bitpair_ptn_ctr.size());
+
+        for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
+            itv_ptn_entropy.push_back(BitEntropy(i));
+        }
+        last_access_flip_behavior.resize(itv_ptn_entropy.size());
 
         if (x_print_cfg) {
             cout << endl;
             cout << "========================================================================" << endl;
             cout << "ENTROPY-V3 INDEX CONFIGURATION" << endl;
             cout << "========================================================================" << endl;
-            cout << "Warmup intervals:   " << WARMUP_INTERVALS << endl;
-            cout << "Remap interval:     " << REMAP_INTERVAL << endl;
-            cout << "Interval size:      " << INTERVAL_SIZE << endl;
-            cout << "History length:     " << HISTORY_LENGTH << endl;
-            cout << "Max address bits:   " << MAX_ADDRESS_BITS << endl;
-            cout << "Sensitivity:        " << SENSE_THRESHOLD << " (%)" << endl;
-            cout << "Update Hit/Miss:    " << (V3_UPDATE_HITMISS_SETTING==1? "MISS ONLY" : (V3_UPDATE_HITMISS_SETTING==2? "HIT ONLY" : "BOTH HIT/MISS")) << endl;
-            cout << "Skip Prefetch:      " << (V3_SKIP_UPDATE_PF? "Yes" : "No") << endl;
-            cout << "Skip Writeback:     " << (V3_SKIP_UPDATE_WB? "Yes" : "No") << endl;
-            cout << "Skip Writeback Hit: " << (V3_SKIP_UPDATE_WB_HIT? "Yes" : "No") << endl;
-            cout << "V3_ETP_CTR_MAX:     " << V3_ETP_CTR_MAX << endl;
-            cout << "V3_COR_CTR_MAX:     " << V3_COR_CTR_MAX << endl;
+            cout << "Warmup intervals:     " << WARMUP_INTERVALS << endl;
+            cout << "Remap interval:       " << REMAP_INTERVAL << endl;
+            cout << "Interval size:        " << INTERVAL_SIZE << endl;
+            cout << "History length:       " << HISTORY_LENGTH << endl;
+            cout << "Max address bits:     " << MAX_ADDRESS_BITS << endl;
+            cout << "Sensitivity:          " << SENSE_THRESHOLD << " (%)" << endl;
+            cout << "Update Hit/Miss:      " << (V3_UPDATE_HITMISS_SETTING==1? "MISS ONLY" : (V3_UPDATE_HITMISS_SETTING==2? "HIT ONLY" : "BOTH HIT/MISS")) << endl;
+            cout << "Skip Prefetch:        " << (V3_SKIP_UPDATE_PF? "Yes" : "No") << endl;
+            cout << "Skip Writeback:       " << (V3_SKIP_UPDATE_WB? "Yes" : "No") << endl;
+            cout << "Skip Writeback Hit:   " << (V3_SKIP_UPDATE_WB_HIT? "Yes" : "No") << endl;
+            cout << "V3_ETP_CTR_MAX:       " << V3_ETP_CTR_MAX << endl;
+            cout << "V3_COR_CTR_MAX:       " << V3_COR_CTR_MAX << endl;
+            cout << "CORR_PRORATE:         " << CORR_PRORATE << endl;
+            cout << "ETP_CUTOFF_STARTRATE: " << ETP_CUTOFF_STARTRATE << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
             cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
@@ -79,11 +87,16 @@ public:
     uint32_t compute_sum_correl_two_sequences(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     uint32_t get_correl(uint32_t bit_a, uint32_t bit_b);
     uint32_t compute_pair_table_idx(uint32_t bit_a, uint32_t bit_b);
+
+    void     get_cfg_etp(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                         vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_1(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+    void     get_cfg_4(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
 
 protected:
@@ -92,16 +105,14 @@ protected:
    uint32_t num_reset_itv{0};
    uint32_t num_reset_bitpair_etp{0};
    uint32_t num_reset_bitpair_ptn{0};
+   uint32_t num_reset_itv_ptn{0};
    vector<BitEntropy> bitpair_entropy;
    vector<BitEntropy> bitpair_ptn_ctr;
+   vector<BitEntropy> itv_ptn_entropy;
 
-//    vector<uint32_t> last_interval_bpe_ids;
+   vector<bool> last_access_bitpair_flip_behavior;
    vector<bool> last_access_flip_behavior;
-
-//    vector<BitEntropy> sorted_ovr;
-//    vector<BitEntropy> sorted_itv;
-//    vector<BitEntropy> sorted_bitpair_etp;
-//    vector<BitEntropy> sorted_bitpair_pattern;
+   uint32_t num_updates{0};
 };
 
 #endif // ENTROPY_INDEX_V3_H
