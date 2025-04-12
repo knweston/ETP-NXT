@@ -369,18 +369,18 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     cout << "Sorted COR:   " << etp_vector_to_string(sorted_corr) << endl;
     cout << endl;
 
-    vector<uint32_t> c1_seq_a;
-    vector<uint32_t> c1_seq_b;
-    get_cfg_1(x_seq_a, x_seq_b, c1_seq_a, c1_seq_b);
-    cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
-    cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
-    // x_seq_b = c1_seq_b;
+    // vector<uint32_t> c1_seq_a;
+    // vector<uint32_t> c1_seq_b;
+    // get_cfg_1(x_seq_a, x_seq_b, c1_seq_a, c1_seq_b);
+    // cout << "c1_seq_a:  " << vec_to_string(c1_seq_a) << endl;
+    // cout << "c1_seq_b:  " << vec_to_string(c1_seq_b) << endl;
+    // // x_seq_b = c1_seq_b;
 
-    vector<uint32_t> c2_seq_a;
-    vector<uint32_t> c2_seq_b;
-    get_cfg_2(x_seq_a, x_seq_b, c2_seq_a, c2_seq_b);
-    cout << "c2_seq_a:  " << vec_to_string(c2_seq_a) << endl;
-    cout << "c2_seq_b:  " << vec_to_string(c2_seq_b) << endl;
+    // vector<uint32_t> c2_seq_a;
+    // vector<uint32_t> c2_seq_b;
+    // get_cfg_2(x_seq_a, x_seq_b, c2_seq_a, c2_seq_b);
+    // cout << "c2_seq_a:  " << vec_to_string(c2_seq_a) << endl;
+    // cout << "c2_seq_b:  " << vec_to_string(c2_seq_b) << endl;
     // x_seq_b = c2_seq_b;
 
     // vector<uint32_t> c3_seq_a;
@@ -397,19 +397,26 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     // cout << "cetp_seq_b:  " << vec_to_string(cetp_seq_b) << endl;
     // x_seq_b = cetp_seq_b;
 
-    vector<uint32_t> c4_seq_a;
-    vector<uint32_t> c4_seq_b;
-    get_cfg_4(x_seq_a, x_seq_b, c4_seq_a, c4_seq_b);
-    cout << "c4_seq_a:  " << vec_to_string(c4_seq_a) << endl;
-    cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
+    // vector<uint32_t> c4_seq_a;
+    // vector<uint32_t> c4_seq_b;
+    // get_cfg_4(x_seq_a, x_seq_b, c4_seq_a, c4_seq_b);
+    // cout << "c4_seq_a:  " << vec_to_string(c4_seq_a) << endl;
+    // cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
     // x_seq_b = c4_seq_b;
 
-    vector<uint32_t> c5_seq_a;
-    vector<uint32_t> c5_seq_b;
-    get_cfg_5(x_seq_a, x_seq_b, c5_seq_a, c5_seq_b);
-    cout << "c5_seq_a:  " << vec_to_string(c5_seq_a) << endl;
-    cout << "c5_seq_b:  " << vec_to_string(c5_seq_b) << endl;
-    x_seq_b = c5_seq_b;
+    // vector<uint32_t> c5_seq_a;
+    // vector<uint32_t> c5_seq_b;
+    // get_cfg_5(x_seq_a, x_seq_b, c5_seq_a, c5_seq_b);
+    // cout << "c5_seq_a:  " << vec_to_string(c5_seq_a) << endl;
+    // cout << "c5_seq_b:  " << vec_to_string(c5_seq_b) << endl;
+    // x_seq_b = c5_seq_b;
+
+    vector<uint32_t> c6_seq_a;
+    vector<uint32_t> c6_seq_b;
+    get_cfg_6(x_seq_a, x_seq_b, c6_seq_a, c6_seq_b);
+    cout << "c6_seq_a:  " << vec_to_string(c6_seq_a) << endl;
+    cout << "c6_seq_b:  " << vec_to_string(c6_seq_b) << endl;
+    x_seq_b = c6_seq_b;
 
     // compute ETP
     double etp_diff = 0;
@@ -486,7 +493,7 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     }
     else if ((SENSE_THRESHOLD >= 0) && !is_zero_segment(m_last_seq_b)) {
         // if ((etp_diff+corr_diff) > SENSE_THRESHOLD) {
-        if (etp_diff > SENSE_THRESHOLD) {
+        if (bp_etp_diff > SENSE_THRESHOLD) {
             cout << "Switch to new candidate." << endl;
         }
         else {
@@ -833,23 +840,22 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         cout << "\nnext_cutoff_bpe: " << next_cutoff_bpe << endl;
         vector<BitEntropy> extracted_bpe_table;
 
-        cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
-        for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-            cout << "CORR: " << correl_table[j].to_string()
-                 << ". BPE: " << bitpair_entropy[j].to_string() 
-                 << ". BPP: " << bitpair_ptn_ctr[j].to_string()
-                 << ". ETP[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
-                 << ". ETP[" << correl_table[j].m_segid[1] << "]: " << itv_entropy[correl_table[j].m_segid[1]].m_entropy
-                 << ". PTN[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_ptn_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
-                 << ". PTN[" << correl_table[j].m_segid[1] << "]: " << itv_ptn_entropy[correl_table[j].m_segid[1]].m_entropy
-                 << endl;
-        }
-        cout << endl;
+        // cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
+        // for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
+        //     cout << "CORR: " << correl_table[j].to_string()
+        //          << ". BPE: " << bitpair_entropy[j].to_string() 
+        //          << ". BPP: " << bitpair_ptn_ctr[j].to_string()
+        //          << ". ETP[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
+        //          << ". ETP[" << correl_table[j].m_segid[1] << "]: " << itv_entropy[correl_table[j].m_segid[1]].m_entropy
+        //          << ". PTN[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_ptn_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
+        //          << ". PTN[" << correl_table[j].m_segid[1] << "]: " << itv_ptn_entropy[correl_table[j].m_segid[1]].m_entropy
+        //          << endl;
+        // }
+        // cout << endl;
 
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
             if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                  && (itv_ptn_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) 
-            {
+                                                                  && (itv_ptn_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
                 extracted_bpe_table.push_back(bitpair_entropy[j]);
             }
         }
@@ -860,7 +866,6 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
             next_cutoff_bpe = extracted_bpe_table[extracted_bpe_table.size()-1].m_entropy * CUTOFF_PRORATE;
             found = true;
         }
-
         if (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                 if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
@@ -916,4 +921,44 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         }
     }
     return;
+}
+
+void EntropyV3::get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b)
+{
+    c_seq_a = x_seq_a;    // one sequence must be the nohash index
+    vector<uint32_t> used_bits;
+    for (int32_t i=c_seq_a.size()-1; i >= 0; --i) {
+        uint32_t closest_mid_ptn = itv_ptn_entropy[c_seq_a[i]].m_entropy;
+        uint32_t closest_mid_idx = 0;
+        for (uint32_t j=IDX_SIZE; j < itv_ptn_entropy.size(); ++j) {
+            if (is_existed(itv_ptn_entropy[j].m_id, used_bits)) 
+                continue;
+
+            uint32_t ptn_distance = (itv_ptn_entropy[c_seq_a[i]].m_entropy/2 > itv_ptn_entropy[j].m_entropy)? 
+                                     (itv_ptn_entropy[c_seq_a[i]].m_entropy/2 - itv_ptn_entropy[j].m_entropy) : 
+                                     (itv_ptn_entropy[j].m_entropy - itv_ptn_entropy[c_seq_a[i]].m_entropy/2);
+            if (ptn_distance < closest_mid_ptn) {
+                closest_mid_ptn = ptn_distance;
+                closest_mid_idx = itv_ptn_entropy[j].m_id;
+            }
+        }
+        c_seq_b.push_back(closest_mid_idx);
+        used_bits.push_back(closest_mid_idx);
+    }
+
+    std::reverse(c_seq_b.begin(), c_seq_b.end());
+
+    cout << "\nGETCFG6 Candidate Stats:\n";
+    for (uint32_t i=0; i < used_bits.size(); ++i) {
+        uint32_t index = compute_pair_table_idx(c_seq_a[i],used_bits[i]);
+        cout << "CORR: "  << correl_table[index].to_string()
+             << ". BPE: " << bitpair_entropy[index].to_string() 
+             << ". BPP: " << bitpair_ptn_ctr[index].to_string()
+             << ". ETP["  << c_seq_a[i] << "]: " << itv_entropy[c_seq_a[i]].m_entropy
+             << ". ETP["  << used_bits[i] << "]: " << itv_entropy[used_bits[i]].m_entropy
+             << ". PTN["  << c_seq_a[i] << "]: " << itv_ptn_entropy[c_seq_a[i]].m_entropy
+             << ". PTN["  << used_bits[i] << "]: " << itv_ptn_entropy[used_bits[i]].m_entropy
+             << endl;
+    }
 }

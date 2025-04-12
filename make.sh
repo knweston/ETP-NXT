@@ -25,4 +25,9 @@
 # python3 autobuild.py -i entropy -o entropy
 # python3 autobuild.py -i skewed -o skewed
 
-python3 autobuild.py -i entropyv2 -p next_line -d spp_dev -o ptn
+# python3 autobuild.py -i nohash -p next_line -d spp_dev -o nohash
+# python3 autobuild.py -i xorhash -p next_line -d spp_dev -o xorhash
+# python3 autobuild.py -i entropy -p next_line -d spp_dev -o entropy
+
+python3 autobuild.py -i entropyv3 -o etp3b6
+python3 autobuild.py -i entropyv3 -p next_line -d spp_dev -o etp3b6

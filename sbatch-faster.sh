@@ -36,9 +36,12 @@
 # python3 autoslurm-1core.py -a gapmore -o gap-primeideal -e primeideal -w 2 -r gap-primeideal -t gaps-traces
 # python3 autoslurm-1core.py -a gapmore -o gap-skewedpfn -e skewedpfn -w 2 -r gap-skewedpfn -t gaps-traces
 # ======================================================================================================================== #
-python3 autoslurm-1core.py -a llama -o nohash -e nohash -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a llama -o xorhash -e xorhash -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a llama -o entropy -e entropy -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a llama -o fis_etp -e fis_etp -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp3a1 -e etp3a1 -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o etp3a1 -e etp3a1 -w 2 -t more-traces
+# python3 autoslurm-1core.py -a llama -o nohashpf_dn_2s -e nohashpf_dn_2s -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a llama -o xorhashpf_dn_2s -e xorhashpf_dn_2s -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a llama -o entropypf_dn_2s -e entropypf_dn_2s -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a llama -o fis_etppf_dn_2s -e fis_etppf_dn_2s -w 2 -t dpc3-traces
+
+python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b6pf_dn_2s -e etp3b6pf_dn_2s -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o etp3b6pf_dn_2s -e etp3b6pf_dn_2s -w 2 -t more-traces
+python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b6 -e etp3b6 -w 2 -t dpc3-traces
+python3 autoslurm-1core.py -a dpc3-specmore -o etp3b6 -e etp3b6 -w 2 -t more-traces

@@ -10,8 +10,9 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
 #define V3_SENSE_THRESHOLD 4
-#define CUTOFF_PRORATE 0.8
-#define ETP_CUTOFF_STARTRATE 0.05
+#define CUTOFF_PRORATE 0.9
+#define ETP_CUTOFF_STARTRATE 0.00
+// #define NUM_DROP_LOWETP 0
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -66,6 +67,7 @@ public:
             cout << "V3_COR_CTR_MAX:       " << V3_COR_CTR_MAX << endl;
             cout << "CUTOFF_PRORATE:       " << CUTOFF_PRORATE << endl;
             cout << "ETP_CUTOFF_STARTRATE: " << ETP_CUTOFF_STARTRATE << endl;
+            // cout << "NUM_DROP_LOWETP:      " << NUM_DROP_LOWETP << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
             cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
@@ -100,6 +102,8 @@ public:
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+    void     get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
 
 protected:
    vector<BitEntropy>  correl_table;
