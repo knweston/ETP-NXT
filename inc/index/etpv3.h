@@ -5,14 +5,13 @@
 
 #define V3_ETP_CTR_MAX 1048576  // 20-bit
 #define V3_COR_CTR_MAX 1048576   // 20-bit
-#define V3_SKIP_UPDATE_PF 0
+#define V3_SKIP_UPDATE_PF 1
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
-#define V3_UPDATE_HITMISS_SETTING 1 // 0: update on both hit/miss, 1: update miss only, 2: update hit only
-#define V3_SENSE_THRESHOLD 4
-#define CUTOFF_PRORATE 0.9
+#define V3_UPDATE_HITMISS_SETTING 3 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
+#define V3_SENSE_THRESHOLD 20
+#define CUTOFF_PRORATE 0.8
 #define ETP_CUTOFF_STARTRATE 0.00
-// #define NUM_DROP_LOWETP 0
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -58,8 +57,8 @@ public:
             cout << "Interval size:        " << INTERVAL_SIZE << endl;
             cout << "History length:       " << HISTORY_LENGTH << endl;
             cout << "Max address bits:     " << MAX_ADDRESS_BITS << endl;
-            cout << "Sensitivity:          " << SENSE_THRESHOLD << " (%)" << endl;
-            cout << "Update Hit/Miss:      " << (V3_UPDATE_HITMISS_SETTING==1? "MISS ONLY" : (V3_UPDATE_HITMISS_SETTING==2? "HIT ONLY" : "BOTH HIT/MISS")) << endl;
+            cout << "Sensitivity:          " << V3_SENSE_THRESHOLD << " (%)" << endl;
+            cout << "Update Hit/Miss:      " << (V3_UPDATE_HITMISS_SETTING==1? "MISS ONLY" : (V3_UPDATE_HITMISS_SETTING==2? "HIT ONLY" : (V3_UPDATE_HITMISS_SETTING==3? "MISS+PF_USEFUL" : "BOTH HIT/MISS"))) << endl;
             cout << "Skip Prefetch:        " << (V3_SKIP_UPDATE_PF? "Yes" : "No") << endl;
             cout << "Skip Writeback:       " << (V3_SKIP_UPDATE_WB? "Yes" : "No") << endl;
             cout << "Skip Writeback Hit:   " << (V3_SKIP_UPDATE_WB_HIT? "Yes" : "No") << endl;
@@ -67,7 +66,6 @@ public:
             cout << "V3_COR_CTR_MAX:       " << V3_COR_CTR_MAX << endl;
             cout << "CUTOFF_PRORATE:       " << CUTOFF_PRORATE << endl;
             cout << "ETP_CUTOFF_STARTRATE: " << ETP_CUTOFF_STARTRATE << endl;
-            // cout << "NUM_DROP_LOWETP:      " << NUM_DROP_LOWETP << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
             cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;

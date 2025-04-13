@@ -680,6 +680,14 @@ void CACHE::handle_read()
                     }
                 }
 
+                // [Kevin]
+                if (m_index) {
+                    if (block[set][way].prefetch)
+                        m_index->update(RQ.entry[index].address, lower_level, true, PF_USEFUL);
+                    else
+                        m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
+                }
+
                 // update prefetch stats and reset prefetch bit
                 if (block[set][way].prefetch) {
                     pf_useful++;
@@ -689,11 +697,6 @@ void CACHE::handle_read()
 
                 HIT[RQ.entry[index].type]++;
                 ACCESS[RQ.entry[index].type]++;
-
-                // [Kevin]
-                if (m_index) {
-                    m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
-                }
                 
                 // remove this entry from RQ
                 RQ.remove_queue(&RQ.entry[index]);
