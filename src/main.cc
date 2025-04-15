@@ -718,6 +718,10 @@ int main(int argc, char** argv)
             for (uint32_t i=appname_startpt; i<appname_endpt; ++i) {
                 app_name += path[i];
             }
+            
+            APP_LIST.push_back(app_name);
+            APP_PATH.push_back(path);
+
             if (app_name.find("-") != -1) {
                 appname_endpt = app_name.find("-")+appname_startpt;
                 app_name = "";
@@ -725,9 +729,7 @@ int main(int argc, char** argv)
                     app_name += path[i];
                 }
             }
-            APP_LIST.push_back(app_name);
-            APP_PATH.push_back(path);
-
+            
             for (uint32_t i=0; i<app_name.size(); ++i) {
                 seed_number += app_name[i];
                 printf("%c %d %d\n", app_name[i], i, seed_number);

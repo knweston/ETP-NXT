@@ -193,7 +193,8 @@ void GeneticIndex::move_cache_data(MEMORY *lower_level) {
             }
 
             bool fill_ready = true;
-            uint32_t dest_way = get_drrip_victim(dest_index);
+            // uint32_t dest_way = get_drrip_victim(dest_index);
+            uint32_t dest_way = get_lru_victim(dest_index);
 
             // if the destination block is dirty, write it back before overriding the data
             if (block_array[dest_index][dest_way].valid && block_array[dest_index][dest_way].dirty) {
@@ -233,7 +234,8 @@ void GeneticIndex::move_cache_data(MEMORY *lower_level) {
             // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
             if (fill_ready) {
                 override_block(block, &block_array[dest_index][dest_way]);
-                drrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+                // drrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+                lru_update(dest_index, dest_way);
             }
             
             // invalidate the source block
@@ -245,6 +247,43 @@ void GeneticIndex::move_cache_data(MEMORY *lower_level) {
         }
     }
     map_ptr++;
+}
+
+//========================================================================//
+// REPLACEMENT FUNCTIONS
+//========================================================================//
+uint32_t GeneticIndex::get_lru_victim(uint32_t set) {
+    uint32_t way = 0;
+
+    // fill invalid line first
+    for (way=0; way<NUM_WAY; way++) {
+        if (block_array[set][way].valid == false)
+            break;
+    }
+    
+    // LRU victim
+    if (way == NUM_WAY) {
+        for (way=0; way<NUM_WAY; way++) {
+            if (block_array[set][way].lru == NUM_WAY-1)
+                break;
+        }
+    }
+    
+    if (way >= NUM_WAY) {
+        cout << "ERROR: way_id out of bound = " << way << endl;
+        assert(false);
+    }
+    return way;
+}
+
+void GeneticIndex::lru_update(uint32_t set, uint32_t way) {
+    // update lru replacement state
+    for (uint32_t i=0; i<NUM_WAY; i++) {
+        if (block_array[set][i].lru < block_array[set][way].lru) {
+            block_array[set][i].lru++;
+        }
+    }
+    block_array[set][way].lru = 0; // promote to the MRU position
 }
 
 uint32_t GeneticIndex::get_drrip_victim(uint32_t set) {

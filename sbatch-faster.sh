@@ -41,12 +41,14 @@
 # python3 autoslurm-1core.py -a llama -o entropypf_dn_2s -e entropypf_dn_2s -w 2 -t dpc3-traces
 # python3 autoslurm-1core.py -a llama -o fis_etppf_dn_2s -e fis_etppf_dn_2s -w 2 -t dpc3-traces
 
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b6pf_dn_2s -e etp3b6pf_dn_2s -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o etp3b6pf_dn_2s -e etp3b6pf_dn_2s -w 2 -t more-traces
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b6 -e etp3b6 -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o etp3b6 -e etp3b6 -w 2 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b6pf_dn_2s -e etp3b6pf_dn_2s -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o etp3b6pf_dn_2s -e etp3b6pf_dn_2s -w 2 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b6 -e etp3b6 -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o etp3b6 -e etp3b6 -w 2 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b7pf_dn_2s -e etp3b7pf_dn_2s -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o etp3b7pf_dn_2s -e etp3b7pf_dn_2s -w 2 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b7 -e etp3b7 -w 2 -t dpc3-traces
+# python3 autoslurm-1core.py -a dpc3-specmore -o etp3b7 -e etp3b7 -w 2 -t more-traces
 
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b7pf_dn_2s -e etp3b7pf_dn_2s -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o etp3b7pf_dn_2s -e etp3b7pf_dn_2s -w 2 -t more-traces
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp3b7 -e etp3b7 -w 2 -t dpc3-traces
-python3 autoslurm-1core.py -a dpc3-specmore -o etp3b7 -e etp3b7 -w 2 -t more-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o genetic -e genetic -w 2 -t dpc3-traces -f fixed_idx_genetic.ini
+python3 autoslurm-1core.py -a dpc3-specmore -o genetic -e genetic -w 2 -t more-traces -f fixed_idx_genetic.ini

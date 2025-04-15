@@ -131,6 +131,7 @@ public:
         // multi-core support
         cout << "CONFIG FILE: " << CONFIG_FILE << endl;
         for (uint32_t i=0; i<NUM_CPUS; ++i) {
+            cout << "APP_LIST[" << i << "]: " << APP_LIST[i] << endl;
             vector<uint32_t> dna_sequence = read_dna_config(APP_LIST[i]);
             Candidate new_candidate = Candidate(dna_sequence);
             m_population.push_back(new_candidate);
@@ -176,6 +177,8 @@ public:
     // replacement policy
     uint32_t get_drrip_victim(uint32_t set);
     void     drrip_update(uint32_t set, uint32_t way, uint32_t src_age);
+    uint32_t get_lru_victim(uint32_t set);
+    void     lru_update(uint32_t set, uint32_t way);
     
 protected:
     vector<Candidate> m_population;
