@@ -143,7 +143,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
     access_ctr++;
 
     if (should_update(is_hit, type)) {
-        etp_tracker_access_update(address);
+        // etp_tracker_access_update(address);
         m_etpv3_addr_hist.push_back(address);
         num_updates++;
     }
@@ -182,7 +182,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         m_last_seq_b = m_curr_seq_b;
 
         // compute new XOR-hash index config for new interval
-        etp_tracker_interval_update();
+        // etp_tracker_interval_update();
         compute_new_config(m_curr_seq_a, m_curr_seq_b);
 
         m_should_remap = check_remap();
@@ -202,6 +202,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         num_interval++;
         map_ptr    = 0;
         access_ctr = 0;
+        num_updates= 0;
     }
     warmup_check();
 }
@@ -666,7 +667,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         bool found = false;
         uint32_t start_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_corr_based[i],IDX_SIZE);
         uint32_t end_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_corr_based[i],MAX_ADDRESS_BITS-1)+1;
-        cout << "\nnext_cutoff_corr: " << next_cutoff_corr << endl;
+        cout << "next_cutoff_corr: " << next_cutoff_corr << endl;
 
         vector<BitEntropy> extracted_bit_correl_table;
         double ETP_CUTOFF_RATE = ETP_CUTOFF_STARTRATE;
@@ -871,25 +872,25 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         bool found = false;
         uint32_t start_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],IDX_SIZE);
         uint32_t end_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],MAX_ADDRESS_BITS-1)+1;
-        cout << "\nnext_cutoff_bpe: " << next_cutoff_bpe << endl;
+        cout << "next_cutoff_bpe: " << next_cutoff_bpe << endl;
         vector<BitEntropy> extracted_bpe_table;
 
-        cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
-        for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-            cout << "CORR: " << correl_table[j].to_string()
-                 << ". BPE: " << bitpair_entropy[j].to_string() 
-                 << ". BPP: " << bitpair_ptn_ctr[j].to_string()
-                 << ". ETP[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
-                 << ". ETP[" << correl_table[j].m_segid[1] << "]: " << itv_entropy[correl_table[j].m_segid[1]].m_entropy
-                 << ". PTN[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_ptn_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
-                 << ". PTN[" << correl_table[j].m_segid[1] << "]: " << itv_ptn_entropy[correl_table[j].m_segid[1]].m_entropy
-                 << endl;
-        }
-        cout << endl;
+        // cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
+        // for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
+        //     cout << "CORR: " << correl_table[j].to_string()
+        //          << ". BPE: " << bitpair_entropy[j].to_string() 
+        //          << ". BPP: " << bitpair_ptn_ctr[j].to_string()
+        //          << ". ETP[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
+        //          << ". ETP[" << correl_table[j].m_segid[1] << "]: " << itv_entropy[correl_table[j].m_segid[1]].m_entropy
+        //          << ". PTN[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_ptn_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
+        //          << ". PTN[" << correl_table[j].m_segid[1] << "]: " << itv_ptn_entropy[correl_table[j].m_segid[1]].m_entropy
+        //          << endl;
+        // }
+        // cout << endl;
 
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
             if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                  && (itv_ptn_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
+                                                                  && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
                 extracted_bpe_table.push_back(bitpair_entropy[j]);
             }
         }
@@ -903,7 +904,7 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         if (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                 if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                     && (itv_ptn_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
+                                                                     && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
                     extracted_bpe_table.push_back(bitpair_entropy[j]);
                 }
             }
@@ -920,18 +921,18 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
             }
         }
 
-        cout << "extracted_bpe_table: " << endl;
-        for (uint32_t i=0; i < extracted_bpe_table.size(); ++i) {
-            uint32_t index = compute_pair_table_idx(extracted_bpe_table[i].m_segid[0], extracted_bpe_table[i].m_segid[1]);
-            cout << "BPE: " << bitpair_entropy[index].to_string() 
-                 << ". BPP: " << bitpair_ptn_ctr[index].to_string()
-                 << ". ETP["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
-                 << ". ETP["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
-                 << ". PTN["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
-                 << ". PTN["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
-                << endl;
-        }
-        cout << "used_bits: " << vec_to_string(used_bits) << endl;
+        // cout << "extracted_bpe_table: " << endl;
+        // for (uint32_t i=0; i < extracted_bpe_table.size(); ++i) {
+        //     uint32_t index = compute_pair_table_idx(extracted_bpe_table[i].m_segid[0], extracted_bpe_table[i].m_segid[1]);
+        //     cout << "BPE: " << bitpair_entropy[index].to_string() 
+        //          << ". BPP: " << bitpair_ptn_ctr[index].to_string()
+        //          << ". ETP["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
+        //          << ". ETP["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
+        //          << ". PTN["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
+        //          << ". PTN["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
+        //         << endl;
+        // }
+        // cout << "used_bits: " << vec_to_string(used_bits) << endl;
     }
 
     cout << "\nGETCFG5 Candidate Stats:\n";
@@ -1064,7 +1065,7 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     sort(m_etpv3_addr_hist.begin(), m_etpv3_addr_hist.end());
     for (uint32_t i=1; i < m_etpv3_addr_hist.size(); ++i) {
         if (m_etpv3_addr_hist[i] == m_etpv3_addr_hist[i-1]) {
-            if ((m_conflict_addr_hist.size() == 0) || (m_etpv3_addr_hist[i] != m_conflict_addr_hist[m_conflict_addr_hist.size()-1])) {
+            if ((m_conflict_addr_hist.size() == 0) || (m_etpv3_addr_hist[i] != m_conflict_addr_hist.back())) {
                 m_conflict_addr_hist.push_back(m_etpv3_addr_hist[i]);
                 m_conflict_num.push_back(1);
             }
@@ -1086,9 +1087,8 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     for (uint32_t i=0; i < m_conflict_num.size(); ++i) {
         total_conflicts += m_conflict_num[i];
     }
-
-    cout << "num conflicting addresses: " << m_conflict_addr_hist.size() << endl;
-    cout << "num conflicting misses: " << total_conflicts << endl;
+    cout << "total addresses: " << m_conflict_addr_hist.size() << endl;
+    cout << "total conflicts: " << total_conflicts << endl;
 
     cout << "Reset counters before replay\n";
     for (uint32_t i=0; i < itv_entropy.size(); ++i) {
@@ -1108,9 +1108,14 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     }
     m_addr_hist.resize(0);
     m_addr_hist.push_back(0);
+    last_access_bitpair_flip_behavior.resize(0);
+    last_access_bitpair_flip_behavior.resize(bitpair_ptn_ctr.size());
+    last_access_flip_behavior.resize(0);
+    last_access_flip_behavior.resize(itv_ptn_entropy.size());
     
     for (uint32_t i=0; i < m_conflict_addr_hist.size(); ++i) {
-        etp_tracker_access_update(m_conflict_addr_hist[i]);
+        etp_tracking_replay(m_conflict_addr_hist[i], i);
+        // etp_tracker_access_update(m_conflict_addr_hist[i]);
     }
     cout << "Replay completed\n";
     
@@ -1143,13 +1148,147 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     cout << endl;
 
     // get_cfg_etp(x_seq_a, x_seq_b, c_seq_a, c_seq_b); // etp3d0 + warmup 2 intervals
-    get_cfg_1(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d1
+    // get_cfg_1(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d1
     // get_cfg_4(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d2
-    // get_cfg_5(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d3
+    get_cfg_5(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d3
     // get_cfg_genetic(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d4
 
     m_etpv3_addr_hist.resize(0);
     m_conflict_addr_hist.resize(0);
     m_conflict_num.resize(0);
     return;
+}
+
+
+
+void EntropyV3::etp_tracking_replay(uint64_t address, uint32_t addr_idx) {
+    /*
+     * update correlation trackers
+     * rules:
+     * - if bit_i and bit_j move in the same fashion (both flip, both not flip): correl_i_j = 1
+     * - else: correl_i_j = 0
+     */
+
+    // update correlation counters
+    bool should_reset_correl = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        // do not update the trackers if curr_addr == last_addr
+        if ((m_addr_hist[idx] == 0) || (address == m_addr_hist[idx]))
+            continue;
+
+        uint64_t bit_flips = address ^ m_addr_hist[idx];
+        uint32_t correl_table_idx = 0;
+        
+        for (uint32_t i=0; i < IDX_SIZE; ++i) {
+            for (uint32_t j=IDX_SIZE; j < MAX_ADDRESS_BITS; ++j) {
+                uint32_t bit_i_j_flip_correl = ((bit_flips >> i) & 1) ^ ((bit_flips >> j) & 1);
+                if (bit_i_j_flip_correl == 0) {
+                    correl_table[correl_table_idx].m_entropy += m_conflict_num[addr_idx];
+                    if (correl_table[correl_table_idx].m_entropy >= V3_COR_CTR_MAX) {
+                        should_reset_correl = true;
+                    }
+                }
+                correl_table_idx++;
+            }
+        }
+    }
+
+    // update entropy trackers
+    bool should_reset_entropy = false;
+    bool should_reset_ptn_entropy = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        // do not update the trackers if curr_addr == last_addr
+        if (address == m_addr_hist[idx])
+            continue;
+        
+        // compare curr_addr vs. last_addr bit by bit
+        for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
+            bool is_flipped = (bool) ((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1);
+            if (is_flipped) {    // A ^ B == 1 => A != B => high entropy => increment entropy
+                itv_entropy[i].m_entropy += m_conflict_num[addr_idx];
+                if (itv_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
+                    should_reset_entropy = true;
+                }
+            }
+            itv_ptn_entropy[i].m_entropy += ((is_flipped ^ last_access_flip_behavior[i]) * m_conflict_num[addr_idx]);
+            last_access_flip_behavior[i] = is_flipped;
+            if (itv_ptn_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
+                should_reset_ptn_entropy = true;
+            }
+        }
+    }
+
+    // update bit-pair entropy trackers
+    bool should_reset_bitpair_entropy = false;
+    bool should_reset_bitpair_pattern = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        // do not update the trackers if curr_addr == last_addr
+        if (address == m_addr_hist[idx])
+            continue;
+
+        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
+            uint32_t curr_addr_bitpair_xor_output = ((address >> bitpair_entropy[i].m_segid[0]) & 1) ^ ((address >> bitpair_entropy[i].m_segid[1]) & 1);
+            uint32_t last_addr_bitpair_xor_output = ((m_addr_hist[idx] >> bitpair_entropy[i].m_segid[0]) & 1) ^ ((m_addr_hist[idx] >> bitpair_entropy[i].m_segid[1]) & 1);
+            bool bitpair_flip = (bool) (curr_addr_bitpair_xor_output ^ last_addr_bitpair_xor_output);
+            if (bitpair_flip) {
+                bitpair_entropy[i].m_entropy += m_conflict_num[addr_idx];
+                if (bitpair_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
+                    should_reset_bitpair_entropy = true;
+                }
+            }
+            bitpair_ptn_ctr[i].m_entropy += ((bitpair_flip ^ last_access_bitpair_flip_behavior[i]) * m_conflict_num[addr_idx]);
+            last_access_bitpair_flip_behavior[i] = bitpair_flip;
+            if (bitpair_ptn_ctr[i].m_entropy >= V3_ETP_CTR_MAX) {
+                should_reset_bitpair_pattern = true;
+            }
+        }
+    }
+
+    bool duplicate_addr = false;
+    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
+        if (address == m_addr_hist[idx])
+            duplicate_addr = true;
+    }
+
+    // save curr_addr
+    if (!duplicate_addr) {
+        m_addr_hist.push_back(address);
+        while (m_addr_hist.size() > HISTORY_LENGTH)
+            m_addr_hist.erase(m_addr_hist.begin());
+    }
+
+    if (should_reset_entropy) {
+        num_reset_itv++;
+        for (uint32_t i=0; i < itv_entropy.size(); ++i) {
+            itv_entropy[i].m_entropy /= 4;
+        }
+    }
+
+    if (should_reset_ptn_entropy) {
+        num_reset_itv_ptn++;
+        for (uint32_t i=0; i < itv_ptn_entropy.size(); ++i) {
+            itv_ptn_entropy[i].m_entropy /= 4;
+        }
+    }
+
+    if (should_reset_correl) {
+        num_reset_cor++;
+        for (uint32_t i=0; i < correl_table.size(); ++i) {
+            correl_table[i].m_entropy /= 4;
+        }
+    }
+
+    if (should_reset_bitpair_entropy) {
+        num_reset_bitpair_etp++;
+        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
+            bitpair_entropy[i].m_entropy /= 4;
+        }
+    }
+
+    if (should_reset_bitpair_pattern) {
+        num_reset_bitpair_ptn++;
+        for (uint32_t i=0; i < bitpair_ptn_ctr.size(); ++i) {
+            bitpair_ptn_ctr[i].m_entropy /= 4;
+        }
+    }
 }

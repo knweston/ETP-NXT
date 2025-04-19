@@ -8,9 +8,9 @@
 #define V3_SKIP_UPDATE_PF 0
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
-#define V3_UPDATE_HITMISS_SETTING 3 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
+#define V3_UPDATE_HITMISS_SETTING 0 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
 #define V3_SENSE_THRESHOLD 4
-#define CUTOFF_PRORATE 0.8
+#define CUTOFF_PRORATE 0.5
 #define ETP_CUTOFF_STARTRATE 0.00
 
 class EntropyV3 : public EntropyIndex {
@@ -120,6 +120,7 @@ public:
     
     vector<uint32_t> read_dna_config(string app_name);
     vector<uint32_t> parse_config(string input_line);
+    void     etp_tracking_replay(uint64_t address, uint32_t addr_idx);
 
 protected:
     vector<BitEntropy>  correl_table;
