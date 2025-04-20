@@ -339,7 +339,6 @@ void EntropyV3::etp_tracker_access_update(uint64_t address) {
     }
 }
 
-
 void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
     // sort the index bits based on their entropy, from lowest to highest
     // vector<BitEntropy> sorted_ovr = ovr_entropy;
@@ -420,14 +419,6 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     // cout << "c6_seq_a:  " << vec_to_string(c6_seq_a) << endl;
     // cout << "c6_seq_b:  " << vec_to_string(c6_seq_b) << endl;
     // x_seq_b = c6_seq_b;
-
-    vector<uint32_t> c7_seq_a;
-    vector<uint32_t> c7_seq_b;
-    get_cfg_7(x_seq_a, x_seq_b, c7_seq_a, c7_seq_b);
-    cout << "c7_seq_a:  " << vec_to_string(c7_seq_a) << endl;
-    cout << "c7_seq_b:  " << vec_to_string(c7_seq_b) << endl;
-    x_seq_a = c7_seq_a;
-    x_seq_b = c7_seq_b;
 
     // vector<uint32_t> cgen_seq_a;
     // vector<uint32_t> cgen_seq_b;
@@ -1012,9 +1003,6 @@ vector<uint32_t> EntropyV3::read_dna_config(string app_name) {
         }
     }
 }
-
-
-
 vector<uint32_t> EntropyV3::parse_config(string input_line) {
     // input format: [app_name] = [dna_sequence in space-separated-numbers format]
     vector<uint32_t> read_sequence;
@@ -1034,9 +1022,6 @@ vector<uint32_t> EntropyV3::parse_config(string input_line) {
     
     return read_sequence;
 }
-
-
-
 void EntropyV3::get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                                 vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     c_seq_a = m_genetic_cfg_a;    // one sequence must be the nohash index
@@ -1055,240 +1040,4 @@ void EntropyV3::get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_s
              << endl;
     }
     return;
-}
-
-
-void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
-    
-    c_seq_a = x_seq_a;    // one sequence must be the nohash index
-    sort(m_etpv3_addr_hist.begin(), m_etpv3_addr_hist.end());
-    for (uint32_t i=1; i < m_etpv3_addr_hist.size(); ++i) {
-        if (m_etpv3_addr_hist[i] == m_etpv3_addr_hist[i-1]) {
-            if ((m_conflict_addr_hist.size() == 0) || (m_etpv3_addr_hist[i] != m_conflict_addr_hist.back())) {
-                m_conflict_addr_hist.push_back(m_etpv3_addr_hist[i]);
-                m_conflict_num.push_back(1);
-            }
-            else {
-                m_conflict_num[m_conflict_num.size()-1]++;
-            }
-        }
-    }
-
-    // for (uint32_t i=0; i < m_etpv3_addr_hist.size(); ++i) {
-    //     cout << "m_etpv3_addr_hist[" << i << "]: " << m_etpv3_addr_hist[i] << endl; 
-    // }
-    // for (uint32_t i=0; i < m_conflict_addr_hist.size(); ++i) {
-    //     cout << "m_conflict_addr_hist[" << i << "]: " << m_conflict_addr_hist[i] 
-    //          << ". m_conflict_num[" << i << "]: " << m_conflict_num[i] << endl;
-    // }
-    // cout << endl;
-    uint32_t total_conflicts = 0;
-    for (uint32_t i=0; i < m_conflict_num.size(); ++i) {
-        total_conflicts += m_conflict_num[i];
-    }
-    cout << "total addresses: " << m_conflict_addr_hist.size() << endl;
-    cout << "total conflicts: " << total_conflicts << endl;
-
-    cout << "Reset counters before replay\n";
-    for (uint32_t i=0; i < itv_entropy.size(); ++i) {
-        itv_entropy[i].m_entropy = 0;
-    }
-    for (uint32_t i=0; i < correl_table.size(); ++i) {
-        correl_table[i].m_entropy = 0;
-    }
-    for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
-        bitpair_entropy[i].m_entropy = 0;
-    }
-    for (uint32_t i=0; i < bitpair_ptn_ctr.size(); ++i) {
-        bitpair_ptn_ctr[i].m_entropy = 0;
-    }
-    for (uint32_t i=0; i < itv_ptn_entropy.size(); ++i) {
-        itv_ptn_entropy[i].m_entropy = 0;
-    }
-    m_addr_hist.resize(0);
-    m_addr_hist.push_back(0);
-    last_access_bitpair_flip_behavior.resize(0);
-    last_access_bitpair_flip_behavior.resize(bitpair_ptn_ctr.size());
-    last_access_flip_behavior.resize(0);
-    last_access_flip_behavior.resize(itv_ptn_entropy.size());
-    
-    for (uint32_t i=0; i < m_conflict_addr_hist.size(); ++i) {
-        etp_tracking_replay(m_conflict_addr_hist[i], i);
-        // etp_tracker_access_update(m_conflict_addr_hist[i]);
-    }
-    cout << "Replay completed\n";
-    
-    
-    
-    cout << endl;
-    vector<BitEntropy> sorted_itv = itv_entropy;
-    sort(sorted_itv.begin(), sorted_itv.end());
-    std::reverse(sorted_itv.begin(), sorted_itv.end());
-    cout << "Sorted ITV:   " << etp_vector_to_string(sorted_itv) << endl;
-
-    vector<BitEntropy> sorted_itv_ptn = itv_ptn_entropy;
-    sort(sorted_itv_ptn.begin(), sorted_itv_ptn.end());
-    std::reverse(sorted_itv_ptn.begin(), sorted_itv_ptn.end());
-    cout << "Sorted PTN:   " << etp_vector_to_string(sorted_itv_ptn) << endl;
-
-    vector<BitEntropy> sorted_bitpair_etp = bitpair_entropy;
-    sort(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
-    std::reverse(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
-    cout << "Sorted BPE:   " << etp_vector_to_string(sorted_bitpair_etp) << endl;
- 
-    vector<BitEntropy> sorted_bitpair_pattern = bitpair_ptn_ctr;
-    sort(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
-    std::reverse(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
-    cout << "Sorted BPP:   " << etp_vector_to_string(sorted_bitpair_pattern) << endl;
-
-    vector<BitEntropy> sorted_corr = correl_table;
-    sort(sorted_corr.begin(), sorted_corr.end());
-    cout << "Sorted COR:   " << etp_vector_to_string(sorted_corr) << endl;
-    cout << endl;
-
-    // get_cfg_etp(x_seq_a, x_seq_b, c_seq_a, c_seq_b); // etp3d0 + warmup 2 intervals
-    // get_cfg_1(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d1
-    // get_cfg_4(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d2
-    get_cfg_5(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d3
-    // get_cfg_genetic(x_seq_a, x_seq_b, c_seq_a, c_seq_b);    // etp3d4
-
-    m_etpv3_addr_hist.resize(0);
-    m_conflict_addr_hist.resize(0);
-    m_conflict_num.resize(0);
-    return;
-}
-
-
-
-void EntropyV3::etp_tracking_replay(uint64_t address, uint32_t addr_idx) {
-    /*
-     * update correlation trackers
-     * rules:
-     * - if bit_i and bit_j move in the same fashion (both flip, both not flip): correl_i_j = 1
-     * - else: correl_i_j = 0
-     */
-
-    // update correlation counters
-    bool should_reset_correl = false;
-    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-        // do not update the trackers if curr_addr == last_addr
-        if ((m_addr_hist[idx] == 0) || (address == m_addr_hist[idx]))
-            continue;
-
-        uint64_t bit_flips = address ^ m_addr_hist[idx];
-        uint32_t correl_table_idx = 0;
-        
-        for (uint32_t i=0; i < IDX_SIZE; ++i) {
-            for (uint32_t j=IDX_SIZE; j < MAX_ADDRESS_BITS; ++j) {
-                uint32_t bit_i_j_flip_correl = ((bit_flips >> i) & 1) ^ ((bit_flips >> j) & 1);
-                if (bit_i_j_flip_correl == 0) {
-                    correl_table[correl_table_idx].m_entropy += m_conflict_num[addr_idx];
-                    if (correl_table[correl_table_idx].m_entropy >= V3_COR_CTR_MAX) {
-                        should_reset_correl = true;
-                    }
-                }
-                correl_table_idx++;
-            }
-        }
-    }
-
-    // update entropy trackers
-    bool should_reset_entropy = false;
-    bool should_reset_ptn_entropy = false;
-    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-        // do not update the trackers if curr_addr == last_addr
-        if (address == m_addr_hist[idx])
-            continue;
-        
-        // compare curr_addr vs. last_addr bit by bit
-        for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
-            bool is_flipped = (bool) ((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1);
-            if (is_flipped) {    // A ^ B == 1 => A != B => high entropy => increment entropy
-                itv_entropy[i].m_entropy += m_conflict_num[addr_idx];
-                if (itv_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
-                    should_reset_entropy = true;
-                }
-            }
-            itv_ptn_entropy[i].m_entropy += ((is_flipped ^ last_access_flip_behavior[i]) * m_conflict_num[addr_idx]);
-            last_access_flip_behavior[i] = is_flipped;
-            if (itv_ptn_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
-                should_reset_ptn_entropy = true;
-            }
-        }
-    }
-
-    // update bit-pair entropy trackers
-    bool should_reset_bitpair_entropy = false;
-    bool should_reset_bitpair_pattern = false;
-    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-        // do not update the trackers if curr_addr == last_addr
-        if (address == m_addr_hist[idx])
-            continue;
-
-        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
-            uint32_t curr_addr_bitpair_xor_output = ((address >> bitpair_entropy[i].m_segid[0]) & 1) ^ ((address >> bitpair_entropy[i].m_segid[1]) & 1);
-            uint32_t last_addr_bitpair_xor_output = ((m_addr_hist[idx] >> bitpair_entropy[i].m_segid[0]) & 1) ^ ((m_addr_hist[idx] >> bitpair_entropy[i].m_segid[1]) & 1);
-            bool bitpair_flip = (bool) (curr_addr_bitpair_xor_output ^ last_addr_bitpair_xor_output);
-            if (bitpair_flip) {
-                bitpair_entropy[i].m_entropy += m_conflict_num[addr_idx];
-                if (bitpair_entropy[i].m_entropy >= V3_ETP_CTR_MAX) {
-                    should_reset_bitpair_entropy = true;
-                }
-            }
-            bitpair_ptn_ctr[i].m_entropy += ((bitpair_flip ^ last_access_bitpair_flip_behavior[i]) * m_conflict_num[addr_idx]);
-            last_access_bitpair_flip_behavior[i] = bitpair_flip;
-            if (bitpair_ptn_ctr[i].m_entropy >= V3_ETP_CTR_MAX) {
-                should_reset_bitpair_pattern = true;
-            }
-        }
-    }
-
-    bool duplicate_addr = false;
-    for (uint32_t idx=0; idx < m_addr_hist.size(); ++idx) {
-        if (address == m_addr_hist[idx])
-            duplicate_addr = true;
-    }
-
-    // save curr_addr
-    if (!duplicate_addr) {
-        m_addr_hist.push_back(address);
-        while (m_addr_hist.size() > HISTORY_LENGTH)
-            m_addr_hist.erase(m_addr_hist.begin());
-    }
-
-    if (should_reset_entropy) {
-        num_reset_itv++;
-        for (uint32_t i=0; i < itv_entropy.size(); ++i) {
-            itv_entropy[i].m_entropy /= 4;
-        }
-    }
-
-    if (should_reset_ptn_entropy) {
-        num_reset_itv_ptn++;
-        for (uint32_t i=0; i < itv_ptn_entropy.size(); ++i) {
-            itv_ptn_entropy[i].m_entropy /= 4;
-        }
-    }
-
-    if (should_reset_correl) {
-        num_reset_cor++;
-        for (uint32_t i=0; i < correl_table.size(); ++i) {
-            correl_table[i].m_entropy /= 4;
-        }
-    }
-
-    if (should_reset_bitpair_entropy) {
-        num_reset_bitpair_etp++;
-        for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
-            bitpair_entropy[i].m_entropy /= 4;
-        }
-    }
-
-    if (should_reset_bitpair_pattern) {
-        num_reset_bitpair_ptn++;
-        for (uint32_t i=0; i < bitpair_ptn_ctr.size(); ++i) {
-            bitpair_ptn_ctr[i].m_entropy /= 4;
-        }
-    }
 }

@@ -51,8 +51,8 @@
 # python3 autoslurm-1core.py -a dpc3-specmore -o etp3d2 -e etp3d2 -w 2 -t more-traces
 # python3 autoslurm-1core.py -a dpc3-simpoint -o etp3d3 -e etp3d3 -w 2 -t dpc3-traces
 # python3 autoslurm-1core.py -a dpc3-specmore -o etp3d3 -e etp3d3 -w 2 -t more-traces
-python3 autoslurm-1core.py -a dpc3-simpoint -o etp3d4 -e etp3d4 -w 2 -t dpc3-traces -f fixed_idx_genetic.ini
-python3 autoslurm-1core.py -a dpc3-specmore -o etp3d4 -e etp3d4 -w 2 -t more-traces -f fixed_idx_genetic.ini
+# python3 autoslurm-1core.py -a dpc3-simpoint -o etp3d4 -e etp3d4 -w 2 -t dpc3-traces -f fixed_idx_genetic.ini
+# python3 autoslurm-1core.py -a dpc3-specmore -o etp3d4 -e etp3d4 -w 2 -t more-traces -f fixed_idx_genetic.ini
 
 # python3 autoslurm-1core.py -a dpc3-simpoint -o etp3d1-hitmiss-skipwbhit -e etp3d1-hitmiss-skipwbhit -w 2 -t dpc3-traces
 # python3 autoslurm-1core.py -a dpc3-specmore -o etp3d1-hitmiss-skipwbhit -e etp3d1-hitmiss-skipwbhit -w 2 -t more-traces

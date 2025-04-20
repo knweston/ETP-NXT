@@ -116,11 +116,10 @@ public:
     void     get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                             vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);   
+                             vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     
     vector<uint32_t> read_dna_config(string app_name);
     vector<uint32_t> parse_config(string input_line);
-    void     etp_tracking_replay(uint64_t address, uint32_t addr_idx);
 
 protected:
     vector<BitEntropy>  correl_table;
