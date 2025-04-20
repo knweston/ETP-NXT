@@ -9,7 +9,7 @@
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 0 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
-#define V3_SENSE_THRESHOLD 4
+#define V3_SENSE_THRESHOLD 0
 #define CUTOFF_PRORATE 0.5
 #define ETP_CUTOFF_STARTRATE 0.00
 

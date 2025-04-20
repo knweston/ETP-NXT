@@ -444,7 +444,7 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     for (uint32_t i=0; i < x_seq_b.size(); ++i) {
         next_etp += itv_entropy[x_seq_b[i]].m_entropy;
     }
-    if (num_interval>0) {
+    if (num_interval>1) {
         for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
             last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
         }
@@ -454,8 +454,8 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
 
     // compute COR
     double next_corr = (double)compute_sum_correl_two_sequences(x_seq_a, x_seq_b);
-    double last_corr = (num_interval>0)? (double)compute_sum_correl_two_sequences(m_last_seq_a, m_last_seq_b) : 0;
-    double corr_diff = (num_interval>0)? (last_corr-next_corr)*100/last_corr : 0;
+    double last_corr = (num_interval>1)? (double)compute_sum_correl_two_sequences(m_last_seq_a, m_last_seq_b) : 0;
+    double corr_diff = (num_interval>1)? (last_corr-next_corr)*100/last_corr : 0;
 
     // compute BPE
     double bp_etp_last = 0;
@@ -464,14 +464,14 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
         uint32_t index = compute_pair_table_idx(x_seq_a[i], x_seq_b[i]);
         bp_etp_next += bitpair_entropy[index].m_entropy;
     }
-    if (num_interval>0) {
+    if (num_interval>1) {
         cout << endl;
         for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
             uint32_t index = compute_pair_table_idx(m_last_seq_a[i], m_last_seq_b[i]);
             bp_etp_last += bitpair_entropy[index].m_entropy;
         }
     }
-    double bp_etp_diff = (num_interval>0)? (bp_etp_next-bp_etp_last)*100/bp_etp_last : 0;
+    double bp_etp_diff = (num_interval>1)? (bp_etp_next-bp_etp_last)*100/bp_etp_last : 0;
     cout << endl;
 
     cout << "seq_A last:      " << vec_to_string(m_last_seq_a) << endl;
@@ -488,7 +488,13 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     cout << "BPETP Next Cfg:  " << bp_etp_next << endl;
     cout << "BPETP imprv:     " << std::setprecision(2) << bp_etp_diff << std::setprecision(5) << "%" << endl << endl;
 
-    if (num_interval < WARMUP_INTERVALS) {
+    if (num_interval==0) {
+        x_seq_a = m_last_seq_a;
+        x_seq_b = m_last_seq_b;
+        cout << "1st interval: keep current candidate." << endl;
+    }
+
+    else if (num_interval < WARMUP_INTERVALS) {
         cout << "Reset counters on warmup intervals\n";
         num_reset_itv++;
         for (uint32_t i=0; i < itv_entropy.size(); ++i) {
@@ -1012,9 +1018,6 @@ vector<uint32_t> EntropyV3::read_dna_config(string app_name) {
         }
     }
 }
-
-
-
 vector<uint32_t> EntropyV3::parse_config(string input_line) {
     // input format: [app_name] = [dna_sequence in space-separated-numbers format]
     vector<uint32_t> read_sequence;
@@ -1034,9 +1037,6 @@ vector<uint32_t> EntropyV3::parse_config(string input_line) {
     
     return read_sequence;
 }
-
-
-
 void EntropyV3::get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                                 vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     c_seq_a = m_genetic_cfg_a;    // one sequence must be the nohash index
@@ -1114,8 +1114,8 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     last_access_flip_behavior.resize(itv_ptn_entropy.size());
     
     for (uint32_t i=0; i < m_conflict_addr_hist.size(); ++i) {
-        etp_tracking_replay(m_conflict_addr_hist[i], i);
-        // etp_tracker_access_update(m_conflict_addr_hist[i]);
+        // etp_tracking_replay(m_conflict_addr_hist[i], i);
+        etp_tracker_access_update(m_conflict_addr_hist[i]);
     }
     cout << "Replay completed\n";
     
