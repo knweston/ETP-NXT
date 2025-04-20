@@ -113,8 +113,6 @@ public:
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
-    void     get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                              vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     
