@@ -297,7 +297,7 @@ def parse_apps(apps):
          "compute_int_925"
       ]
    
-   elif apps == "gapmore":
+   elif apps == "gap":
       requested_apps = [
          "cc.kron-82B", "cc.twitter-85B", \
          "bc.road-174B","bc.road-79B","bc.road-95B",\
@@ -310,7 +310,48 @@ def parse_apps(apps):
          "cc.twitter-10B","cc.twitter-15B","cc.twitter-16B","cc.twitter-17B","cc.twitter-25B",\
          "sssp.twitter-1116B","sssp.twitter-900B",\
          "tc.twitter-2097B","tc.twitter-34B",\
-         "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B"
+         "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B",
+         "bc.urand-3004B","bc.web-1627B", \
+         "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
+         "cc.road-36B","cc.urand-353B","cc.web-24B"
+      ]
+
+   elif apps == "cloud":
+      requested_apps = [
+         "cassandra_phase0_core0",
+         "cassandra_phase1_core0",
+         "cassandra_phase2_core0",
+         "cassandra_phase3_core0",
+         "cassandra_phase4_core0",
+         "cassandra_phase5_core0",
+         "classification_phase0_core0",
+         "classification_phase1_core0",
+         "classification_phase2_core0",
+         "classification_phase3_core0",
+         "classification_phase4_core0",
+         "classification_phase5_core0",
+         "cloud9_phase0_core0",
+         "cloud9_phase1_core0",
+         "cloud9_phase2_core0",
+         "cloud9_phase3_core0",
+         "cloud9_phase4_core0",
+         "cloud9_phase5_core0",
+         "nutch_phase0_core0",
+         "nutch_phase1_core0",
+         "nutch_phase1_core1",
+         "nutch_phase2_core0",
+         "nutch_phase3_core0",
+         "nutch_phase3_core3",
+         "nutch_phase4_core0",
+         "nutch_phase5_core0",
+         "streaming_phase0_core0",
+         "streaming_phase1_core0",
+         "streaming_phase2_core0",
+         "streaming_phase3_core0",
+         "streaming_phase3_core1",
+         "streaming_phase4_core0",
+         "streaming_phase5_core0",
+         "streaming_phase5_core2"
       ]
 
    elif apps == "dpc3-simpoint":

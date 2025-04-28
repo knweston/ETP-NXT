@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ "$#" -lt 4 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: ./run_champsim.sh [BINARY] [N_WARM] [N_SIM] [CONFIG] [TRACE] [RESULT_FOLDER]"
+    echo "Usage: ./run_champsim.sh [BINARY] [N_WARM] [N_SIM] [CONFIG] [TRACE] [RESULT_FOLDER] [CLOUDSUITE]"
     exit 1
 fi
 
@@ -11,6 +11,7 @@ N_SIM=${3}
 CONFIG=${4}
 TRACE=${5}
 RESULT_FOLDER=${6}
+CLOUDSUITE=${7}
 
 # Sanity check
 if [ ! -f "$BINARY" ] ; then
@@ -41,4 +42,4 @@ TRACE_NAME="${TRACE_TOKENS[@]: -1}"
 IFS=''
 
 mkdir -p results_${N_SIM}M/${RESULT_FOLDER}
-${BINARY} -warmup_instructions ${N_WARM}000000 -simulation_instructions ${N_SIM}000000 -config ${CONFIG} -traces ${TRACE} >> results_${N_SIM}M/${RESULT_FOLDER}/$TRACE_NAME.txt
+${BINARY} -warmup_instructions ${N_WARM}000000 -simulation_instructions ${N_SIM}000000 -config ${CONFIG} -traces ${TRACE} ${CLOUDSUITE} >> results_${N_SIM}M/${RESULT_FOLDER}/$TRACE_NAME.txt

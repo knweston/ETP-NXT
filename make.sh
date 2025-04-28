@@ -19,8 +19,8 @@
 # python3 autobuild.py -i entropy -p next_line -d spp_dev -o entropy
 # python3 autobuild.py -i skewed -p next_line -d spp_dev -o skewed
 
-# python3 autobuild.py -i nohash -o noftr
-# python3 autobuild.py -i xorhash -o xorftr
+# python3 autobuild.py -i nohash -o nohash
+# python3 autobuild.py -i xorhash -o xorhash
 # python3 autobuild.py -i primeideal -o primeideal
 # python3 autobuild.py -i entropy -o entropy
 # python3 autobuild.py -i skewed -o skewed
@@ -29,5 +29,5 @@
 # python3 autobuild.py -i xorhash -p next_line -d spp_dev -o xorhash
 # python3 autobuild.py -i entropy -p next_line -d spp_dev -o entropy
 
-python3 autobuild.py -i entropyv3 -o etp3b6
-python3 autobuild.py -i entropyv3 -p next_line -d spp_dev -o etp3b6
+python3 autobuild.py -i entropyv3 -o etp3b7
+python3 autobuild.py -i entropyv3 -p next_line -d spp_dev -o etp3b7

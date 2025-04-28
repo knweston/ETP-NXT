@@ -10,7 +10,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="3:00:00", mem="1G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="1G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
@@ -91,6 +91,10 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
         if trace_folder == "goog-traces":
             cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.gz'} $TMPDIR\n"
             cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.gz'}"
+        elif trace_folder == "cste-traces":
+            cmd += f"cp {trace_dir+'/'+app+'.trace.xz'} $TMPDIR\n"
+            cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.trace.xz'}"
+            cmd += f" -cloudsuite"
         else:
             cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
             cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.xz'}"
@@ -100,8 +104,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
         else:
             cmd += f" {result_output}"
 
-        if apps == "cloud":
-            cmd += f" -cloudsuite"
         cmd += f"\n"
 
         new_script = SlurmScript(cluster, app+"_"+executable, job_dir, job_output_dir, cmd)

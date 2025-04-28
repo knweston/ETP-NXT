@@ -5,12 +5,13 @@
 
 #define V3_ETP_CTR_MAX 1048576  // 20-bit
 #define V3_COR_CTR_MAX 1048576  // 20-bit
-#define V3_SKIP_UPDATE_PF 0
+#define V3_SKIP_UPDATE_PF 1
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
-#define V3_UPDATE_HITMISS_SETTING 0 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
+#define V3_UPDATE_HITMISS_SETTING 3 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
 #define V3_SENSE_THRESHOLD 4
-#define CUTOFF_PRORATE 0.5
+#define V3_WARMUP_INTERVALS 2
+#define CUTOFF_PRORATE 0.8
 #define ETP_CUTOFF_STARTRATE 0.00
 
 class EntropyV3 : public EntropyIndex {
@@ -46,24 +47,24 @@ public:
         }
         last_access_flip_behavior.resize(itv_ptn_entropy.size());
 
-        // cout << "CONFIG FILE: " << CONFIG_FILE << endl;
-        // for (uint32_t i=0; i<NUM_CPUS; ++i) {
-        //     cout << "APP_LIST[" << i << "]: " << APP_LIST[i] << endl;
-        //     vector<uint32_t> dna_sequence = read_dna_config(APP_LIST[i]);
-        //     for (int32_t j=dna_sequence.size()-1; j > 0; j-=2) {
-        //         m_genetic_cfg_a.push_back(dna_sequence[j-1]);
-        //         m_genetic_cfg_b.push_back(dna_sequence[j]);
-        //     }
-        // }
-        // cout << "m_genetic_cfg_a: " << vec_to_string(m_genetic_cfg_a) << endl;
-        // cout << "m_genetic_cfg_b: " << vec_to_string(m_genetic_cfg_b) << endl;
+        cout << "CONFIG FILE: " << CONFIG_FILE << endl;
+        for (uint32_t i=0; i<NUM_CPUS; ++i) {
+            cout << "APP_LIST[" << i << "]: " << APP_LIST[i] << endl;
+            vector<uint32_t> dna_sequence = read_dna_config(APP_LIST[i]);
+            for (int32_t j=dna_sequence.size()-1; j > 0; j-=2) {
+                m_genetic_cfg_a.push_back(dna_sequence[j-1]);
+                m_genetic_cfg_b.push_back(dna_sequence[j]);
+            }
+        }
+        cout << "m_genetic_cfg_a: " << vec_to_string(m_genetic_cfg_a) << endl;
+        cout << "m_genetic_cfg_b: " << vec_to_string(m_genetic_cfg_b) << endl;
 
         if (x_print_cfg) {
             cout << endl;
             cout << "========================================================================" << endl;
             cout << "ENTROPY-V3 INDEX CONFIGURATION" << endl;
             cout << "========================================================================" << endl;
-            cout << "Warmup intervals:     " << WARMUP_INTERVALS << endl;
+            cout << "V3 Warmup intervals:  " << WARMUP_INTERVALS << endl;
             cout << "Remap interval:       " << REMAP_INTERVAL << endl;
             cout << "Interval size:        " << INTERVAL_SIZE << endl;
             cout << "History length:       " << HISTORY_LENGTH << endl;
@@ -115,6 +116,8 @@ public:
                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                              vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+    void     get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     
     vector<uint32_t> read_dna_config(string app_name);
     vector<uint32_t> parse_config(string input_line);
@@ -135,10 +138,6 @@ protected:
     uint32_t num_updates{0};
 
     vector<uint32_t> m_genetic_cfg_a, m_genetic_cfg_b;
-    vector<uint64_t> m_etpv3_addr_hist;
-
-    vector<uint64_t> m_conflict_addr_hist;
-    vector<uint32_t> m_conflict_num;
 };
 
 #endif // ENTROPY_INDEX_V3_H

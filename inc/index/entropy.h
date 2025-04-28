@@ -14,7 +14,7 @@
 
 // common params
 #define HISTORY_LENGTH  1
-#define SENSE_THRESHOLD 4
+#define SENSE_THRESHOLD 20
 #define RECONFIG_NO_DELAY 1
 #define UPDATE_MISS_ONLY 1
 
@@ -22,7 +22,7 @@
 #define FIX_SEQUENCE 3
 #define NOHASH_IF_SEQ_IDX_HIGHEST_ETP 0
 #define SKIP_SAME_BIT_CANDIDATE 0
-#define WARMUP_INTERVALS 1
+#define WARMUP_INTERVALS 2
 
 
 inline
