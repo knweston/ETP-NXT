@@ -704,12 +704,15 @@ int main(int argc, char** argv)
             uint32_t appname_startpt = 0;
 			uint32_t appname_endpt;
 
-			if(path.find(".champsimtrace.xz") != -1){
+			if(path.find(".champsimtrace.xz") != -1) {
 				appname_endpt = path.find(".champsimtrace.xz");
 			}
-			else{
+			else if (path.find(".champsimtrace.gz") != -1) {
 				appname_endpt = path.find(".champsimtrace.gz");
 			}
+            else {
+                appname_endpt = path.find(".trace.xz");
+            }
 			
             for (uint32_t i=0; i<path.size(); ++i) {
                 if (path[i] == '/')

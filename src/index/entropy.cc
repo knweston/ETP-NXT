@@ -353,7 +353,6 @@ void EntropyIndex::compute_new_config(vector<BitEntropy> entropy, vector<uint32_
             if (seq_b_idx == x_seq_a.size())
                 break;
         }
-        sort(x_seq_b.begin(), x_seq_b.end(), greater<uint32_t>());   // test
     }
 
     // A = maxETP, B = zeros

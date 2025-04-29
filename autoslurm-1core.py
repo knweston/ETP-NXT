@@ -94,7 +94,6 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
         elif trace_folder == "cste-traces":
             cmd += f"cp {trace_dir+'/'+app+'.trace.xz'} $TMPDIR\n"
             cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.trace.xz'}"
-            cmd += f" -cloudsuite"
         else:
             cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
             cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} {num_warmup} {num_simulate} {config_dir + '/' + config_file} {'$TMPDIR/'+app+'.champsimtrace.xz'}"
@@ -103,6 +102,9 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
             cmd += f" {executable}" # default result folder name = exec file name
         else:
             cmd += f" {result_output}"
+
+        if trace_folder == "cste-traces":
+            cmd += f" -cloudsuite"
 
         cmd += f"\n"
 

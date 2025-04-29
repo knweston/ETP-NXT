@@ -28,6 +28,12 @@
 # python3 autobuild.py -i nohash -p next_line -d spp_dev -o nohash
 # python3 autobuild.py -i xorhash -p next_line -d spp_dev -o xorhash
 # python3 autobuild.py -i entropy -p next_line -d spp_dev -o entropy
+# python3 autobuild.py -i entropyv3 -p next_line -d spp_dev -o etp3b7m
 
-python3 autobuild.py -i entropyv3 -o etp3b7
-python3 autobuild.py -i entropyv3 -p next_line -d spp_dev -o etp3b7
+# python3 autobuild.py -i nohash -o nohash
+# python3 autobuild.py -i xorhash -o xorhash
+# python3 autobuild.py -i entropy -o entropy
+# python3 autobuild.py -i entropyv3 -o etp3b7m
+
+# python3 autobuild.py -i entropy -o fxetpfix
+# python3 autobuild.py -i entropy -p next_line -d spp_dev -o fxetpfix

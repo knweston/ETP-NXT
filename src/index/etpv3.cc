@@ -406,13 +406,13 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     // cout << "c4_seq_b:  " << vec_to_string(c4_seq_b) << endl;
     // x_seq_b = c4_seq_b;
 
-    // vector<uint32_t> c5_seq_a;
-    // vector<uint32_t> c5_seq_b;
-    // get_cfg_5(x_seq_a, x_seq_b, c5_seq_a, c5_seq_b);
-    // cout << "c5_seq_a:  " << vec_to_string(c5_seq_a) << endl;
-    // cout << "c5_seq_b:  " << vec_to_string(c5_seq_b) << endl;
-    // x_seq_a = c5_seq_a;
-    // x_seq_b = c5_seq_b;
+    vector<uint32_t> c5_seq_a;
+    vector<uint32_t> c5_seq_b;
+    get_cfg_5(x_seq_a, x_seq_b, c5_seq_a, c5_seq_b);
+    cout << "c5_seq_a:  " << vec_to_string(c5_seq_a) << endl;
+    cout << "c5_seq_b:  " << vec_to_string(c5_seq_b) << endl;
+    x_seq_a = c5_seq_a;
+    x_seq_b = c5_seq_b;
 
     // vector<uint32_t> c6_seq_a;
     // vector<uint32_t> c6_seq_b;
@@ -428,13 +428,13 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     // cout << "c7_seq_b:  " << vec_to_string(c7_seq_b) << endl;
     // x_seq_b = c7_seq_b;
 
-    vector<uint32_t> cgen_seq_a;
-    vector<uint32_t> cgen_seq_b;
-    get_cfg_genetic(x_seq_a, x_seq_b, cgen_seq_a, cgen_seq_b);
-    cout << "cgen_seq_a:  " << vec_to_string(cgen_seq_a) << endl;
-    cout << "cgen_seq_b:  " << vec_to_string(cgen_seq_b) << endl;
-    x_seq_a = cgen_seq_a;
-    x_seq_b = cgen_seq_b;
+    // vector<uint32_t> cgen_seq_a;
+    // vector<uint32_t> cgen_seq_b;
+    // get_cfg_genetic(x_seq_a, x_seq_b, cgen_seq_a, cgen_seq_b);
+    // cout << "cgen_seq_a:  " << vec_to_string(cgen_seq_a) << endl;
+    // cout << "cgen_seq_b:  " << vec_to_string(cgen_seq_b) << endl;
+    // x_seq_a = cgen_seq_a;
+    // x_seq_b = cgen_seq_b;
 
     // compute ETP
     double etp_diff = 0;

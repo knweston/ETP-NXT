@@ -47,17 +47,17 @@ public:
         }
         last_access_flip_behavior.resize(itv_ptn_entropy.size());
 
-        cout << "CONFIG FILE: " << CONFIG_FILE << endl;
-        for (uint32_t i=0; i<NUM_CPUS; ++i) {
-            cout << "APP_LIST[" << i << "]: " << APP_LIST[i] << endl;
-            vector<uint32_t> dna_sequence = read_dna_config(APP_LIST[i]);
-            for (int32_t j=dna_sequence.size()-1; j > 0; j-=2) {
-                m_genetic_cfg_a.push_back(dna_sequence[j-1]);
-                m_genetic_cfg_b.push_back(dna_sequence[j]);
-            }
-        }
-        cout << "m_genetic_cfg_a: " << vec_to_string(m_genetic_cfg_a) << endl;
-        cout << "m_genetic_cfg_b: " << vec_to_string(m_genetic_cfg_b) << endl;
+        // cout << "CONFIG FILE: " << CONFIG_FILE << endl;
+        // for (uint32_t i=0; i<NUM_CPUS; ++i) {
+        //     cout << "APP_LIST[" << i << "]: " << APP_LIST[i] << endl;
+        //     vector<uint32_t> dna_sequence = read_dna_config(APP_LIST[i]);
+        //     for (int32_t j=dna_sequence.size()-1; j > 0; j-=2) {
+        //         m_genetic_cfg_a.push_back(dna_sequence[j-1]);
+        //         m_genetic_cfg_b.push_back(dna_sequence[j]);
+        //     }
+        // }
+        // cout << "m_genetic_cfg_a: " << vec_to_string(m_genetic_cfg_a) << endl;
+        // cout << "m_genetic_cfg_b: " << vec_to_string(m_genetic_cfg_b) << endl;
 
         if (x_print_cfg) {
             cout << endl;
