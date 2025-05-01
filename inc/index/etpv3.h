@@ -3,8 +3,8 @@
 
 #include "index/entropy.h"
 
-#define V3_ETP_CTR_MAX 1048576  // 20-bit
-#define V3_COR_CTR_MAX 1048576  // 20-bit
+#define V3_ETP_CTR_MAX 65536  // 20-bit: 1048576
+#define V3_COR_CTR_MAX 65536  // 20-bit
 #define V3_SKIP_UPDATE_PF 1
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
@@ -12,7 +12,7 @@
 #define V3_SENSE_THRESHOLD 4
 #define V3_WARMUP_INTERVALS 2
 #define CUTOFF_PRORATE 0.8
-#define ETP_CUTOFF_STARTRATE 0.00
+#define ETP_CUTOFF_STARTRATE 0
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -64,7 +64,7 @@ public:
             cout << "========================================================================" << endl;
             cout << "ENTROPY-V3 INDEX CONFIGURATION" << endl;
             cout << "========================================================================" << endl;
-            cout << "V3 Warmup intervals:  " << WARMUP_INTERVALS << endl;
+            cout << "V3 Warmup intervals:  " << V3_WARMUP_INTERVALS << endl;
             cout << "Remap interval:       " << REMAP_INTERVAL << endl;
             cout << "Interval size:        " << INTERVAL_SIZE << endl;
             cout << "History length:       " << HISTORY_LENGTH << endl;
@@ -117,6 +117,8 @@ public:
     void     get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                              vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
+                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+    void     get_cfg_8(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
                         vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     
     vector<uint32_t> read_dna_config(string app_name);
