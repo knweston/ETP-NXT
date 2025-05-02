@@ -3,8 +3,8 @@
 
 #include "index/entropy.h"
 
-#define V3_ETP_CTR_MAX 65536  // 20-bit: 1048576
-#define V3_COR_CTR_MAX 65536  // 20-bit
+#define V3_ETP_CTR_MAX 262144  // 20-bit: 1048576
+#define V3_COR_CTR_MAX 262144  // 20-bit
 #define V3_SKIP_UPDATE_PF 1
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
@@ -12,7 +12,7 @@
 #define V3_SENSE_THRESHOLD 4
 #define V3_WARMUP_INTERVALS 2
 #define CUTOFF_PRORATE 0.8
-#define ETP_CUTOFF_STARTRATE 0
+#define ETP_CUTOFF_STARTRATE 5
 
 class EntropyV3 : public EntropyIndex {
 public:

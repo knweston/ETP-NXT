@@ -37,3 +37,6 @@
 
 # python3 autobuild.py -i entropy -o fxetpfix
 # python3 autobuild.py -i entropy -p next_line -d spp_dev -o fxetpfix
+
+python3 autobuild.py -i entropyv3 -o etp3tst21
+python3 autobuild.py -i entropyv3 -p next_line -d spp_dev -o etp3tst21

@@ -908,6 +908,7 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         uint32_t end_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],MAX_ADDRESS_BITS-1)+1;
         cout << "next_cutoff_bpe: " << next_cutoff_bpe << endl;
         vector<BitEntropy> extracted_bpe_table;
+        int32_t ETP_CUTOFF_RATE = ETP_CUTOFF_STARTRATE;
 
         cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
@@ -922,36 +923,39 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         }
         cout << endl;
 
-        for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-            if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                  && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
-                extracted_bpe_table.push_back(bitpair_entropy[j]);
-            }
-        }
-        sort(extracted_bpe_table.begin(), extracted_bpe_table.end());
-
-        if (extracted_bpe_table.size() > 0) {
-            used_bits.push_back(extracted_bpe_table[extracted_bpe_table.size()-1].m_segid[1]);
-            next_cutoff_bpe = extracted_bpe_table[extracted_bpe_table.size()-1].m_entropy * CUTOFF_PRORATE;
-            found = true;
-        }
-        if (!found) {
+        while (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-                if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                     && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
+                if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
+                                                                    && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_RATE)) {
                     extracted_bpe_table.push_back(bitpair_entropy[j]);
                 }
             }
             sort(extracted_bpe_table.begin(), extracted_bpe_table.end());
 
             if (extracted_bpe_table.size() > 0) {
-                used_bits.push_back(extracted_bpe_table[0].m_segid[1]);
-                next_cutoff_bpe = extracted_bpe_table[0].m_entropy * CUTOFF_PRORATE;
+                used_bits.push_back(extracted_bpe_table[extracted_bpe_table.size()-1].m_segid[1]);
+                next_cutoff_bpe = extracted_bpe_table[extracted_bpe_table.size()-1].m_entropy * CUTOFF_PRORATE;
                 found = true;
             }
-
             if (!found) {
-                assert(false);
+                for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
+                    if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
+                                                                        && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_RATE)) {
+                        extracted_bpe_table.push_back(bitpair_entropy[j]);
+                    }
+                }
+                sort(extracted_bpe_table.begin(), extracted_bpe_table.end());
+
+                if (extracted_bpe_table.size() > 0) {
+                    used_bits.push_back(extracted_bpe_table[0].m_segid[1]);
+                    next_cutoff_bpe = extracted_bpe_table[0].m_entropy * CUTOFF_PRORATE;
+                    found = true;
+                }
+
+                if (!found) {
+                    ETP_CUTOFF_RATE -= 1;
+                    cout << "extracted_bit_correl_table empty. Reduce cutoff ETP to: " << ETP_CUTOFF_RATE << endl;
+                }
             }
         }
 
