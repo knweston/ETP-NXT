@@ -3,16 +3,17 @@
 
 #include "index/entropy.h"
 
-#define V3_ETP_CTR_MAX 262144  // 20-bit: 1048576
-#define V3_COR_CTR_MAX 262144  // 20-bit
+#define V3_ETP_CTR_MAX 1048576  // 20-bit: 1048576
+#define V3_COR_CTR_MAX 1048576  // 20-bit
 #define V3_SKIP_UPDATE_PF 1
 #define V3_SKIP_UPDATE_WB 0
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 3 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
 #define V3_SENSE_THRESHOLD 4
-#define V3_WARMUP_INTERVALS 2
+#define V3_WARMUP_INTERVALS 1
 #define CUTOFF_PRORATE 0.8
-#define ETP_CUTOFF_STARTRATE 5
+#define ETP_CUTOFF_STARTRATE 0
+#define REPLACEMENT_POLICY 0    // 0: LRU, 1: SRRIP
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -78,6 +79,7 @@ public:
             cout << "V3_COR_CTR_MAX:       " << V3_COR_CTR_MAX << endl;
             cout << "CUTOFF_PRORATE:       " << CUTOFF_PRORATE << endl;
             cout << "ETP_CUTOFF_STARTRATE: " << ETP_CUTOFF_STARTRATE << endl;
+            cout << "REPLACEMENT_POLICY:   " << (REPLACEMENT_POLICY==1? "SRRIP" : "LRU") << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
             cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
@@ -96,6 +98,8 @@ public:
     void     etp_tracker_access_update(uint64_t address);
     void     compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     
+    uint32_t replacement_getvictim(uint32_t index);
+    void     replacement_update(uint32_t index, uint32_t way, uint32_t remapping_index, uint32_t remapping_way);
     uint32_t compute_sum_correl_two_sequences(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     uint32_t get_correl(uint32_t bit_a, uint32_t bit_b);
     uint32_t compute_pair_table_idx(uint32_t bit_a, uint32_t bit_b);

@@ -2,7 +2,93 @@ def parse_apps(apps):
    # parse requested apps
    requested_apps = apps.split("_")
 
-   if apps == "xsbench":
+   if apps == "gap":
+      requested_apps = [
+         "cc.kron-82B", "cc.twitter-85B", \
+         "bc.road-174B","bc.road-79B","bc.road-95B",\
+         "bc.twitter-876B","bc.twitter-1658B","bc.twitter-2320B","bc.twitter-309B","bc.web-2078B",\
+         "bfs.kron-154B","bfs.kron-469B", \
+         "bfs.road-112B","bfs.road-128B","bfs.road-140B","bfs.road-99B",\
+         "bfs.twitter-160B","bfs.twitter-242B","bfs.twitter-408B","bfs.twitter-44B",\
+         "bfs.urand-161B","bfs.urand-36B","bfs.urand-410B","bfs.urand-60B",\
+         "cc.kron-10B","cc.kron-17B","cc.kron-78B","cc.kron-99B",\
+         "cc.twitter-10B","cc.twitter-15B","cc.twitter-16B","cc.twitter-17B","cc.twitter-25B",\
+         "sssp.twitter-1116B","sssp.twitter-900B",\
+         "tc.twitter-2097B","tc.twitter-34B",\
+         "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B",
+         "bc.urand-3004B","bc.web-1627B", \
+         "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
+         "cc.road-36B","cc.urand-353B","cc.web-24B"
+      ]
+
+   elif apps == "cloud":
+      requested_apps = [
+         "cassandra_phase0_core0",
+         "cassandra_phase1_core0",
+         "cassandra_phase2_core0",
+         "cassandra_phase3_core0",
+         "cassandra_phase4_core0",
+         "cassandra_phase5_core0",
+         "classification_phase0_core0",
+         "classification_phase1_core0",
+         "classification_phase2_core0",
+         "classification_phase3_core0",
+         "classification_phase4_core0",
+         "classification_phase5_core0",
+         "cloud9_phase0_core0",
+         "cloud9_phase1_core0",
+         "cloud9_phase2_core0",
+         "cloud9_phase3_core0",
+         "cloud9_phase4_core0",
+         "cloud9_phase5_core0",
+         "nutch_phase0_core0",
+         "nutch_phase1_core0",
+         "nutch_phase1_core1",
+         "nutch_phase2_core0",
+         "nutch_phase3_core0",
+         "nutch_phase3_core3",
+         "nutch_phase4_core0",
+         "nutch_phase5_core0",
+         "streaming_phase0_core0",
+         "streaming_phase1_core0",
+         "streaming_phase2_core0",
+         "streaming_phase3_core0",
+         "streaming_phase3_core1",
+         "streaming_phase4_core0",
+         "streaming_phase5_core0",
+         "streaming_phase5_core2"
+      ]
+
+   elif apps == "dpc3-simpoint":
+      # MPKI >= 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
+      requested_apps = [
+         "403","410","433","436","437","450","459","462","470","471","473","481","482",\
+         "602","605","607","620","621","623","627","628","649","654",\
+         "bodytrack","canneal","facesim","ferret","fluidanimate","freqmine","streamcluster","vips",\
+         "cassandra","http","tomcat","llama"
+      ]
+   
+   elif apps == "dpc3-specmore":
+      # MPKI > 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
+      requested_apps = [
+         "401.bzip2-226B","401.bzip2-277B",\
+         "403.gcc-16B","403.gcc-48B",\
+         "434.zeusmp-10B",\
+         "456.hmmer-327B",\
+         "483.xalancbmk-127B","483.xalancbmk-716B",\
+         "602.gcc_s-1850B","602.gcc_s-2226B",\
+         "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
+         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B","654.roms_s-294B",\
+      ]
+
+   elif apps == "cvp-entropy":
+      requested_apps = [
+         "compute_int_921","compute_int_925","compute_int_4","compute_int_817","compute_int_467","compute_int_529","compute_int_105","compute_int_41","compute_int_177","compute_int_28",\
+         "compute_fp_84","compute_fp_44","compute_fp_94","compute_fp_12","compute_fp_129","compute_fp_136","compute_fp_105","compute_fp_124","compute_fp_111","compute_fp_96",\
+         "srv776","srv461","srv276","srv715","srv738","srv676","srv405","srv527","srv495","srv48"
+      ]
+   
+   elif apps == "xsbench":
       # "fast" xsbench under 8w1r setup
       requested_apps = ["xs.XL100hash-194B",\
                      "xs.XL100hash-28B",\
@@ -297,85 +383,6 @@ def parse_apps(apps):
          "compute_int_925"
       ]
    
-   elif apps == "gap":
-      requested_apps = [
-         "cc.kron-82B", "cc.twitter-85B", \
-         "bc.road-174B","bc.road-79B","bc.road-95B",\
-         "bc.twitter-876B","bc.twitter-1658B","bc.twitter-2320B","bc.twitter-309B","bc.web-2078B",\
-         "bfs.kron-154B","bfs.kron-469B", \
-         "bfs.road-112B","bfs.road-128B","bfs.road-140B","bfs.road-99B",\
-         "bfs.twitter-160B","bfs.twitter-242B","bfs.twitter-408B","bfs.twitter-44B",\
-         "bfs.urand-161B","bfs.urand-36B","bfs.urand-410B","bfs.urand-60B",\
-         "cc.kron-10B","cc.kron-17B","cc.kron-78B","cc.kron-99B",\
-         "cc.twitter-10B","cc.twitter-15B","cc.twitter-16B","cc.twitter-17B","cc.twitter-25B",\
-         "sssp.twitter-1116B","sssp.twitter-900B",\
-         "tc.twitter-2097B","tc.twitter-34B",\
-         "tc.urand-825B","tc.web-5088B","tc.web-2259B","tc.web-3876B",
-         "bc.urand-3004B","bc.web-1627B", \
-         "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
-         "cc.road-36B","cc.urand-353B","cc.web-24B"
-      ]
-
-   elif apps == "cloud":
-      requested_apps = [
-         "cassandra_phase0_core0",
-         "cassandra_phase1_core0",
-         "cassandra_phase2_core0",
-         "cassandra_phase3_core0",
-         "cassandra_phase4_core0",
-         "cassandra_phase5_core0",
-         "classification_phase0_core0",
-         "classification_phase1_core0",
-         "classification_phase2_core0",
-         "classification_phase3_core0",
-         "classification_phase4_core0",
-         "classification_phase5_core0",
-         "cloud9_phase0_core0",
-         "cloud9_phase1_core0",
-         "cloud9_phase2_core0",
-         "cloud9_phase3_core0",
-         "cloud9_phase4_core0",
-         "cloud9_phase5_core0",
-         "nutch_phase0_core0",
-         "nutch_phase1_core0",
-         "nutch_phase1_core1",
-         "nutch_phase2_core0",
-         "nutch_phase3_core0",
-         "nutch_phase3_core3",
-         "nutch_phase4_core0",
-         "nutch_phase5_core0",
-         "streaming_phase0_core0",
-         "streaming_phase1_core0",
-         "streaming_phase2_core0",
-         "streaming_phase3_core0",
-         "streaming_phase3_core1",
-         "streaming_phase4_core0",
-         "streaming_phase5_core0",
-         "streaming_phase5_core2"
-      ]
-
-   elif apps == "dpc3-simpoint":
-      # MPKI >= 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
-      requested_apps = [
-         "403","410","433","436","437","450","459","462","470","471","473","481","482",\
-         "602","605","607","620","621","623","627","628","649","654",\
-         "bodytrack","canneal","facesim","ferret","fluidanimate","freqmine","streamcluster","vips",\
-         "cassandra","http","tomcat","llama"
-      ]
-   
-   elif apps == "dpc3-specmore":
-      # MPKI > 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
-      requested_apps = [
-         "401.bzip2-226B","401.bzip2-277B",\
-         "403.gcc-16B","403.gcc-48B",\
-         "434.zeusmp-10B",\
-         "456.hmmer-327B",\
-         "483.xalancbmk-127B","483.xalancbmk-716B",\
-         "602.gcc_s-1850B","602.gcc_s-2226B",\
-         "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
-         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B","654.roms_s-294B",\
-      ]
-
    # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 
    # due to "src/ooo_cpu.cc:1653: void O3_CPU::execute_store(uint32_t, uint32_t, uint32_t): Assertion `0' failed."
    # this bug is seen in all indexing types, including nohash

@@ -18,7 +18,7 @@ uint64_t warmup_instructions     = 1000000,
          simulation_instructions = 10000000,
          champsim_seed, rand_offset = 0;
 
-uint32_t interval_size_1core = 500000,
+uint32_t interval_size_1core = 1000000,
          interval_size_ncore = interval_size_1core*NUM_CPUS;
 
 // Replacement Policy
@@ -780,14 +780,24 @@ int main(int argc, char** argv)
     // srand(champsim_seed);
     // cout << "champsim_seed = " << champsim_seed << endl;
 
-    // testing randomness settings for AdaptiveX project MICRO'24
+    // EntropyIndex settings MICRO'24
     if (rand_offset != 0)   // only reset if not 0, since champsim_rand default seed is already 0
         champsim_rand.seed(rand_offset);
     srand(seed_number);
     cout << "champsim_seed = " << rand_offset << ". srand_seed = " << seed_number << endl;
 
-    for (int i=0; i<NUM_CPUS; i++) {
+    // EntropyV3 setting
+    // if (rand_offset != 0) {
+    //     champsim_rand.seed(champsim_seed);
+    //     cout << "champsim_seed = " << champsim_seed << endl;
+    // }
+    // else {
+    //     cout << "champsim_seed = " << rand_offset << endl;
+    // }
+    // srand(champsim_seed);
+    // cout << "srand_seed = " << champsim_seed << endl;
 
+    for (int i=0; i<NUM_CPUS; i++) {
         ooo_cpu[i].cpu = i; 
         ooo_cpu[i].warmup_instructions = warmup_instructions;
         ooo_cpu[i].simulation_instructions = simulation_instructions;

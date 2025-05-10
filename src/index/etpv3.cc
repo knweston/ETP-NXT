@@ -26,7 +26,8 @@ void EntropyV3::move_cache_data(MEMORY *lower_level) {
                 cout << "last_idx: " << last_index << endl;
                 assert(false);
             }
-            uint32_t dest_way = get_lru_victim(dest_index);
+            uint32_t dest_way = replacement_getvictim(dest_index);
+            // uint32_t dest_way = get_lru_victim(dest_index);
             // uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
             BLOCK *dest_block = &block_array[dest_index][dest_way];
 
@@ -38,7 +39,8 @@ void EntropyV3::move_cache_data(MEMORY *lower_level) {
                 increment_eviction(dest_index);
 
                 override_block(src_block, dest_block);
-                lru_update(dest_index, dest_way, src_block->lru);
+                replacement_update(dest_index, dest_way, map_ptr, way);
+                // lru_update(dest_index, dest_way, src_block->lru);
                 // rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
             }
 
@@ -104,6 +106,27 @@ bool EntropyV3::should_update(bool is_hit, uint32_t type) {
     if (V3_SKIP_UPDATE_WB_HIT && (type == WRITEBACK) && is_hit)             // return false for all writeback hits
         return false;
     return true;
+}
+
+uint32_t EntropyV3::replacement_getvictim(uint32_t index) {
+    if (REPLACEMENT_POLICY == 0)
+        return get_lru_victim(index);
+    else if (REPLACEMENT_POLICY == 1)
+        return get_rrip_victim(index);
+    else
+        assert(false);
+}
+
+void EntropyV3::replacement_update(uint32_t index, uint32_t way, uint32_t remapping_index, uint32_t remapping_way) {
+    if (REPLACEMENT_POLICY == 0) {
+        lru_update(index, way, block_array[remapping_index][remapping_way].lru);
+    }
+    else if (REPLACEMENT_POLICY == 1) {
+        rrip_update(index, way, rrpv[remapping_index][remapping_way]);
+    }
+    else {
+        assert(false);
+    }
 }
 
 // return the correlation counter between bit A and bit B in the correlation table
@@ -172,6 +195,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
         cout << "   num_reset_itv:         " << num_reset_itv << endl;
         cout << "   num_reset_cor:         " << num_reset_cor << endl;
+        cout << "   num_reset_itv_ptn:     " << num_reset_itv_ptn << endl;
         cout << "   num_reset_bitpair_etp: " << num_reset_bitpair_etp << endl;
         cout << "   num_reset_bitpair_ptn: " << num_reset_bitpair_ptn << endl;
         cout << "   num_total_updates:     " << num_updates << endl;
@@ -524,12 +548,12 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
         
         // if ((num_interval > 0) && (bp_etp_diff <= 0)) {   // etp3b11/etp3b12/etp3tst14
         // // if ((num_interval > 0) && (bp_etp_diff <= 0.1)) {   // etp3b6/etp3c: bp_etp_diff <= 0.1
-        // // if ((num_interval > 0) && (bp_etp_diff <= 0.15)) {  // etp3b7/etp3b10
-        // // if ((num_interval > 0) && ((bp_etp_diff <= V3_SENSE_THRESHOLD) || (etp_diff <= V3_SENSE_THRESHOLD))) {  // etp3b8
-        // // if ((num_interval > 0) && ((bp_etp_diff <= V3_SENSE_THRESHOLD) && (etp_diff <= V3_SENSE_THRESHOLD))) {  // etp3b9
-        //     x_seq_a = m_last_seq_a;
-        //     x_seq_b = m_last_seq_b;
-        //     cout << "Keep current candidate." << endl;
+        // if ((num_interval > 0) && (bp_etp_diff <= 0.15)) {  // etp3b7/etp3b10
+        // if ((num_interval > 0) && ((bp_etp_diff <= V3_SENSE_THRESHOLD) || (etp_diff <= V3_SENSE_THRESHOLD))) {  // etp3b8
+        // if ((num_interval > 0) && ((bp_etp_diff <= V3_SENSE_THRESHOLD) && (etp_diff <= V3_SENSE_THRESHOLD))) {  // etp3b9
+            // x_seq_a = m_last_seq_a;
+            // x_seq_b = m_last_seq_b;
+            // cout << "Keep current candidate." << endl;
         // }
     }
     else if ((V3_SENSE_THRESHOLD >= 0) && !is_zero_segment(m_last_seq_b)) {
@@ -910,18 +934,18 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         vector<BitEntropy> extracted_bpe_table;
         int32_t ETP_CUTOFF_RATE = ETP_CUTOFF_STARTRATE;
 
-        cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
-        for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-            cout << "CORR: " << correl_table[j].to_string()
-                 << ". BPE: " << bitpair_entropy[j].to_string() 
-                 << ". BPP: " << bitpair_ptn_ctr[j].to_string()
-                 << ". ETP[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
-                 << ". ETP[" << correl_table[j].m_segid[1] << "]: " << itv_entropy[correl_table[j].m_segid[1]].m_entropy
-                 << ". PTN[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_ptn_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
-                 << ". PTN[" << correl_table[j].m_segid[1] << "]: " << itv_ptn_entropy[correl_table[j].m_segid[1]].m_entropy
-                 << endl;
-        }
-        cout << endl;
+        // cout << "\nStats list of bit: " << sorted_nohash_idx_sequence_bpe_based[i] << endl;
+        // for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
+        //     cout << "CORR: " << correl_table[j].to_string()
+        //          << ". BPE: " << bitpair_entropy[j].to_string() 
+        //          << ". BPP: " << bitpair_ptn_ctr[j].to_string()
+        //          << ". ETP[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
+        //          << ". ETP[" << correl_table[j].m_segid[1] << "]: " << itv_entropy[correl_table[j].m_segid[1]].m_entropy
+        //          << ". PTN[" << sorted_nohash_idx_sequence_bpe_based[i] << "]: " << itv_ptn_entropy[sorted_nohash_idx_sequence_bpe_based[i]].m_entropy
+        //          << ". PTN[" << correl_table[j].m_segid[1] << "]: " << itv_ptn_entropy[correl_table[j].m_segid[1]].m_entropy
+        //          << endl;
+        // }
+        // cout << endl;
 
         while (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
