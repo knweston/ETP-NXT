@@ -78,7 +78,12 @@ def parse_apps(apps):
          "483.xalancbmk-127B","483.xalancbmk-716B",\
          "602.gcc_s-1850B","602.gcc_s-2226B",\
          "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
-         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B","654.roms_s-294B",\
+         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B","654.roms_s-294B"
+      ]
+   
+   elif apps == "dpc3-spectemp":
+      requested_apps = [
+         "654.roms_s-294B"
       ]
 
    elif apps == "cvp-entropy":

@@ -475,7 +475,8 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
 
             // try to allocate pages contiguously
             if (fragmented) {
-                num_adjacent_page = 1 << (rand() % 10);
+                // num_adjacent_page = 1 << (rand() % 10);
+                num_adjacent_page = 1 << (rand() % 3);
                 DP ( if (warmup_complete[cpu]) {
                 cout << "Recalculate num_adjacent_page: " << num_adjacent_page << endl; });
             }
