@@ -427,10 +427,7 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
         else {
             uint8_t fragmented = 0;
             if (num_adjacent_page > 0) {
-                if (VARIABLE_ADDRESS_TRANSLATION)
-                    random_ppage = ++previous_ppage + (rand() % (int)pow(2,30));    // add randomness to the page generator [KW]
-                else
-                    random_ppage = ++previous_ppage;
+                random_ppage = ++previous_ppage;
             }
             else {
                 random_ppage = champsim_rand.draw_rand();
@@ -475,8 +472,28 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
 
             // try to allocate pages contiguously
             if (fragmented) {
-                // num_adjacent_page = 1 << (rand() % 10);
-                num_adjacent_page = 1 << (rand() % 3);
+                num_adjacent_page = 1 << (rand() % 10);  // original setting
+                // num_adjacent_page = 1 << (rand() % 5); // adj1: 0,1,2,3,4
+                // num_adjacent_page = 1 << ((rand()%5)+5); // adj2: 5,6,7,8,9
+                // num_adjacent_page = 1 << ((rand()%10)+5); // adj3: 5,6,7,8,9,10,11,12,13,14
+                // num_adjacent_page = 1 << ((rand()%5)+9);    // adj4: 9,10,11,12,13
+                // num_adjacent_page = 1 << ((rand()%8)+8);    // adj5: 8,9,10,11,12,13,14,15
+                // num_adjacent_page = 1 << ((rand()%10)+9);    // adj6: 9,10,11,12,13,14,15,16,17,18
+                // num_adjacent_page = 1 << ((rand()%10)+10);    // adj7: 10,11,12,13,14,15,16,17,18,19
+                
+                // // adj8: 0,1,2,3,9,10,11,12,13,14
+                // num_adjacent_page = 1 << (rand()%10);
+                // if (num_adjacent_page > 8) {
+                //     num_adjacent_page << 5;
+                // }
+
+                // // adj9: 0,1,2,8,9,10,11,12,13,14,15,16
+                // uint32_t num_rand = rand() % 12;
+                // if (num_rand > 2) 
+                //     num_rand += 5;
+                // num_adjacent_page = 1 << num_rand;
+                cout << "num_adjacent_page: " << num_adjacent_page << endl;
+
                 DP ( if (warmup_complete[cpu]) {
                 cout << "Recalculate num_adjacent_page: " << num_adjacent_page << endl; });
             }
@@ -775,6 +792,7 @@ int main(int argc, char** argv)
     }
 
     // set random seed number
+    seed_number = 0;    // adj0
     champsim_seed = seed_number + rand_offset;
     
     // randomness settings of DuelHash project ISCA'24

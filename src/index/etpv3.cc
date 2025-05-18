@@ -27,8 +27,6 @@ void EntropyV3::move_cache_data(MEMORY *lower_level) {
                 assert(false);
             }
             uint32_t dest_way = replacement_getvictim(dest_index);
-            // uint32_t dest_way = get_lru_victim(dest_index);
-            // uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
             BLOCK *dest_block = &block_array[dest_index][dest_way];
 
             bool fill_ready = remap_tie_break(src_block, dest_block, lower_level);
@@ -39,9 +37,7 @@ void EntropyV3::move_cache_data(MEMORY *lower_level) {
                 increment_eviction(dest_index);
 
                 override_block(src_block, dest_block);
-                replacement_update(dest_index, dest_way, map_ptr, way);
-                // lru_update(dest_index, dest_way, src_block->lru);
-                // rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+                replacement_update(dest_index, dest_way, map_ptr, way);  // etp3c: no update, etp3d: original SRRIP update
             }
 
             // invalidate the source block
@@ -546,15 +542,11 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
             itv_ptn_entropy[i].m_entropy = 0;
         }
         
-        // if ((num_interval > 0) && (bp_etp_diff <= 0)) {   // etp3b11/etp3b12/etp3tst14
-        // // if ((num_interval > 0) && (bp_etp_diff <= 0.1)) {   // etp3b6/etp3c: bp_etp_diff <= 0.1
-        // if ((num_interval > 0) && (bp_etp_diff <= 0.15)) {  // etp3b7/etp3b10
-        // if ((num_interval > 0) && ((bp_etp_diff <= V3_SENSE_THRESHOLD) || (etp_diff <= V3_SENSE_THRESHOLD))) {  // etp3b8
-        // if ((num_interval > 0) && ((bp_etp_diff <= V3_SENSE_THRESHOLD) && (etp_diff <= V3_SENSE_THRESHOLD))) {  // etp3b9
-            // x_seq_a = m_last_seq_a;
-            // x_seq_b = m_last_seq_b;
-            // cout << "Keep current candidate." << endl;
-        // }
+        if ((num_interval > 0) && (bp_etp_diff <= 0)) {   // etp3b11/etp3b12/etp3tst14
+            x_seq_a = m_last_seq_a;
+            x_seq_b = m_last_seq_b;
+            cout << "Keep current candidate." << endl;
+        }
     }
     else if ((V3_SENSE_THRESHOLD >= 0) && !is_zero_segment(m_last_seq_b)) {
         // if ((etp_diff+corr_diff) > V3_SENSE_THRESHOLD) {
@@ -983,18 +975,18 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
             }
         }
 
-        cout << "extracted_bpe_table: " << endl;
-        for (uint32_t i=0; i < extracted_bpe_table.size(); ++i) {
-            uint32_t index = compute_pair_table_idx(extracted_bpe_table[i].m_segid[0], extracted_bpe_table[i].m_segid[1]);
-            cout << "BPE: " << bitpair_entropy[index].to_string() 
-                 << ". BPP: " << bitpair_ptn_ctr[index].to_string()
-                 << ". ETP["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
-                 << ". ETP["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
-                 << ". PTN["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
-                 << ". PTN["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
-                << endl;
-        }
-        cout << "used_bits: " << vec_to_string(used_bits) << endl;
+        // cout << "extracted_bpe_table: " << endl;
+        // for (uint32_t i=0; i < extracted_bpe_table.size(); ++i) {
+        //     uint32_t index = compute_pair_table_idx(extracted_bpe_table[i].m_segid[0], extracted_bpe_table[i].m_segid[1]);
+        //     cout << "BPE: " << bitpair_entropy[index].to_string() 
+        //          << ". BPP: " << bitpair_ptn_ctr[index].to_string()
+        //          << ". ETP["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
+        //          << ". ETP["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
+        //          << ". PTN["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
+        //          << ". PTN["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
+        //         << endl;
+        // }
+        // cout << "used_bits: " << vec_to_string(used_bits) << endl;
     }
 
     cout << "\nGETCFG5 Candidate Stats:\n";

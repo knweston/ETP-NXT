@@ -83,7 +83,7 @@ def parse_apps(apps):
    
    elif apps == "dpc3-spectemp":
       requested_apps = [
-         "654.roms_s-294B"
+         "654.roms_s-1390B","654.roms_s-1613B","654.roms_s-523B"
       ]
 
    elif apps == "cvp-entropy":

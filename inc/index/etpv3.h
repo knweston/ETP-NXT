@@ -10,10 +10,10 @@
 #define V3_SKIP_UPDATE_WB_HIT 0
 #define V3_UPDATE_HITMISS_SETTING 3 // 0: update on both hit/miss, 1: update miss only, 2: update hit only, 3: update miss and pf_useful
 #define V3_SENSE_THRESHOLD 4
-#define V3_WARMUP_INTERVALS 1
+#define V3_WARMUP_INTERVALS 2
 #define CUTOFF_PRORATE 0.8
 #define ETP_CUTOFF_STARTRATE 0
-#define REPLACEMENT_POLICY 0    // 0: LRU, 1: SRRIP
+#define REPLACEMENT_POLICY 1    // 0: LRU, 1: SRRIP
 
 class EntropyV3 : public EntropyIndex {
 public:

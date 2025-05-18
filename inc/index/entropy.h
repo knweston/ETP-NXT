@@ -19,7 +19,7 @@
 #define UPDATE_MISS_ONLY 1
 
 // entropy index params
-#define FIX_SEQUENCE 3
+#define FIX_SEQUENCE 1
 #define NOHASH_IF_SEQ_IDX_HIGHEST_ETP 0
 #define SKIP_SAME_BIT_CANDIDATE 0
 #define WARMUP_INTERVALS 2
