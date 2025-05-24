@@ -1,6 +1,7 @@
 #include "belady.h"
 #include "lru.h"
 #include "drrip.h"
+#include "srrip.h"
 #include "frequency_index.h"
 #include "normal_index.h"
 #include "neural_index.h"
@@ -38,6 +39,12 @@ uint32_t RAND_SEED       = 0;
 RANDOM   RAND_ENGINE(RAND_SEED);    // seed of champsim random class is zero
 
 void main_loop(Replacement *replacement_policy, Index *indexing) {
+    // initialize LLC cache
+    for (uint32_t set=0; set < LLC_SET; ++set) {
+        for (uint32_t way=0; way < LLC_WAY; ++way)
+            CACHE[set][way] = 0;
+    }
+
     // start the main loop
     auto start = chrono::steady_clock::now();
 
@@ -142,6 +149,8 @@ Replacement* init_replacement_policy(Index* indexing) {
         replacement_policy = new LRU();
     else if (REPL_POLICY == "DRRIP")
         replacement_policy = new DRRIP();
+    else if (REPL_POLICY == "SRRIP")
+        replacement_policy = new SRRIP();
     else {
         cout << "Unrecognized replacement policy: " << REPL_POLICY << endl;
         exit(1);
@@ -244,7 +253,8 @@ int main(int argc, char *argv[]) {
         else
             break;
     }
-    srand(RAND_SEED);   // set the seed for C++ rand() based on trace name
+    RAND_SEED = 0;      // new random setting for ETPv3
+    srand(RAND_SEED);   // set the seed for C++ rand() based on trace name         
     cout << "RAND_SEED: " << RAND_SEED << endl;
     
     // initialize LLC cache

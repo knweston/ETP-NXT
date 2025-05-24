@@ -70,7 +70,7 @@ def generate_jobs(apps, output, executable, num_loops, trace_folder):
     # construct commands
     for idx, app in enumerate(requested_apps):
         cmd = f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
-        cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} 0 1500 {'$TMPDIR/'+app+'.champsimtrace.xz PROFILE'}\n"
+        cmd += f"{code_dir+'/run_champsim.sh'} {code_dir+'/bin/'+executable} 0 1200 {'$TMPDIR/'+app+'.champsimtrace.xz PROFILE'}\n"
         cmd += f"cp {'$TMPDIR/*-TRACE.txt'} {trace_dir+'/'}\n"
 
         new_script = SlurmScript(app+"_"+executable, job_dir, output_dir, cmd)

@@ -18,7 +18,7 @@ uint64_t warmup_instructions     = 1000000,
          simulation_instructions = 10000000,
          champsim_seed, rand_offset = 0;
 
-uint32_t interval_size_1core = 1000000,
+uint32_t interval_size_1core = 500000,
          interval_size_ncore = interval_size_1core*NUM_CPUS;
 
 // Replacement Policy
@@ -472,28 +472,7 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
 
             // try to allocate pages contiguously
             if (fragmented) {
-                num_adjacent_page = 1 << (rand() % 10);  // original setting
-                // num_adjacent_page = 1 << (rand() % 5); // adj1: 0,1,2,3,4
-                // num_adjacent_page = 1 << ((rand()%5)+5); // adj2: 5,6,7,8,9
-                // num_adjacent_page = 1 << ((rand()%10)+5); // adj3: 5,6,7,8,9,10,11,12,13,14
-                // num_adjacent_page = 1 << ((rand()%5)+9);    // adj4: 9,10,11,12,13
-                // num_adjacent_page = 1 << ((rand()%8)+8);    // adj5: 8,9,10,11,12,13,14,15
-                // num_adjacent_page = 1 << ((rand()%10)+9);    // adj6: 9,10,11,12,13,14,15,16,17,18
-                // num_adjacent_page = 1 << ((rand()%10)+10);    // adj7: 10,11,12,13,14,15,16,17,18,19
-                
-                // // adj8: 0,1,2,3,9,10,11,12,13,14
-                // num_adjacent_page = 1 << (rand()%10);
-                // if (num_adjacent_page > 8) {
-                //     num_adjacent_page << 5;
-                // }
-
-                // // adj9: 0,1,2,8,9,10,11,12,13,14,15,16
-                // uint32_t num_rand = rand() % 12;
-                // if (num_rand > 2) 
-                //     num_rand += 5;
-                // num_adjacent_page = 1 << num_rand;
-                cout << "num_adjacent_page: " << num_adjacent_page << endl;
-
+                num_adjacent_page = 1 << ((rand()%10)+5);
                 DP ( if (warmup_complete[cpu]) {
                 cout << "Recalculate num_adjacent_page: " << num_adjacent_page << endl; });
             }
@@ -792,29 +771,19 @@ int main(int argc, char** argv)
     }
 
     // set random seed number
-    seed_number = 0;    // adj0
+    seed_number = 0;
     champsim_seed = seed_number + rand_offset;
-    
-    // randomness settings of DuelHash project ISCA'24
-    // srand(champsim_seed);
-    // cout << "champsim_seed = " << champsim_seed << endl;
 
     // EntropyIndex settings MICRO'24
-    if (rand_offset != 0)   // only reset if not 0, since champsim_rand default seed is already 0
-        champsim_rand.seed(rand_offset);
-    srand(seed_number);
-    cout << "champsim_seed = " << rand_offset << ". srand_seed = " << seed_number << endl;
+    // if (rand_offset != 0)   // only reset if not 0, since champsim_rand default seed is already 0
+    //     champsim_rand.seed(rand_offset);
+    // srand(seed_number);
+    // cout << "champsim_seed = " << rand_offset << ". srand_seed = " << seed_number << endl;
 
     // EntropyV3 setting
-    // if (rand_offset != 0) {
-    //     champsim_rand.seed(champsim_seed);
-    //     cout << "champsim_seed = " << champsim_seed << endl;
-    // }
-    // else {
-    //     cout << "champsim_seed = " << rand_offset << endl;
-    // }
-    // srand(champsim_seed);
-    // cout << "srand_seed = " << champsim_seed << endl;
+    if (rand_offset != 0)   // only reset if not 0, since champsim_rand default seed is already 0
+        champsim_rand.seed(rand_offset);
+    cout << "champsim_seed = " << rand_offset << endl;
 
     for (int i=0; i<NUM_CPUS; i++) {
         ooo_cpu[i].cpu = i; 

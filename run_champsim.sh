@@ -43,4 +43,5 @@ TRACE_NAME="${TRACE_TOKENS[@]: -1}"
 IFS=''
 
 mkdir -p results_${N_SIM}M/${RESULT_FOLDER}
-${BINARY} -warmup_instructions ${N_WARM}000000 -simulation_instructions ${N_SIM}000000 ${CLOUDSUITE} -config ${CONFIG} -random_offset ${RAND_OFFSET} -traces ${TRACE} >> results_${N_SIM}M/${RESULT_FOLDER}/$TRACE_NAME.txt
+echo ${BINARY} -warmup_instructions ${N_WARM}000000 -simulation_instructions ${N_SIM}000000 ${CLOUDSUITE} -config ${CONFIG} -random_offset ${RAND_OFFSET} -traces ${TRACE}
+${BINARY} -warmup_instructions ${N_WARM}000000 -simulation_instructions ${N_SIM}000000 ${CLOUDSUITE} -random_offset ${RAND_OFFSET} -config ${CONFIG} -traces ${TRACE} >> results_${N_SIM}M/${RESULT_FOLDER}/$TRACE_NAME.txt

@@ -243,7 +243,8 @@ void GeneticIndex::generate_migrants(uint32_t num_migrants) {
 }
 
 void GeneticIndex::next_candidate() {
-    m_population[current_candidate_idx].fitness(MISSES[LOAD] + MISSES[RFO] + MISSES[PREFETCH]);
+    // m_population[current_candidate_idx].fitness(MISSES[LOAD] + MISSES[RFO] + MISSES[PREFETCH]);
+    m_population[current_candidate_idx].fitness(MISSES[LOAD] + MISSES[RFO]);
     ++current_candidate_idx;
 }
 

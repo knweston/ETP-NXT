@@ -107,7 +107,7 @@ class RANDOM {
   public:
     std::random_device rd;
     std::mt19937_64 engine{rd()};
-    std::uniform_int_distribution<uint64_t> dist{0, 0xFFFFFFFFF}; // used to generate random physical page numbers
+    std::uniform_int_distribution<uint64_t> dist{0, 0x3FFFFFF}; // used to generate random physical page numbers
 
     RANDOM (uint64_t seed) {
         cout << "intitialized seed: " << seed << endl;

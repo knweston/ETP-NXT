@@ -72,18 +72,18 @@ def parse_apps(apps):
       # MPKI > 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
       requested_apps = [
          "401.bzip2-226B","401.bzip2-277B",\
-         "403.gcc-16B","403.gcc-48B",\
+         "403.gcc-16B",\
          "434.zeusmp-10B",\
          "456.hmmer-327B",\
-         "483.xalancbmk-127B","483.xalancbmk-716B",\
-         "602.gcc_s-1850B","602.gcc_s-2226B",\
-         "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-2931B","603.bwaves_s-891B",\
-         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1390B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-523B","654.roms_s-294B"
+         "483.xalancbmk-716B",\
+         "602.gcc_s-2226B",\
+         "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-891B",\
+         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-294B"
       ]
    
    elif apps == "dpc3-spectemp":
       requested_apps = [
-         "654.roms_s-1390B","654.roms_s-1613B","654.roms_s-523B"
+         "602.gcc_s-1850B","603.bwaves_s-2931B","654.roms_s-523B","654.roms_s-1390B","483.xalancbmk-127B","403.gcc-48B"
       ]
 
    elif apps == "cvp-entropy":

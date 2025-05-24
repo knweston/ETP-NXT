@@ -127,9 +127,31 @@ void CACHE::handle_fill()
             // update prefetcher
             if (cache_type == IS_L1I)
               l1i_prefetcher_cache_fill(fill_cpu, ((MSHR.entry[mshr_index].ip)>>LOG2_BLOCK_SIZE)<<LOG2_BLOCK_SIZE, set, way, (MSHR.entry[mshr_index].type == PREFETCH) ? 1 : 0, ((block[set][way].ip)>>LOG2_BLOCK_SIZE)<<LOG2_BLOCK_SIZE);
-            if (cache_type == IS_L1D)
-              l1d_prefetcher_cache_fill(MSHR.entry[mshr_index].full_addr, set, way, (MSHR.entry[mshr_index].type == PREFETCH) ? 1 : 0, 
-                block[set][way].address<<LOG2_BLOCK_SIZE, MSHR.entry[mshr_index].pf_metadata);
+            // if (cache_type == IS_L1D)
+            //   l1d_prefetcher_cache_fill(MSHR.entry[mshr_index].full_addr, set, way, (MSHR.entry[mshr_index].type == PREFETCH) ? 1 : 0, 
+            //     block[set][way].address<<LOG2_BLOCK_SIZE, MSHR.entry[mshr_index].pf_metadata);
+
+            if (cache_type == IS_L1D) { // for berti
+                uint64_t v_fill_addr, v_evicted_addr;
+                map <uint64_t, uint64_t>::iterator ppage_check = inverse_table.find(MSHR.entry[mshr_index].full_addr >> LOG2_PAGE_SIZE);
+                if(ppage_check == inverse_table.end()) {
+                    cout << "Address not found: " << MSHR.entry[mshr_index].full_addr;
+                    assert(0);
+                }
+                v_fill_addr = (ppage_check->second) << LOG2_PAGE_SIZE;
+                v_fill_addr |= (MSHR.entry[mshr_index].full_addr & ((1 << LOG2_PAGE_SIZE)-1));
+
+                ppage_check = inverse_table.find(block[set][way].address >> (LOG2_PAGE_SIZE - LOG2_BLOCK_SIZE));
+                if(ppage_check != inverse_table.end()) {
+                    v_evicted_addr = (ppage_check->second) << LOG2_PAGE_SIZE;
+                    v_evicted_addr |= ((block[set][way].address << LOG2_BLOCK_SIZE) & ((1 << LOG2_PAGE_SIZE)-1));
+                }
+                else
+                    v_evicted_addr = 0;
+
+                l1d_prefetcher_cache_fill(v_fill_addr, MSHR.entry[mshr_index].full_addr, set, way, (MSHR.entry[mshr_index].type == PREFETCH) ? 1 : 0, v_evicted_addr, block[set][way].address<<LOG2_BLOCK_SIZE, MSHR.entry[mshr_index].pf_metadata);
+            }
+
             if (cache_type == IS_L2C)
               MSHR.entry[mshr_index].pf_metadata = l2c_prefetcher_cache_fill(MSHR.entry[mshr_index].address<<LOG2_BLOCK_SIZE, set, way, (MSHR.entry[mshr_index].type == PREFETCH) ? 1 : 0, 
                 block[set][way].address<<LOG2_BLOCK_SIZE, MSHR.entry[mshr_index].pf_metadata);
@@ -442,8 +464,28 @@ void CACHE::handle_writeback() {
                         l1i_prefetcher_cache_fill(writeback_cpu, ((WQ.entry[index].ip)>>LOG2_BLOCK_SIZE)<<LOG2_BLOCK_SIZE, set, way, 0, 
                         ((block[set][way].ip)>>LOG2_BLOCK_SIZE)<<LOG2_BLOCK_SIZE);
                     }
-                    else if (cache_type == IS_L1D)
-                        l1d_prefetcher_cache_fill(WQ.entry[index].full_addr, set, way, 0, block[set][way].address<<LOG2_BLOCK_SIZE, WQ.entry[index].pf_metadata);
+                    // else if (cache_type == IS_L1D)
+                    //     l1d_prefetcher_cache_fill(WQ.entry[index].full_addr, set, way, 0, block[set][way].address<<LOG2_BLOCK_SIZE, WQ.entry[index].pf_metadata);
+                    
+                    if (cache_type == IS_L1D) { // for berti
+                        uint64_t v_fill_addr, v_evicted_addr;
+                        auto ppage_check = inverse_table.find(WQ.entry[index].full_addr >> LOG2_PAGE_SIZE);
+                        assert(ppage_check != inverse_table.end());
+                        v_fill_addr = (ppage_check->second) << LOG2_PAGE_SIZE;
+                        v_fill_addr |= (WQ.entry[index].full_addr & ((1 << LOG2_PAGE_SIZE)-1));
+
+                        ppage_check = inverse_table.find(block[set][way].address >> (LOG2_PAGE_SIZE - LOG2_BLOCK_SIZE));
+                        if(ppage_check != inverse_table.end())
+                        {
+                            v_evicted_addr = (ppage_check->second) << LOG2_PAGE_SIZE;
+                            v_evicted_addr |= ((block[set][way].address << LOG2_BLOCK_SIZE) & ((1 << LOG2_PAGE_SIZE)-1));
+                        }
+                        else
+                            v_evicted_addr = 0;
+
+                        l1d_prefetcher_cache_fill(v_fill_addr, WQ.entry[index].full_addr, set, way, 0, v_evicted_addr, block[set][way].address<<LOG2_BLOCK_SIZE, WQ.entry[index].pf_metadata);
+                    }
+                    
                     else if (cache_type == IS_L2C) {
                         WQ.entry[index].pf_metadata = l2c_prefetcher_cache_fill(WQ.entry[index].address<<LOG2_BLOCK_SIZE, set, way, 0,
                                         block[set][way].address<<LOG2_BLOCK_SIZE, WQ.entry[index].pf_metadata);
@@ -825,6 +867,12 @@ void CACHE::handle_prefetch() {
                 // COLLECT STATS
                 sim_hit[prefetch_cpu][PQ.entry[index].type]++;
                 sim_access[prefetch_cpu][PQ.entry[index].type]++;
+
+                if (NAME == "LLC" && (all_warmup_complete > NUM_CPUS)) { // [Kevin]
+                    SmartIndex* smart_index = SmartIndex::get_instance(LLC_SET, LLC_WAY);
+                    if (smart_index->EXEC_MODE == PROFILE)
+                        smart_index->add_to_trace(PQ.entry[index].address, PQ.entry[index].type, PQ.entry[index].ip, current_core_cycle[prefetch_cpu]);
+                }
 
                 // run prefetcher on prefetches from higher caches
                 if(PQ.entry[index].pf_origin_level < fill_level) {
