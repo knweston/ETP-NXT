@@ -69,7 +69,7 @@ def change_idx_in_file(idx_type):
 
 
 
-def build(idx_type, l1d_prefetcher, l1i_prefetcher, l2_prefetcher, filename, repl_policy):
+def build(idx_type, l1d_prefetcher, l1i_prefetcher, l2_prefetcher, filename, repl_policy, num_core):
    idx_str = str(idx_type).split(".")[-1].lower()
 
    if (filename == ""):
@@ -78,12 +78,13 @@ def build(idx_type, l1d_prefetcher, l1i_prefetcher, l2_prefetcher, filename, rep
       exec_name = filename
 
    cmd = "./build_champsim.sh bimodal " + l1i_prefetcher + " " + l1d_prefetcher + " " + l2_prefetcher + " no "
-   # cmd = "./build_champsim.sh bimodal " + l1i_prefetcher + " " + l1d_prefetcher + " " + l2_prefetcher + " next_line "    # test: LLC next-line prefetcher
    if idx_type == INDEX.SKEWED:
-      cmd += "skewed 1 "
+      cmd += "skewed " + num_core + " "
    else:
-      cmd += repl_policy + " 1 "
+      cmd += repl_policy + " " + num_core + " "
 
+   if int(num_core) > 1:
+      cmd += "c" + num_core
    cmd += exec_name
 
    if l1d_prefetcher != "no" or l1i_prefetcher != "no" or l2_prefetcher != "no":
@@ -122,9 +123,10 @@ def main():
    parser.add_argument("-p", "--l1d_prefetcher", required=False, default="no", type=str)
    parser.add_argument("-f", "--l1i_prefetcher", required=False, default="no", type=str)
    parser.add_argument("-d", "--l2_prefetcher", required=False, default="no", type=str)
+   parser.add_argument("-c", "--num_core", required=False, default="1", type=str)
    args = parser.parse_args()
    
-   build(parse_index_type(args.idx_type), args.l1d_prefetcher, args.l1i_prefetcher, args.l2_prefetcher, args.output_filename, args.replacement_type)
+   build(parse_index_type(args.idx_type), args.l1d_prefetcher, args.l1i_prefetcher, args.l2_prefetcher, args.output_filename, args.replacement_type, args.num_core)
 
 if __name__ == "__main__":
    main()

@@ -518,27 +518,27 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
         cout << "Reset counters on warmup intervals\n";
         num_reset_itv++;
         for (uint32_t i=0; i < itv_entropy.size(); ++i) {
-            itv_entropy[i].m_entropy = 0;
+            itv_entropy[i].m_entropy /= 2;
         }
 
         num_reset_cor++;
         for (uint32_t i=0; i < correl_table.size(); ++i) {
-            correl_table[i].m_entropy = 0;
+            correl_table[i].m_entropy /= 2;
         }
 
         num_reset_bitpair_etp++;
         for (uint32_t i=0; i < bitpair_entropy.size(); ++i) {
-            bitpair_entropy[i].m_entropy = 0;
+            bitpair_entropy[i].m_entropy /= 2;
         }
 
         num_reset_bitpair_ptn++;
         for (uint32_t i=0; i < bitpair_ptn_ctr.size(); ++i) {
-            bitpair_ptn_ctr[i].m_entropy = 0;
+            bitpair_ptn_ctr[i].m_entropy /= 2;
         }
 
         num_reset_itv_ptn++;
         for (uint32_t i=0; i < itv_ptn_entropy.size(); ++i) {
-            itv_ptn_entropy[i].m_entropy = 0;
+            itv_ptn_entropy[i].m_entropy /= 2;
         }
         
         if ((num_interval > 0) && (bp_etp_diff <= 0)) {   // etp3b11/etp3b12/etp3tst14

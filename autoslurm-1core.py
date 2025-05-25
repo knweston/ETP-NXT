@@ -10,7 +10,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="1G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="3:00:00", mem="1G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
