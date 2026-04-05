@@ -1,21 +1,21 @@
 #include <cassert>
 #include "cache.h"
 
-constexpr uint32_t GLB_HIT_RESET_THRESHOLD  = 32;
-constexpr uint32_t SET_MISS_RESET_THRESHOLD = 8;
-constexpr uint32_t MAX_AGE = 3;
-constexpr uint32_t COEF_BLK_AGE   = 8;
-constexpr uint32_t COEF_BLK_ISHIT = 1;
-constexpr uint32_t COEF_BLK_ISPF  = 1;
+// uint32_t GLB_HIT_RESET_THRESHOLD  = 32;
+// uint32_t SET_MISS_RESET_THRESHOLD = 8;
+// uint32_t MAX_AGE = 3;
+// uint32_t COEF_BLK_AGE   = 8;
+// uint32_t COEF_BLK_ISHIT = 1;
+// uint32_t COEF_BLK_ISPF  = 1;
 
-std::vector<uint32_t> set_misses;
-std::vector<uint32_t> blk_age;
-std::vector<bool>     blk_ishit;
-std::vector<bool>     blk_ispf;
+// std::vector<uint32_t> set_misses;
+// std::vector<uint32_t> blk_age;
+// std::vector<bool>     blk_ishit;
+// std::vector<bool>     blk_ispf;
 
-uint32_t glb_avg_hitage = 0;
-uint32_t glb_sum_hitage = 0;
-uint32_t glb_hitcount   = 0;
+// uint32_t glb_avg_hitage = 0;
+// uint32_t glb_sum_hitage = 0;
+// uint32_t glb_hitcount   = 0;
 
 uint32_t global_idx(uint32_t set, uint32_t way, uint32_t assoc) {
    return (set*assoc + way);
@@ -99,7 +99,6 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
    else {
       set_misses[set]++;
       if (set_misses[set] == SET_MISS_RESET_THRESHOLD) {
-         // FIXME: increment the age of all blocks in this set
          for (uint32_t i=0; i < NUM_WAY; ++i) {
             if (blk_age[global_idx(set,i,NUM_WAY)] < MAX_AGE) {
                blk_age[global_idx(set,i,NUM_WAY)]++;

@@ -42,7 +42,7 @@ def parse_index_type(str_type):
       print("Index not found: ", str_type)
 
 # From left to right, the latency (in cycles) of:
-# nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, primereal
+# nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, primereal, etpv2, etpv3
 LATENCY = [0,0,2,0,0,0,0,5,0,0]
 
 

@@ -49,18 +49,34 @@
 #define LLC_PQ_SIZE NUM_CPUS*32
 #define LLC_MSHR_SIZE NUM_CPUS*64
 
-#define LLC_INDEX_TYPE 0
+#define LLC_INDEX_TYPE 5
 #define LLC_HASH_LATENCY 0
 
 // LLC_LATENCY = 4 (L1I or L1D) + 8 (L2C) + 24/26/32 = 36/38/44 cycles
-// #define LLC_LATENCY ((LLC_WAY == 1) ? (24+LLC_HASH_LATENCY) : ((LLC_WAY == 16) ? (32+LLC_HASH_LATENCY) : (26+LLC_HASH_LATENCY)))
-#define LLC_LATENCY 32
+#define LLC_LATENCY ((LLC_WAY == 1) ? (24+LLC_HASH_LATENCY) : ((LLC_WAY == 16) ? (32+LLC_HASH_LATENCY) : (26+LLC_HASH_LATENCY)))
+// #define LLC_LATENCY 32
 
 #define VARIABLE_ADDRESS_TRANSLATION 0
 #define MAX_ADDRESS_BITS 32
 
 extern bool ru_bit[LLC_SET][LLC_WAY];
 extern uint32_t rrpv[LLC_SET][LLC_WAY];
+
+extern uint32_t GLB_HIT_RESET_THRESHOLD;
+extern uint32_t SET_MISS_RESET_THRESHOLD;
+extern uint32_t MAX_AGE;
+extern uint32_t COEF_BLK_AGE;
+extern uint32_t COEF_BLK_ISHIT;
+extern uint32_t COEF_BLK_ISPF;
+
+extern std::vector<uint32_t> set_misses;
+extern std::vector<uint32_t> blk_age;
+extern std::vector<bool>     blk_ishit;
+extern std::vector<bool>     blk_ispf;
+
+extern uint32_t glb_avg_hitage;
+extern uint32_t glb_sum_hitage;
+extern uint32_t glb_hitcount;
 
 #endif // CACHE_GLOBAL_H
 

@@ -108,6 +108,8 @@ uint32_t EntropyV3::replacement_getvictim(uint32_t index) {
         return get_lru_victim(index);
     else if (REPLACEMENT_POLICY == 1)
         return get_rrip_victim(index);
+    else if (REPLACEMENT_POLICY == 2)
+        return get_rlr_victim(index);
     else
         assert(false);
 }
@@ -118,6 +120,9 @@ void EntropyV3::replacement_update(uint32_t index, uint32_t way, uint32_t remapp
     }
     else if (REPLACEMENT_POLICY == 1) {
         rrip_update(index, way, rrpv[remapping_index][remapping_way]);
+    }
+    else if (REPLACEMENT_POLICY == 2) {
+        rlr_update(index, way, remapping_index, remapping_way);
     }
     else {
         assert(false);

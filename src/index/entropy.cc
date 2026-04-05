@@ -157,6 +157,7 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
             bool fill_ready = true;
             // uint32_t dest_way = get_lru_victim(dest_index); // if the cache is using LRU replacement policy
             uint32_t dest_way = get_rrip_victim(dest_index); // if the cache is using RRIP-based replacement policy
+            // uint32_t dest_way = get_rlr_victim(dest_index);
 
             BLOCK *dest_block = &block_array[dest_index][dest_way];
 
@@ -194,6 +195,7 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
                 override_block(src_block, dest_block);
                 // lru_update(dest_index, dest_way, src_block->lru);
                 rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
+                // rlr_update(dest_index, dest_way, map_ptr, way);
             }
             
             // invalidate the source block
@@ -621,4 +623,49 @@ bool EntropyIndex::is_zero_segment(vector<uint32_t>& x_seq) {
             return false;
     }
     return true;
+}
+
+uint32_t EntropyIndex::global_idx(uint32_t set, uint32_t way) {
+   return (set*NUM_WAY + way);
+}
+
+uint32_t EntropyIndex::get_rlr_victim(uint32_t set) {
+    // victimize invalid lines if any
+    for (int i=0; i<LLC_WAY; i++) {
+        if (!block_array[set][i].valid)
+            return i;
+    }
+
+    // compute P-score of every block in victim set, victimize the lowest p-score
+    uint32_t min_score  = COEF_BLK_AGE + COEF_BLK_ISHIT + COEF_BLK_ISPF;
+    uint32_t victim_way = 0;
+    for (uint32_t way=0; way < NUM_WAY; ++way) {
+        uint32_t glb_idx = global_idx(set,way);
+        bool p_age    = (blk_age[glb_idx] > glb_avg_hitage)? 0 : 1;
+        bool p_reused = blk_ishit[glb_idx]? 1 : 0;
+        bool p_type   = blk_ispf[glb_idx]? 0 : 1;
+        uint32_t p_score = COEF_BLK_AGE * p_age + COEF_BLK_ISHIT * p_reused + COEF_BLK_ISPF * p_type;
+        if (p_score < min_score) {
+            min_score = p_score;
+            victim_way = way;
+        }
+        else if (p_score == min_score) {
+            // tie-breaker 1: age, lower age is victimized
+            if (blk_age[glb_idx] < blk_age[global_idx(set,victim_way)]) {
+                victim_way = way;
+            }
+            // tie-breaker 2: way_id, lower way_id is victimized
+            // do nothing
+        }
+    }
+    
+    return victim_way;
+}
+
+void EntropyIndex::rlr_update(uint32_t set, uint32_t way, uint32_t src_set, uint32_t src_way) {
+    // replace destination block info with source block info
+    blk_age[global_idx(set,way)]   = blk_age[global_idx(src_set,src_way)];   // set age for new line
+    blk_ishit[global_idx(set,way)] = blk_ishit[global_idx(src_set,src_way)]; // set reused
+    blk_ispf[global_idx(set,way)]  = blk_ispf[global_idx(src_set,src_way)];   // set prefetch
+    return;
 }

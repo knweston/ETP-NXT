@@ -13,7 +13,7 @@
 #define V3_WARMUP_INTERVALS 2
 #define CUTOFF_PRORATE 0.5
 #define ETP_CUTOFF_STARTRATE 0
-#define REPLACEMENT_POLICY 1    // 0: LRU, 1: SRRIP
+#define REPLACEMENT_POLICY 1    // 0: LRU, 1: SRRIP, 2: RLR
 
 class EntropyV3 : public EntropyIndex {
 public:
@@ -79,7 +79,7 @@ public:
             cout << "V3_COR_CTR_MAX:       " << V3_COR_CTR_MAX << endl;
             cout << "CUTOFF_PRORATE:       " << CUTOFF_PRORATE << endl;
             cout << "ETP_CUTOFF_STARTRATE: " << ETP_CUTOFF_STARTRATE << endl;
-            cout << "REPLACEMENT_POLICY:   " << (REPLACEMENT_POLICY==1? "SRRIP" : "LRU") << endl;
+            cout << "REPLACEMENT_POLICY:   " << (REPLACEMENT_POLICY==1? "SRRIP" : (REPLACEMENT_POLICY==2? "RLR" : "LRU")) << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
             cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;

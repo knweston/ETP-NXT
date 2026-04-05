@@ -18,12 +18,28 @@ uint64_t warmup_instructions     = 1000000,
          simulation_instructions = 10000000,
          champsim_seed, rand_offset = 0;
 
-uint32_t interval_size_1core = 500000,
+uint32_t interval_size_1core = 1000000,
          interval_size_ncore = interval_size_1core;
 
 // Replacement Policy
 bool ru_bit[LLC_SET][LLC_WAY];
 uint32_t rrpv[LLC_SET][LLC_WAY];
+
+uint32_t GLB_HIT_RESET_THRESHOLD  = 32;
+uint32_t SET_MISS_RESET_THRESHOLD = 8;
+uint32_t MAX_AGE = 3;
+uint32_t COEF_BLK_AGE   = 8;
+uint32_t COEF_BLK_ISHIT = 1;
+uint32_t COEF_BLK_ISPF  = 1;
+std::vector<uint32_t> set_misses;
+std::vector<uint32_t> blk_age;
+std::vector<bool>     blk_ishit;
+std::vector<bool>     blk_ispf;
+uint32_t glb_avg_hitage = 0;
+uint32_t glb_sum_hitage = 0;
+uint32_t glb_hitcount   = 0;
+
+
 
 time_t start_time;
 string CONFIG_FILE;

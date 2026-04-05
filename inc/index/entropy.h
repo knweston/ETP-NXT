@@ -19,7 +19,7 @@
 #define UPDATE_MISS_ONLY 1
 
 // entropy index params
-#define FIX_SEQUENCE 3
+#define FIX_SEQUENCE 0
 #define NOHASH_IF_SEQ_IDX_HIGHEST_ETP 0
 #define SKIP_SAME_BIT_CANDIDATE 0
 #define WARMUP_INTERVALS 2
@@ -183,6 +183,9 @@ public:
     void     rrip_update(uint32_t set, uint32_t way, uint32_t src_age);
     uint32_t get_lru_victim(uint32_t set);
     void     lru_update(uint32_t set, uint32_t way, uint32_t src_lru_pos);
+    uint32_t get_rlr_victim(uint32_t set);
+    void     rlr_update(uint32_t set, uint32_t way, uint32_t src_set, uint32_t src_way);
+    uint32_t global_idx(uint32_t set, uint32_t way);
 
 protected:
     // XOR-hash configuration

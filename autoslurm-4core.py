@@ -10,7 +10,7 @@ def create_dir(path):
 
 class SlurmScript:
 
-    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="5:00:00", mem="1G", num_threads="1"):
+    def __init__(self, cluster, job_name, job_dir, out_dir, cmd, time="9:00:00", mem="1G", num_threads="1"):
         self.cluster  = cluster
         self.job_name = job_name
         self.job_dir  = job_dir
@@ -85,7 +85,11 @@ def generate_jobs(apps, job_output, result_output, cluster, executable, num_loop
     for idx, app_list in enumerate(requested_apps):
         cmd = ""
         for app in app_list:
-            cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
+            if app.find("compute") != -1 or app.find("srv") != -1:
+                cvp1_trace_dir = os.path.join(home_dir, "cvp1-traces")  # champsim-traces directory
+                cmd += f"cp {cvp1_trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
+            else:
+                cmd += f"cp {trace_dir+'/'+app+'.champsimtrace.xz'} $TMPDIR\n"
 
         cmd += f"\nfor i in {'{0..'+str(num_loops-1)+'}'}\n"
         cmd += f"do\n"
