@@ -6,7 +6,10 @@
 class SkewedIndex : public Index {
 public:
    SkewedIndex(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length, BLOCK **arr)
-      :Index(x_numset, x_numway, x_interval_length), block_array(arr)
+      :Index(x_numset, x_numway, x_interval_length), block_array(arr),
+       m_tie_break_state(0x9e3779b9u), m_last_victim_valid(false),
+       m_last_victim_address(0), m_last_invalid_mask(0), m_last_ru0_mask(0),
+       m_last_clean_mask(0), m_last_dirty_mask(0), m_last_victim_set(0), m_last_victim_way(0)
    {
       m_shuffled_bit_sels.push_back(perfect_shuffle(lg2(NUM_SET), 0, lg2(NUM_SET)));
       reverse(m_shuffled_bit_sels.back().begin(), m_shuffled_bit_sels.back().end());
@@ -37,6 +40,18 @@ public:
 protected:
    BLOCK**  block_array; // ptr to the cache set data array
    vector<vector<uint32_t>> m_shuffled_bit_sels;
+
+   // Cache the last selection because get_set() and llc_find_victim() both
+   // ask for a victim for the same miss.
+   uint32_t m_tie_break_state;
+   bool m_last_victim_valid;
+   uint64_t m_last_victim_address;
+   uint64_t m_last_invalid_mask;
+   uint64_t m_last_ru0_mask;
+   uint64_t m_last_clean_mask;
+   uint64_t m_last_dirty_mask;
+   uint32_t m_last_victim_set;
+   uint32_t m_last_victim_way;
 };
 
 #endif // SKEWED_INDEX_H

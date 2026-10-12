@@ -41,14 +41,17 @@
 # python3 autobuild.py -i primereal -r srrip -o primereal
 # python3 autobuild.py -i xorhash -r srrip -o xorhash
 # python3 autobuild.py -i entropy -r srrip -o entropy1c
-# python3 autobuild.py -i entropyv3 -r srrip -o etp3r
-python3 autobuild.py -i entropy -r srrip -o etpminmax
+python3 autobuild.py -i entropyv3 -r srrip -o etp3r
+# python3 autobuild.py -i entropy -r srrip -o etpminmax
 # python3 autobuild.py -i entropy -r srrip -o fxetp
 
 # python3 autobuild.py -i nohash -r srrip -p berti -d ip_stride -o nohash
 # python3 autobuild.py -i primereal -r srrip -p berti -d ip_stride -o primereal
 # python3 autobuild.py -i xorhash -r srrip -p berti -d ip_stride -o xorhash
 # python3 autobuild.py -i entropy -r srrip -p berti -d ip_stride -o entropy1c
-# python3 autobuild.py -i entropyv3 -r srrip -p berti -d ip_stride -o etp3r
-python3 autobuild.py -i entropy -r srrip -p berti -d ip_stride -o etpminmax
+python3 autobuild.py -i entropyv3 -r srrip -p berti -d ip_stride -o etp3r
+# python3 autobuild.py -i entropy -r srrip -p berti -d ip_stride -o etpminmax
 # python3 autobuild.py -i entropy -r srrip -p berti -d ip_stride -o fxetp
+
+python3 autobuild.py -i skewed -r srrip -o skewed
+python3 autobuild.py -i skewed -r srrip -p berti -d ip_stride -o skewed

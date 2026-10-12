@@ -63,102 +63,67 @@ void CACHE::llc_replacement_final_stats()
 }
 
 void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
-    // compute hashed index of each way
-    vector<uint32_t> hashed_indices;
-    for (uint32_t i=0; i < NUM_WAY; ++i) {
-        uint32_t hashed_idx = compute_index(address, m_shuffled_bit_sels[0], m_shuffled_bit_sels[i+1]);
-        
-        // victimize invalid lines if any
-        if (!block_array[hashed_idx][i].valid) {
-            *way_id = i;
-            *set_id = hashed_idx;
-            return;
+    // Preserve the priority order: invalid, RU=0, clean RU=1, then dirty RU=1.
+    vector<uint32_t> hashed_indices(NUM_WAY);
+    uint64_t invalid_mask = 0;
+    uint64_t ru0_mask = 0;
+    uint64_t clean_mask = 0;
+    uint64_t dirty_mask = 0;
+
+    for (uint32_t way = 0; way < NUM_WAY; ++way) {
+        uint32_t hashed_idx = compute_index(address, m_shuffled_bit_sels[0], m_shuffled_bit_sels[way + 1]);
+        hashed_indices[way] = hashed_idx;
+        uint64_t way_bit = uint64_t{1} << way;
+
+        if (!block_array[hashed_idx][way].valid) {
+            invalid_mask |= way_bit;
+        } else if (!ru_bit[hashed_idx][way]) {
+            ru0_mask |= way_bit;
+        } else if (block_array[hashed_idx][way].dirty) {
+            dirty_mask |= way_bit;
+        } else {
+            clean_mask |= way_bit;
         }
-        hashed_indices.push_back(hashed_idx);
     }
 
-    vector<vector<uint32_t>> ru_types;
-    ru_types.resize(2);
-    for (uint32_t way=0; way < NUM_WAY; ++way) {
-        uint32_t hashed_idx = hashed_indices[way];
-        ru_types[ru_bit[hashed_idx][way]].push_back(way);
+    // get_set() and llc_find_victim() query this same miss. Reuse the choice
+    // when the address and candidate state match, so both receive the same pair.
+    if (m_last_victim_valid && address == m_last_victim_address &&
+        invalid_mask == m_last_invalid_mask && ru0_mask == m_last_ru0_mask &&
+        clean_mask == m_last_clean_mask && dirty_mask == m_last_dirty_mask) {
+        *set_id = m_last_victim_set;
+        *way_id = m_last_victim_way;
+        return;
     }
 
-    /*
-    // debug
-    cout << "address: " << address << endl;
-    cout << "hashed_indices: ";
-    for (uint32_t i=0; i < NUM_WAY; ++i)
-        cout << hashed_indices[i] << " ";
-    cout << endl;
-
-    cout << "ru_types[0]: ";
-    for (uint32_t i=0; i < ru_types[0].size(); ++i)
-        cout << ru_types[0][i] << " ";
-    cout << endl;
-
-    cout << "ru_types[1]: ";
-    for (uint32_t i=0; i < ru_types[1].size(); ++i)
-        cout << ru_types[1][i] << " ";
-    cout << endl;
-    */
-
-    // all lines are ru_bit == 1
-    if (ru_types[0].size() == 0) {
-        vector<vector<uint32_t>> dirty_types;
-        dirty_types.resize(2);
-        for (uint32_t way=0; way < ru_types[1].size(); ++way) {
-            uint32_t hashed_idx = ru_types[1][way];
-            dirty_types[block_array[hashed_idx][way].dirty].push_back(way);
-        }
-
-        // all lines are dirty => random victim
-        if (dirty_types[0].size() == 0) {
-            // *way_id = dirty_types[1][rand() % dirty_types[1].size()];    // random
-            *way_id = dirty_types[1][0];
-            *set_id = hashed_indices[*way_id];
-        }
-
-        // only one clean line
-        else if (dirty_types[0].size() == 1) {
-            *way_id = dirty_types[0][0];
-            *set_id = hashed_indices[*way_id];
-        }
-
-        // more than one clean lines => random victim
-        else {
-            // *way_id = dirty_types[0][rand() % dirty_types[0].size()];    // random
-            *way_id = dirty_types[0][0];
-            *set_id = hashed_indices[*way_id];
-        }
-
-        /*
-        // debug
-        cout << "dirty_types[0]: ";
-        for (uint32_t i=0; i < dirty_types[0].size(); ++i)
-            cout << dirty_types[0][i] << " ";
-        cout << endl;
-
-        cout << "dirty_types[1]: ";
-        for (uint32_t i=0; i < dirty_types[1].size(); ++i)
-            cout << dirty_types[1][i] << " ";
-        cout << endl;
-        */
+    uint64_t eligible_mask = invalid_mask ? invalid_mask :
+                             (ru0_mask ? ru0_mask :
+                             (clean_mask ? clean_mask : dirty_mask));
+    vector<uint32_t> candidates;
+    for (uint32_t way = 0; way < NUM_WAY; ++way) {
+        if (eligible_mask & (uint64_t{1} << way))
+            candidates.push_back(way);
     }
 
-    // only one line with ru_bit == 0
-    else if (ru_types[0].size() == 1) {
-        *way_id = ru_types[0][0];
-        *set_id = hashed_indices[ru_types[0][0]];
+    // Use a local fixed-seed PRNG only for ties. This is reproducible and
+    // does not affect the simulator's other random-number streams.
+    uint32_t selected = 0;
+    if (candidates.size() > 1) {
+        m_tie_break_state ^= m_tie_break_state << 13;
+        m_tie_break_state ^= m_tie_break_state >> 17;
+        m_tie_break_state ^= m_tie_break_state << 5;
+        selected = m_tie_break_state % candidates.size();
     }
 
-    // more than one line with ru_bit == 0 => random victim
-    else {
-        // *way_id = ru_types[0][rand() % ru_types[0].size()];  // random
-        *way_id = ru_types[0][0];
-        *set_id = hashed_indices[*way_id];
-    }
+    *way_id = candidates[selected];
+    *set_id = hashed_indices[*way_id];
 
-    // cout << "victim_set: " << *set_id << ". victim_way: " << *way_id << endl;
-    // cout << endl;
+    m_last_victim_valid = true;
+    m_last_victim_address = address;
+    m_last_invalid_mask = invalid_mask;
+    m_last_ru0_mask = ru0_mask;
+    m_last_clean_mask = clean_mask;
+    m_last_dirty_mask = dirty_mask;
+    m_last_victim_set = *set_id;
+    m_last_victim_way = *way_id;
 }

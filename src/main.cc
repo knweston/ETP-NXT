@@ -18,7 +18,7 @@ uint64_t warmup_instructions     = 1000000,
          simulation_instructions = 10000000,
          champsim_seed, rand_offset = 0;
 
-uint32_t interval_size_1core = 1000000,
+uint32_t interval_size_1core = 500000,
          interval_size_ncore = interval_size_1core;
 
 // Replacement Policy
@@ -948,6 +948,14 @@ int main(int argc, char** argv)
         }
     }
 
+    else if (LLC_INDEX_TYPE == 7) {
+        if (NUM_CPUS == 1) {
+            uncore.LLC.m_index = new AscibIndex(LLC_SET, LLC_WAY, interval_size_1core, uncore.LLC.block, FILL_LLC, 0);
+        }
+        else {
+            uncore.LLC.m_index = new AscibIndex(LLC_SET, LLC_WAY, interval_size_ncore, uncore.LLC.block, FILL_LLC, 0);
+        }
+    }
     else if (LLC_INDEX_TYPE == 8) {
         if (NUM_CPUS == 1) { // single core
             uncore.LLC.m_index = new EntropyV2(LLC_SET, LLC_WAY, interval_size_1core, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);

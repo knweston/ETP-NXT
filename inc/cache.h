@@ -6,6 +6,7 @@
 #include "index/entropy.h"
 #include "index/entropy2.h"
 #include "index/etpv3.h"
+#include "index/ascib.h"
 #include "index/skewed.h"
 #include "index/buddy.h"
 
