@@ -1,53 +1,147 @@
+/*
+    Modified LRU/NRU for 4-way skewed cache, proposed by Andre Seznec
+    - 1 RU bit per way
+    - Hit/New Allocated:
+        - ru_bit[set_id][way_id] = 1 when way_id is accessed
+        - reset when num_accesses == RESET_PERIOD
+    - Miss: victimize in this order; the knob below controls ties
+        1. among ru_bit[set_id][way_id] = 0
+        2. among ru_bit[set_id][way_id] = 1 and dirty == 0
+        3. among ru_bit[set_id][way_id] = 1 and dirty == 1
+*/
+
 #include "cache.h"
 
-// initialize replacement state
-void CACHE::llc_initialize_replacement()
-{
+// 0: old replacement, choose the lowest-numbered eligible way.
+// 1: new replacement, reproducible pseudo-random ties with repeated-query reuse.
+// Both modes keep the corrected dirty check at each candidate's actual set/way.
+#ifndef SKEWED_RANDOM_VICTIM_TIEBREAK
+#define SKEWED_RANDOM_VICTIM_TIEBREAK 0
+#endif
 
+#if SKEWED_RANDOM_VICTIM_TIEBREAK != 0 && SKEWED_RANDOM_VICTIM_TIEBREAK != 1
+#error "SKEWED_RANDOM_VICTIM_TIEBREAK must be 0 (old) or 1 (random ties)"
+#endif
+
+#define RESET_PERIOD LLC_SET*LLC_WAY*BLOCK_SIZE/4
+uint32_t num_accesses = 0;
+
+// initialize replacement state
+void CACHE::llc_initialize_replacement() {
+    cout << "SKEWED_RANDOM_VICTIM_TIEBREAK: " << (SKEWED_RANDOM_VICTIM_TIEBREAK ? "new" : "old") << endl;
+    for(int i=0; i<LLC_SET; i++) {
+        for(int j=0; j<LLC_WAY; j++)
+            ru_bit[i][j] = false;
+    }
+
+    cout << "RESET_PERIOD: " << RESET_PERIOD << endl;
 }
 
 // find replacement victim
 uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
 {
-    // baseline LRU
-    return lru_victim(cpu, instr_id, set, current_set, ip, full_addr, type); 
+    // type cast index ptr to skewed cache
+    SkewedIndex* m_skewed_index = static_cast<SkewedIndex*>(m_index);
+
+    // call get_victim from SkewedIndex class
+    uint32_t set_id = 0;
+    uint32_t way_id = 0;
+    m_skewed_index->get_victim(full_addr>>LOG2_BLOCK_SIZE, &set_id, &way_id);
+
+    if (block[set_id][way_id].valid && m_index) {
+        m_index->increment_eviction(set_id);
+    }
+    return way_id;
 }
 
 // called on every cache hit and cache fill
 void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, uint64_t full_addr, uint64_t ip, uint64_t victim_addr, uint32_t type, uint8_t hit)
 {
-    string TYPE_NAME;
-    if (type == LOAD)
-        TYPE_NAME = "LOAD";
-    else if (type == RFO)
-        TYPE_NAME = "RFO";
-    else if (type == PREFETCH)
-        TYPE_NAME = "PF";
-    else if (type == WRITEBACK)
-        TYPE_NAME = "WB";
-    else
-        assert(0);
-
-    if (hit)
-        TYPE_NAME += "_HIT";
-    else
-        TYPE_NAME += "_MISS";
-
-    if ((type == WRITEBACK) && ip)
-        assert(0);
-
-    // uncomment this line to see the LLC accesses
-    // cout << "CPU: " << cpu << "  LLC " << setw(9) << TYPE_NAME << " set: " << setw(5) << set << " way: " << setw(2) << way;
-    // cout << hex << " paddr: " << setw(12) << paddr << " ip: " << setw(8) << ip << " victim_addr: " << victim_addr << dec << endl;
-
-    // baseline LRU
-    if (hit && (type == WRITEBACK)) // writeback hit does not update LRU state
-        return;
-
-    return lru_update(set, way);
+    num_accesses++;
+    if (num_accesses >= RESET_PERIOD) {
+        for(int i=0; i<LLC_SET; i++) {
+            for(int j=0; j<LLC_WAY; j++)
+                ru_bit[i][j] = false;
+        }
+        num_accesses = 0;
+        cout << "reset access counter" << endl;
+    }
+    ru_bit[set][way] = 1;
 }
 
 void CACHE::llc_replacement_final_stats()
 {
+    // do nothing
+}
 
+void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
+    // Preserve the priority order: invalid, RU=0, clean RU=1, then dirty RU=1.
+    vector<uint32_t> hashed_indices(NUM_WAY);
+    uint64_t invalid_mask = 0;
+    uint64_t ru0_mask = 0;
+    uint64_t clean_mask = 0;
+    uint64_t dirty_mask = 0;
+
+    for (uint32_t way = 0; way < NUM_WAY; ++way) {
+        uint32_t hashed_idx = compute_index(address, way);
+        hashed_indices[way] = hashed_idx;
+        uint64_t way_bit = uint64_t{1} << way;
+
+        if (!block_array[hashed_idx][way].valid) {
+            invalid_mask |= way_bit;
+        } else if (!ru_bit[hashed_idx][way]) {
+            ru0_mask |= way_bit;
+        } else if (block_array[hashed_idx][way].dirty) {
+            dirty_mask |= way_bit;
+        } else {
+            clean_mask |= way_bit;
+        }
+    }
+
+#if SKEWED_RANDOM_VICTIM_TIEBREAK == 1
+    // get_set() and llc_find_victim() query this same miss. Reuse the choice
+    // when the address and candidate state match, so both receive the same pair.
+    if (m_last_victim_valid && address == m_last_victim_address &&
+        invalid_mask == m_last_invalid_mask && ru0_mask == m_last_ru0_mask &&
+        clean_mask == m_last_clean_mask && dirty_mask == m_last_dirty_mask) {
+        *set_id = m_last_victim_set;
+        *way_id = m_last_victim_way;
+        return;
+    }
+#endif
+
+    uint64_t eligible_mask = invalid_mask ? invalid_mask :
+                             (ru0_mask ? ru0_mask :
+                             (clean_mask ? clean_mask : dirty_mask));
+    vector<uint32_t> candidates;
+    for (uint32_t way = 0; way < NUM_WAY; ++way) {
+        if (eligible_mask & (uint64_t{1} << way))
+            candidates.push_back(way);
+    }
+
+    // Candidates are in way order, so selected=0 preserves the old tie-break.
+    uint32_t selected = 0;
+#if SKEWED_RANDOM_VICTIM_TIEBREAK == 1
+    // Use a local fixed-seed PRNG without changing other random streams.
+    if (candidates.size() > 1) {
+        m_tie_break_state ^= m_tie_break_state << 13;
+        m_tie_break_state ^= m_tie_break_state >> 17;
+        m_tie_break_state ^= m_tie_break_state << 5;
+        selected = m_tie_break_state % candidates.size();
+    }
+#endif
+
+    *way_id = candidates[selected];
+    *set_id = hashed_indices[*way_id];
+
+#if SKEWED_RANDOM_VICTIM_TIEBREAK == 1
+    m_last_victim_valid = true;
+    m_last_victim_address = address;
+    m_last_invalid_mask = invalid_mask;
+    m_last_ru0_mask = ru0_mask;
+    m_last_clean_mask = clean_mask;
+    m_last_dirty_mask = dirty_mask;
+    m_last_victim_set = *set_id;
+    m_last_victim_way = *way_id;
+#endif
 }

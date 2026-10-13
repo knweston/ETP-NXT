@@ -20,7 +20,6 @@ def parse_apps(apps):
          "bfs.kron-128B","bfs.road-19B","bfs.web-56B", \
          "cc.road-36B","cc.urand-353B","cc.web-24B"
       ]
-
    elif apps == "cloud":
       requested_apps = [
          "cassandra_phase0_core0",
@@ -60,15 +59,11 @@ def parse_apps(apps):
       ]
    elif apps == "parsec":
       requested_apps = ["bodytrack","canneal","facesim","ferret","fluidanimate","freqmine","streamcluster","vips"]
-      
    elif apps == "dpc4-ml":
       requested_apps = [
          "bark.cpp-bark-small.coarse_token_gen.1",\
          "bark.cpp-bark-small.coarse_token_gen.4",\
          "bark.cpp-bark-small.coarse_token_gen.5",\
-         "biogpt.cpp-ggml-model-tocilizumab.1",\
-         "biogpt.cpp-ggml-model-tocilizumab.2",\
-         "biogpt.cpp-ggml-model-tocilizumab.3",\
          "clip_trace_1",\
          "clip_trace_3",\
          "llama2.c-stories110M.1",\
@@ -80,8 +75,6 @@ def parse_apps(apps):
          "llama2.c-stories42M.1",\
          "llama2.c-stories42M.2",\
          "llama2.c-stories42M.3",\
-         "rwkv_trace_1",\
-         "rwkv_trace_2",\
          "rwkv_trace_3",\
          "stable-diffusion.cpp-sd-v1-4.ckpt.1",\
          "stable-diffusion.cpp-sd-v1-4.ckpt.2",\
@@ -111,27 +104,20 @@ def parse_apps(apps):
       # MPKI >= 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
       requested_apps = [
          "403","410","433","436","437","450","459","462","470","471","473","481","482",\
-         "602","605","607","620","621","623","627","628","649","654",\
-         "bodytrack","canneal","facesim","ferret","fluidanimate","freqmine","streamcluster","vips",\
-         "cassandra","http","tomcat","llama"
+         "602","605","607","620","621","623","627","628","649","654"
       ]
-   
    elif apps == "dpc3-specmore":
       # MPKI > 1 under config 256/2-2,512/4-8,2048/16-32, rank2, DRAM=24
       requested_apps = [
-         "401.bzip2-226B","401.bzip2-277B",\
-         "403.gcc-16B",\
-         "434.zeusmp-10B",\
-         "456.hmmer-327B",\
-         "483.xalancbmk-716B",\
-         "602.gcc_s-2226B",\
-         "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-891B",\
-         "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-294B"
-      ]
-   
-   elif apps == "dpc3-spectemp":
-      requested_apps = [
-         "602.gcc_s-1850B","603.bwaves_s-2931B","654.roms_s-523B","654.roms_s-1390B","483.xalancbmk-127B","403.gcc-48B"
+         # "401.bzip2-226B","401.bzip2-277B",\
+         # "403.gcc-16B",\
+         # "434.zeusmp-10B",\
+         # "456.hmmer-327B",\
+         # "483.xalancbmk-716B",\
+         # "602.gcc_s-2226B",\
+         # "603.bwaves_s-1740B","603.bwaves_s-2609B","603.bwaves_s-891B",\
+         # "654.roms_s-1007B","654.roms_s-1070B","654.roms_s-1613B","654.roms_s-293B","654.roms_s-294B"
+         "403.gcc-16B","434.zeusmp-10B","456.hmmer-327B","602.gcc_s-2226B","603.bwaves_s-891B","654.roms_s-1007B"
       ]
 
    elif apps == "cvp-entropy":
@@ -432,6 +418,110 @@ def parse_apps(apps):
    # Note: ferret is ok at 1B, but consistently fails at 10B run (at instruction 1750000001) 
    # due to "src/ooo_cpu.cc:1653: void O3_CPU::execute_store(uint32_t, uint32_t, uint32_t): Assertion `0' failed."
    # this bug is seen in all indexing types, including nohash
+
+   elif apps == "geoidx-cvp1":
+      requested_apps = [
+         "compute_fp_1",\
+         "compute_fp_100",\
+         "compute_fp_101",\
+         "compute_fp_104",\
+         "compute_fp_105",\
+         "compute_fp_108",\
+         "compute_fp_110",\
+         "compute_fp_111",\
+         "compute_fp_112",\
+         "compute_fp_12",\
+         "compute_fp_121",\
+         "compute_fp_124",\
+         "compute_fp_127",\
+         "compute_fp_128",\
+         "compute_fp_129",\
+         "compute_fp_130",\
+         "compute_fp_133",\
+         "compute_fp_134",\
+         "compute_fp_136",\
+         "compute_fp_139",\
+         "compute_fp_14",\
+         "compute_fp_15",\
+         "compute_fp_25",\
+         "compute_fp_30",\
+         "compute_fp_37",\
+         "compute_fp_4",\
+         "compute_fp_44",\
+         "compute_fp_48",\
+         "compute_fp_49",\
+         "compute_fp_5",\
+         "compute_fp_51",\
+         "compute_fp_54",\
+         "compute_fp_56",\
+         "compute_fp_57",\
+         "compute_fp_59",\
+         "compute_fp_6",\
+         "compute_fp_61",\
+         "compute_fp_63",\
+         "compute_fp_65",\
+         "compute_fp_67",\
+         "compute_fp_7",\
+         "compute_fp_75",\
+         "compute_fp_78",\
+         "compute_fp_8",\
+         "compute_fp_84",\
+         "compute_fp_87",\
+         "compute_fp_94",\
+         "compute_fp_95",\
+         "compute_fp_96",\
+         "compute_fp_97",\
+         "compute_int_105",\
+         "compute_int_204",\
+         "compute_int_28",\
+         "compute_int_354",\
+         "compute_int_434",\
+         "compute_int_479",\
+         "compute_int_751",\
+         "srv111",\
+         "srv132",\
+         "srv137",\
+         "srv155",\
+         "srv160",\
+         "srv174",\
+         "srv215",\
+         "srv242",\
+         "srv262",\
+         "srv279",\
+         "srv3",\
+         "srv314",\
+         "srv333",\
+         "srv366",\
+         "srv371",\
+         "srv394",\
+         "srv405",\
+         "srv440",\
+         "srv453",\
+         "srv456",\
+         "srv461",\
+         "srv470",\
+         "srv475",\
+         "srv490",\
+         "srv509",\
+         "srv552",\
+         "srv562",\
+         "srv564",\
+         "srv58",\
+         "srv602",\
+         "srv637",\
+         "srv64",\
+         "srv650",\
+         "srv671",\
+         "srv676",\
+         "srv69",\
+         "srv717",\
+         "srv738",\
+         "srv745",\
+         "srv767",\
+         "srv776",\
+         "srv78",\
+         "srv93"
+      ]
 
    elif apps == "hpca26c4v1":
       requested_apps = [

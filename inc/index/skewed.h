@@ -7,7 +7,7 @@
 // 1: L XOR (perfshuff^(way/2)(H) AND mask), with T on even ways
 //    and its index-width complement on odd ways.
 #ifndef SKEWED_INDEX_FORMULA
-#define SKEWED_INDEX_FORMULA 1
+#define SKEWED_INDEX_FORMULA 0
 #endif
 
 #if SKEWED_INDEX_FORMULA != 0 && SKEWED_INDEX_FORMULA != 1

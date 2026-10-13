@@ -16,7 +16,7 @@
 // 1: new replacement, reproducible pseudo-random ties with repeated-query reuse.
 // Both modes keep the corrected dirty check at each candidate's actual set/way.
 #ifndef SKEWED_RANDOM_VICTIM_TIEBREAK
-#define SKEWED_RANDOM_VICTIM_TIEBREAK 1
+#define SKEWED_RANDOM_VICTIM_TIEBREAK 0
 #endif
 
 #if SKEWED_RANDOM_VICTIM_TIEBREAK != 0 && SKEWED_RANDOM_VICTIM_TIEBREAK != 1
