@@ -18,106 +18,106 @@
 // uint32_t glb_hitcount   = 0;
 
 uint32_t global_idx(uint32_t set, uint32_t way, uint32_t assoc) {
-   return (set*assoc + way);
+    return (set*assoc + way);
 }
 
 // initialize replacement state
 void CACHE::llc_initialize_replacement() {
-   set_misses.resize(NUM_SET, 0);
-   blk_age.resize(NUM_SET * NUM_WAY, 0);
-   blk_ishit.resize(NUM_SET * NUM_WAY, 0);
-   blk_ispf.resize(NUM_SET * NUM_WAY, 0);
+    set_misses.resize(NUM_SET, 0);
+    blk_age.resize(NUM_SET * NUM_WAY, 0);
+    blk_ishit.resize(NUM_SET * NUM_WAY, 0);
+    blk_ispf.resize(NUM_SET * NUM_WAY, 0);
 
-   cout << "COEF_BLK_AGE:   " << COEF_BLK_AGE << endl;
-   cout << "COEF_BLK_ISHIT: " << COEF_BLK_ISHIT << endl;
-   cout << "COEF_BLK_ISPF:  " << COEF_BLK_ISPF << endl;
+    cout << "COEF_BLK_AGE:   " << COEF_BLK_AGE << endl;
+    cout << "COEF_BLK_ISHIT: " << COEF_BLK_ISHIT << endl;
+    cout << "COEF_BLK_ISPF:  " << COEF_BLK_ISPF << endl;
 }
 
 // find replacement victim
 uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK* current_set, uint64_t pc, uint64_t full_addr, uint32_t type)
 {
-   // victimize invalid lines if any
-   for (int i=0; i<LLC_WAY; i++) {
-      if (!block[set][i].valid)
-         return i;
-   }
+    // victimize invalid lines if any
+    for (int i=0; i<LLC_WAY; i++) {
+        if (!block[set][i].valid)
+            return i;
+    }
 
-   // compute P-score of every block in victim set, victimize the lowest p-score
-   uint32_t min_score  = COEF_BLK_AGE + COEF_BLK_ISHIT + COEF_BLK_ISPF;
-   uint32_t victim_way = 0;
-   for (uint32_t way=0; way < NUM_WAY; ++way) {
-      uint32_t glb_idx = global_idx(set,way,NUM_WAY);
-      bool p_age    = (blk_age[glb_idx] > glb_avg_hitage)? 0 : 1;
-      bool p_reused = blk_ishit[glb_idx]? 1 : 0;
-      bool p_type   = blk_ispf[glb_idx]? 0 : 1;
-      uint32_t p_score = COEF_BLK_AGE * p_age + COEF_BLK_ISHIT * p_reused + COEF_BLK_ISPF * p_type;
-      if (p_score < min_score) {
-         min_score = p_score;
-         victim_way = way;
-      }
-      else if (p_score == min_score) {
-         // tie-breaker 1: age, lower age is victimized
-         if (blk_age[glb_idx] < blk_age[global_idx(set,victim_way,NUM_WAY)]) {
+    // compute P-score of every block in victim set, victimize the lowest p-score
+    uint32_t min_score  = COEF_BLK_AGE + COEF_BLK_ISHIT + COEF_BLK_ISPF;
+    uint32_t victim_way = 0;
+    for (uint32_t way=0; way < NUM_WAY; ++way) {
+        uint32_t glb_idx = global_idx(set,way,NUM_WAY);
+        bool p_age    = (blk_age[glb_idx] > glb_avg_hitage)? 0 : 1;
+        bool p_reused = blk_ishit[glb_idx]? 1 : 0;
+        bool p_type   = blk_ispf[glb_idx]? 0 : 1;
+        uint32_t p_score = COEF_BLK_AGE * p_age + COEF_BLK_ISHIT * p_reused + COEF_BLK_ISPF * p_type;
+        if (p_score < min_score) {
+            min_score = p_score;
             victim_way = way;
-         }
-         // tie-breaker 2: way_id, lower way_id is victimized
-         // do nothing
-      }
-   }
+        }
+        else if (p_score == min_score) {
+            // tie-breaker 1: age, lower age is victimized
+            if (blk_age[glb_idx] < blk_age[global_idx(set,victim_way,NUM_WAY)]) {
+                victim_way = way;
+            }
+            // tie-breaker 2: way_id, lower way_id is victimized
+            // do nothing
+        }
+    }
 
-   if (block[set][victim_way].valid && m_index) {
-      m_index->increment_eviction(set);
-   }
-   
-   return victim_way;
+    if (block[set][victim_way].valid && m_index) {
+        m_index->increment_eviction(set);
+    }
+
+    return victim_way;
 }
 
 // called on every cache hit and cache fill
 void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, uint64_t full_addr, uint64_t pc, uint64_t victim_addr, uint32_t type,
-                                     uint8_t hit)
+    uint8_t hit)
 {
-   assert(blk_age[global_idx(set,way,NUM_WAY)] <= MAX_AGE);
-   assert(set_misses[set] <= SET_MISS_RESET_THRESHOLD);
-   assert(glb_hitcount <= GLB_HIT_RESET_THRESHOLD);
-   assert(glb_sum_hitage <= MAX_AGE*GLB_HIT_RESET_THRESHOLD);
+    assert(blk_age[global_idx(set,way,NUM_WAY)] <= MAX_AGE);
+    assert(set_misses[set] <= SET_MISS_RESET_THRESHOLD);
+    assert(glb_hitcount <= GLB_HIT_RESET_THRESHOLD);
+    assert(glb_sum_hitage <= MAX_AGE*GLB_HIT_RESET_THRESHOLD);
 
-   // do not update replacement state on writeback hits
-   if (hit && (type == WRITEBACK)) {
-      return;
-   }
-   
-   // update global counters (inter-set)
-   if (hit) {
-      glb_sum_hitage += blk_age[global_idx(set,way,NUM_WAY)];
-      glb_hitcount++;
-      if (glb_hitcount == GLB_HIT_RESET_THRESHOLD) {
-         glb_avg_hitage = 2*glb_sum_hitage / GLB_HIT_RESET_THRESHOLD;
-         glb_hitcount   = 0;
-         glb_sum_hitage = 0;
-      }
-   }
-   else {
-      set_misses[set]++;
-      if (set_misses[set] == SET_MISS_RESET_THRESHOLD) {
-         for (uint32_t i=0; i < NUM_WAY; ++i) {
-            if (blk_age[global_idx(set,i,NUM_WAY)] < MAX_AGE) {
-               blk_age[global_idx(set,i,NUM_WAY)]++;
+    // do not update replacement state on writeback hits
+    if (hit && (type == WRITEBACK)) {
+        return;
+    }
+
+    // update global counters (inter-set)
+    if (hit) {
+        glb_sum_hitage += blk_age[global_idx(set,way,NUM_WAY)];
+        glb_hitcount++;
+        if (glb_hitcount == GLB_HIT_RESET_THRESHOLD) {
+            glb_avg_hitage = 2*glb_sum_hitage / GLB_HIT_RESET_THRESHOLD;
+            glb_hitcount   = 0;
+            glb_sum_hitage = 0;
+        }
+    }
+    else {
+        set_misses[set]++;
+        if (set_misses[set] == SET_MISS_RESET_THRESHOLD) {
+            for (uint32_t i=0; i < NUM_WAY; ++i) {
+                if (blk_age[global_idx(set,i,NUM_WAY)] < MAX_AGE) {
+                    blk_age[global_idx(set,i,NUM_WAY)]++;
+                }
             }
-         }
-         set_misses[set] = 0;
-      }
-   }
+            set_misses[set] = 0;
+        }
+    }
 
-   // update local counters (intra-set)
-   if (hit) {
-      blk_age[global_idx(set,way,NUM_WAY)]   = 0;     // reset age upon hit
-      blk_ishit[global_idx(set,way,NUM_WAY)] = true;  // set reused
-   }
-   else {
-      blk_age[global_idx(set,way,NUM_WAY)]   = 0;                   // reset age for new line
-      blk_ishit[global_idx(set,way,NUM_WAY)] = false;               // reset reused
-      blk_ispf[global_idx(set,way,NUM_WAY)]  = (type == PREFETCH);  // set prefetch
-   }
+    // update local counters (intra-set)
+    if (hit) {
+        blk_age[global_idx(set,way,NUM_WAY)]   = 0;     // reset age upon hit
+        blk_ishit[global_idx(set,way,NUM_WAY)] = true;  // set reused
+    }
+    else {
+        blk_age[global_idx(set,way,NUM_WAY)]   = 0;                   // reset age for new line
+        blk_ishit[global_idx(set,way,NUM_WAY)] = false;               // reset reused
+        blk_ispf[global_idx(set,way,NUM_WAY)]  = (type == PREFETCH);  // set prefetch
+    }
 }
 
 // use this function to print out your own stats at the end of simulation

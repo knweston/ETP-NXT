@@ -49,12 +49,12 @@ enum FILTER_REQUEST {SPP_L2C_PREFETCH, SPP_LLC_PREFETCH, L2C_DEMAND, L2C_EVICT};
 uint64_t get_hash(uint64_t key);
 
 class SIGNATURE_TABLE {
-  public:
+public:
     bool     valid[ST_SET][ST_WAY];
     uint32_t tag[ST_SET][ST_WAY],
-             last_offset[ST_SET][ST_WAY],
-             sig[ST_SET][ST_WAY],
-             lru[ST_SET][ST_WAY];
+        last_offset[ST_SET][ST_WAY],
+        sig[ST_SET][ST_WAY],
+        lru[ST_SET][ST_WAY];
 
     SIGNATURE_TABLE() {
         cout << "Initialize SIGNATURE TABLE" << endl;
@@ -77,10 +77,10 @@ class SIGNATURE_TABLE {
 };
 
 class PATTERN_TABLE {
-  public:
+public:
     int      delta[PT_SET][PT_WAY];
     uint32_t c_delta[PT_SET][PT_WAY],
-             c_sig[PT_SET];
+        c_sig[PT_SET];
 
     PATTERN_TABLE() {
         cout << endl << "Initialize PATTERN TABLE" << endl;
@@ -100,14 +100,14 @@ class PATTERN_TABLE {
     }
 
     void update_pattern(uint32_t last_sig, int curr_delta),
-         read_pattern(uint32_t curr_sig, int *prefetch_delta, uint32_t *confidence_q, uint32_t &lookahead_way, uint32_t &lookahead_conf, uint32_t &pf_q_tail, uint32_t &depth);
+        read_pattern(uint32_t curr_sig, int *prefetch_delta, uint32_t *confidence_q, uint32_t &lookahead_way, uint32_t &lookahead_conf, uint32_t &pf_q_tail, uint32_t &depth);
 };
 
 class PREFETCH_FILTER {
-  public:
+public:
     uint64_t remainder_tag[FILTER_SET];
     bool     valid[FILTER_SET],  // Consider this as "prefetched"
-             useful[FILTER_SET]; // Consider this as "used"
+        useful[FILTER_SET]; // Consider this as "used"
 
     PREFETCH_FILTER() {
         cout << endl << "Initialize PREFETCH FILTER" << endl;
@@ -125,17 +125,17 @@ class PREFETCH_FILTER {
 };
 
 class GLOBAL_REGISTER {
-  public:
+public:
     // Global counters to calculate global prefetching accuracy
     uint64_t pf_useful,
-             pf_issued,
-             global_accuracy; // Alpha value in Section III. Equation 3
+        pf_issued,
+        global_accuracy; // Alpha value in Section III. Equation 3
 
     // Global History Register (GHR) entries
     uint8_t  valid[MAX_GHR_ENTRY];
     uint32_t sig[MAX_GHR_ENTRY],
-             confidence[MAX_GHR_ENTRY],
-             offset[MAX_GHR_ENTRY];
+        confidence[MAX_GHR_ENTRY],
+        offset[MAX_GHR_ENTRY];
     int      delta[MAX_GHR_ENTRY];
 
     GLOBAL_REGISTER() {

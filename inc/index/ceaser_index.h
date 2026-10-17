@@ -11,9 +11,9 @@
 class CeaserIndex : public Index {
 public:
     CeaserIndex(uint32_t x_numset, uint32_t x_numway, 
-                uint32_t x_interval_length, uint32_t remap_length, 
-                uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu)
-    :Index(x_numset, x_numway, x_interval_length)
+        uint32_t x_interval_length, uint32_t remap_length, 
+        uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu)
+        :Index(x_numset, x_numway, x_interval_length)
     {
         REMAP_INTERVAL = remap_length;
         FILL_LEVEL     = x_fill_lvl;
@@ -52,7 +52,7 @@ public:
 
     uint32_t compute_index(uint64_t address, uint64_t full_key);
     void     move_cache_data(MEMORY *lower_level);   // move data from old set to new set
-    
+
     // Feistel Encryption
     uint64_t encrypt_addr(uint64_t address, uint64_t full_key);
     uint32_t F(uint64_t input, uint32_t partial_key);

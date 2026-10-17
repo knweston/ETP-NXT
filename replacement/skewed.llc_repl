@@ -16,7 +16,7 @@
 // 1: new replacement, reproducible pseudo-random ties with repeated-query reuse.
 // Both modes keep the corrected dirty check at each candidate's actual set/way.
 #ifndef SKEWED_RANDOM_VICTIM_TIEBREAK
-#define SKEWED_RANDOM_VICTIM_TIEBREAK 0
+#define SKEWED_RANDOM_VICTIM_TIEBREAK 1
 #endif
 
 #if SKEWED_RANDOM_VICTIM_TIEBREAK != 0 && SKEWED_RANDOM_VICTIM_TIEBREAK != 1
@@ -111,8 +111,8 @@ void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_i
 #endif
 
     uint64_t eligible_mask = invalid_mask ? invalid_mask :
-                             (ru0_mask ? ru0_mask :
-                             (clean_mask ? clean_mask : dirty_mask));
+        (ru0_mask ? ru0_mask :
+        (clean_mask ? clean_mask : dirty_mask));
     vector<uint32_t> candidates;
     for (uint32_t way = 0; way < NUM_WAY; ++way) {
         if (eligible_mask & (uint64_t{1} << way))

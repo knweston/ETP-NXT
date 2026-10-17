@@ -59,7 +59,7 @@ uint64_t CRC_HASH( uint64_t _blockAddress )
 uint64_t get_pc_signature(uint64_t pc, bool hit, bool prefetch, uint32_t core) {
     if (NUM_CPUS == 1) {
         pc = pc << 1;
-        if(hit) {
+        if (hit) {
             pc = pc | 1;
         }
         pc = pc << 1;
@@ -70,7 +70,7 @@ uint64_t get_pc_signature(uint64_t pc, bool hit, bool prefetch, uint32_t core) {
         pc = (pc << (64 - PC_SIGNATURE_BITS)) >> (64 - PC_SIGNATURE_BITS);
     } else {
         pc = pc << 1;
-        if(prefetch) {
+        if (prefetch) {
             pc = pc | 1;
         }
         pc = pc << 2;
@@ -158,19 +158,19 @@ uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, c
     int victim_way = 0;
     for (int way = 0; way < LLC_WAY; way++) {
         if (abs(etr[set][way]) > max_etr ||
-                (abs(etr[set][way]) == max_etr &&
-                        etr[set][way] < 0)) {
+            (abs(etr[set][way]) == max_etr &&
+                etr[set][way] < 0)) {
             max_etr = abs(etr[set][way]);
             victim_way = way;
         }
     }
-    
+
     uint64_t pc_signature = get_pc_signature(pc, false, type == PREFETCH, cpu);
     if (type != WRITEBACK && rdp.count(pc_signature) &&
-            (rdp[pc_signature] > MAX_RD || rdp[pc_signature] / GRANULARITY > max_etr)) {
+        (rdp[pc_signature] > MAX_RD || rdp[pc_signature] / GRANULARITY > max_etr)) {
         return LLC_WAY;
     }
-    
+
     return victim_way;
 }
 
@@ -210,12 +210,12 @@ int time_elapsed(int global, int local) {
 void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, uint64_t full_addr, uint64_t pc, uint64_t victim_addr, uint32_t type, uint8_t hit)
 {
     if (type == WRITEBACK) {
-        if(!hit) {
+        if (!hit) {
             etr[set][way] = -INF_ETR;
         }
         return;
     }
-        
+
 
     pc = get_pc_signature(pc, hit, type == PREFETCH, cpu);
 
@@ -277,11 +277,11 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
                 break;
             }
         }
-        
+
         current_timestamp[set] = increment_timestamp(current_timestamp[set]);
     }
 
-    if(etr_clock[set] == GRANULARITY) {
+    if (etr_clock[set] == GRANULARITY) {
         for (int w = 0; w < LLC_WAY; w++) {
             if ((uint32_t) w != way && abs(etr[set][w]) < INF_ETR) {
                 etr[set][w]--;
@@ -290,17 +290,17 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
         etr_clock[set] = 0;
     }
     etr_clock[set]++;
-    
-    
+
+
     if (way < LLC_WAY) {
-        if(!rdp.count(pc)) {
+        if (!rdp.count(pc)) {
             if (NUM_CPUS == 1) {
                 etr[set][way] = 0;
             } else {
                 etr[set][way] = INF_ETR;
             }
         } else {
-            if(rdp[pc] > MAX_RD) {
+            if (rdp[pc] > MAX_RD) {
                 etr[set][way] = INF_ETR;
             } else {
                 etr[set][way] = rdp[pc] / GRANULARITY;

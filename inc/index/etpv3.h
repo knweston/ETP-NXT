@@ -18,7 +18,7 @@
 class EntropyV3 : public EntropyIndex {
 public:
     EntropyV3(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length,
-                    uint32_t remap_length, uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu, bool x_print_cfg=true)
+        uint32_t remap_length, uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu, bool x_print_cfg=true)
         :EntropyIndex(x_numset, x_numway, x_interval_length, remap_length, x_fill_lvl, arr, cpu, false)
     {
         /*
@@ -32,7 +32,7 @@ public:
                 correl_table.push_back(BitEntropy(bit_pair));
             }
         }
-        
+
         // for 32 tracking bits, there are 496 possible pairs -> 495*248=122760 correlations to track
         for (uint32_t i=0; i < IDX_SIZE; ++i) {
             for (uint32_t j=IDX_SIZE; j < MAX_ADDRESS_BITS; ++j) {
@@ -97,7 +97,7 @@ public:
     void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
     void     etp_tracker_access_update(uint64_t address);
     void     compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
-    
+
     uint32_t replacement_getvictim(uint32_t index);
     void     replacement_update(uint32_t index, uint32_t way, uint32_t remapping_index, uint32_t remapping_way);
     uint32_t compute_sum_correl_two_sequences(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
@@ -105,26 +105,26 @@ public:
     uint32_t compute_pair_table_idx(uint32_t bit_a, uint32_t bit_b);
 
     void     get_cfg_etp(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                         vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_1(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_4(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                       vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                             vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
     void     get_cfg_8(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
-    
+        vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b);
+
     vector<uint32_t> read_dna_config(string app_name);
     vector<uint32_t> parse_config(string input_line);
 

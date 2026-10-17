@@ -90,7 +90,7 @@ void CeaserIndex::print_stats() {
 uint64_t CeaserIndex::encrypt_addr(uint64_t address, uint64_t full_key) {
     uint32_t xor_input = address & ADDR_PART_MASK;                                  // rhs
     uint32_t f_input   = (address >> ENCRYPTING_ADDR_PART_SIZE) & ADDR_PART_MASK;   // lhs
-    
+
     for (uint32_t i=0; i < NUM_STAGES; ++i) {
         uint32_t partial_key = (full_key >> (i*ENCRYPTING_ADDR_PART_SIZE)) & ADDR_PART_MASK;
 
@@ -147,7 +147,7 @@ void CeaserIndex::move_cache_data(MEMORY *lower_level) {
 
         // initiate a move if the source block is valid
         if (block->valid) {
-            
+
             // compute new index
             uint32_t dest_index = compute_index(block->address, curr_key);
             uint32_t last_index = compute_index(block->address, last_key);
@@ -214,7 +214,7 @@ void CeaserIndex::move_cache_data(MEMORY *lower_level) {
                 override_block(block, &block_array[dest_index][dest_way]);
                 lru_update(dest_index, dest_way);
             }
-            
+
             // invalidate the source block
             block->valid   = 0;
             block->address = 0;
@@ -243,7 +243,7 @@ uint32_t CeaserIndex::get_lru_victim(uint32_t set) {
         if (block_array[set][way].valid == false)
             break;
     }
-    
+
     // LRU victim
     if (way == NUM_WAY) {
         for (way=0; way<NUM_WAY; way++) {
@@ -251,7 +251,7 @@ uint32_t CeaserIndex::get_lru_victim(uint32_t set) {
                 break;
         }
     }
-    
+
     if (way >= NUM_WAY) {
         cout << "ERROR: way_id out of bound = " << way << endl;
         assert(false);

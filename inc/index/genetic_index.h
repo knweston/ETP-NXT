@@ -118,10 +118,10 @@ protected:
 class GeneticIndex : public Index {
 public:
     GeneticIndex(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length,
-                 uint32_t remap_length, uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu)
+        uint32_t remap_length, uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu)
         :Index(x_numset, x_numway, x_interval_length), 
-         m_num_warmup_interval(2),
-         m_evaluation_done(false)
+        m_num_warmup_interval(2),
+        m_evaluation_done(false)
     {
         REMAP_INTERVAL = remap_length;
         FILL_LEVEL     = x_fill_lvl;
@@ -155,9 +155,9 @@ public:
                 last_candidate_idx = 0;
             }
         }   
-        
+
         m_scoreboard = vector<uint32_t>(m_population.size(), 0);
-        
+
         G_ACCESS    = new uint64_t [NUM_SET];
         PI_G_ACCESS = new uint64_t [NUM_SET];
         memset(G_ACCESS, 0, NUM_SET * sizeof(*G_ACCESS));
@@ -179,7 +179,7 @@ public:
     void     drrip_update(uint32_t set, uint32_t way, uint32_t src_age);
     uint32_t get_lru_victim(uint32_t set);
     void     lru_update(uint32_t set, uint32_t way);
-    
+
 protected:
     vector<Candidate> m_population;
     uint32_t current_candidate_idx;

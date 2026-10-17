@@ -2,7 +2,7 @@
 
 // initialized in main.cc
 uint32_t DRAM_MTPS, DRAM_DBUS_RETURN_TIME,
-         tRP, tRCD, tCAS;
+    tRP, tRCD, tCAS;
 
 void MEMORY_CONTROLLER::reset_remain_requests(PACKET_QUEUE *queue, uint32_t channel)
 {
@@ -44,11 +44,11 @@ void MEMORY_CONTROLLER::reset_remain_requests(PACKET_QUEUE *queue, uint32_t chan
             queue->entry[i].event_cycle = current_core_cycle[op_cpu];
 
             DP ( if (warmup_complete[op_cpu]) {
-            cout << queue->NAME << " instr_id: " << queue->entry[i].instr_id << " swrites: " << scheduled_writes[channel] << " sreads: " << scheduled_reads[channel] << endl; });
+                cout << queue->NAME << " instr_id: " << queue->entry[i].instr_id << " swrites: " << scheduled_writes[channel] << " sreads: " << scheduled_reads[channel] << endl; });
 
         }
     }
-    
+
     update_schedule_cycle(&RQ[channel]);
     update_schedule_cycle(&WQ[channel]);
     update_process_cycle(&RQ[channel]);
@@ -79,11 +79,11 @@ void MEMORY_CONTROLLER::operate()
             // add data bus turn-around time
             dbus_cycle_available[i] += DRAM_DBUS_TURN_AROUND_TIME;
         } 
-        
+
         else if (write_mode[i]) {
             if (WQ[i].occupancy == 0)
                 write_mode[i] = 0;
-        
+
             else if (RQ[i].occupancy && (WQ[i].occupancy < DRAM_WRITE_LOW_WM))
                 write_mode[i] = 0;
 
@@ -304,7 +304,7 @@ void MEMORY_CONTROLLER::process(PACKET_QUEUE *queue)
 
                 scheduled_writes[op_channel]--;
             } 
-            
+
             else {
                 // update data bus cycle time
                 dbus_cycle_available[op_channel] = current_core_cycle[op_cpu] + DRAM_DBUS_RETURN_TIME;
@@ -416,15 +416,15 @@ int MEMORY_CONTROLLER::add_rq(PACKET *packet)
     uint32_t channel = dram_get_channel(packet->address);
     int wq_index = check_dram_queue(&WQ[channel], packet);
     if (wq_index != -1) {
-        
+
         // no need to check fill level
         //if (packet->fill_level < fill_level) {
 
-            packet->data = WQ[channel].entry[wq_index].data;
-            if (packet->instruction) 
-                upper_level_icache[packet->cpu]->return_data(packet);
-            if (packet->is_data) 
-                upper_level_dcache[packet->cpu]->return_data(packet);
+        packet->data = WQ[channel].entry[wq_index].data;
+        if (packet->instruction) 
+            upper_level_icache[packet->cpu]->return_data(packet);
+        if (packet->is_data) 
+            upper_level_dcache[packet->cpu]->return_data(packet);
         //}
 
         DP ( if (packet->cpu) {
@@ -449,7 +449,7 @@ int MEMORY_CONTROLLER::add_rq(PACKET *packet)
     // search for the empty index
     for (index=0; index<DRAM_RQ_SIZE; index++) {
         if (RQ[channel].entry[index].address == 0) {
-            
+
             RQ[channel].entry[index] = *packet;
             RQ[channel].occupancy++;
 
@@ -461,7 +461,7 @@ int MEMORY_CONTROLLER::add_rq(PACKET *packet)
                      column = dram_get_column(packet->address); 
 #endif
 
-            DP ( if(warmup_complete[packet->cpu]) {
+            DP ( if (warmup_complete[packet->cpu]) {
             cout << "[" << NAME << "_RQ] " <<  __func__ << " instr_id: " << packet->instr_id << " address: " << hex << packet->address;
             cout << " full_addr: " << packet->full_addr << dec << " ch: " << channel;
             cout << " rank: " << rank << " bank: " << bank << " row: " << row << " col: " << column;
@@ -491,7 +491,7 @@ int MEMORY_CONTROLLER::add_wq(PACKET *packet)
     // search for the empty index
     for (index=0; index<DRAM_WQ_SIZE; index++) {
         if (WQ[channel].entry[index].address == 0) {
-            
+
             WQ[channel].entry[index] = *packet;
             WQ[channel].occupancy++;
 
@@ -503,7 +503,7 @@ int MEMORY_CONTROLLER::add_wq(PACKET *packet)
                      column = dram_get_column(packet->address); 
 #endif
 
-            DP ( if(warmup_complete[packet->cpu]) {
+            DP ( if (warmup_complete[packet->cpu]) {
             cout << "[" << NAME << "_WQ] " <<  __func__ << " instr_id: " << packet->instr_id << " address: " << hex << packet->address;
             cout << " full_addr: " << packet->full_addr << dec << " ch: " << channel;
             cout << " rank: " << rank << " bank: " << bank << " row: " << row << " col: " << column;
@@ -539,7 +539,7 @@ void MEMORY_CONTROLLER::update_schedule_cycle(PACKET_QUEUE *queue)
             min_index = i;
         }
     }
-    
+
     queue->next_schedule_cycle = min_cycle;
     queue->next_schedule_index = min_index;
     if (min_index < queue->SIZE) {
@@ -563,7 +563,7 @@ void MEMORY_CONTROLLER::update_process_cycle(PACKET_QUEUE *queue)
             min_index = i;
         }
     }
-    
+
     queue->next_process_cycle = min_cycle;
     queue->next_process_index = min_index;
     if (min_index < queue->SIZE) {
@@ -581,7 +581,7 @@ int MEMORY_CONTROLLER::check_dram_queue(PACKET_QUEUE *queue, PACKET *packet)
     // search write queue
     for (uint32_t index=0; index<queue->SIZE; index++) {
         if (queue->entry[index].address == packet->address) {
-            
+
             DP ( if (warmup_complete[packet->cpu]) {
             cout << "[" << queue->NAME << "] " << __func__ << " same entry instr_id: " << packet->instr_id << " prior_id: " << queue->entry[index].instr_id;
             cout << " address: " << hex << packet->address << " full_addr: " << packet->full_addr << dec << endl; });

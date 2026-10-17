@@ -159,7 +159,7 @@ vector<uint32_t> GeneticIndex::parse_config(string input_line) {
     stringstream ss(str_sequence);
     while (ss >> element)
         read_sequence.push_back(element);
-    
+
     return read_sequence;
 }
 
@@ -169,7 +169,7 @@ void GeneticIndex::move_cache_data(MEMORY *lower_level) {
 
         // initiate a move if the source block is valid
         if (block->valid) {
-            
+
             // compute new index
             uint32_t dest_index = compute_index(block->address, current_candidate_idx);
             uint32_t last_index = compute_index(block->address, last_candidate_idx);
@@ -237,7 +237,7 @@ void GeneticIndex::move_cache_data(MEMORY *lower_level) {
                 // drrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
                 lru_update(dest_index, dest_way);
             }
-            
+
             // invalidate the source block
             block->valid   = 0;
             block->address = 0;
@@ -260,7 +260,7 @@ uint32_t GeneticIndex::get_lru_victim(uint32_t set) {
         if (block_array[set][way].valid == false)
             break;
     }
-    
+
     // LRU victim
     if (way == NUM_WAY) {
         for (way=0; way<NUM_WAY; way++) {
@@ -268,7 +268,7 @@ uint32_t GeneticIndex::get_lru_victim(uint32_t set) {
                 break;
         }
     }
-    
+
     if (way >= NUM_WAY) {
         cout << "ERROR: way_id out of bound = " << way << endl;
         assert(false);

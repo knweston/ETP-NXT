@@ -31,7 +31,7 @@ int PF_check(uint32_t cpu, int signature, int curr_block);
 int st_prime = L2_ST_PRIME, pt_prime = L2_PT_PRIME;
 
 class PF_buffer {
-  public:
+public:
     int delta,
         signature,
         conf,
@@ -73,7 +73,7 @@ void CACHE::l2c_prefetcher_initialize()
 void GHR_update(uint32_t cpu, int signature, int path_conf, int last_block, int oop_delta)
 {
     int match;
-	for (match=0; match<L2_GHR_TRACK; match++)  {
+    for (match=0; match<L2_GHR_TRACK; match++)  {
         if (L2_GHR[cpu][match].signature == signature) { // Hit
 
             // Update metadata
@@ -99,11 +99,11 @@ void GHR_update(uint32_t cpu, int signature, int path_conf, int last_block, int 
                 break;
             }
         }
-	}
+    }
 
     if (match == L2_GHR_TRACK) { // Miss
 
-		// Search for LRU victim
+        // Search for LRU victim
         int max_idx = -1;
         int max_lru = 0;
         for (match=0; match<L2_GHR_TRACK; match++) {
@@ -147,94 +147,83 @@ int PF_check(uint32_t cpu, int signature, int curr_block)
     PATTERN_TABLE *table = L2_PT[cpu][l2_pt_idx];
     int pf_max = 0, pf_idx = -1, conf_max = 100, temp_conf = 100; 
 
-    if (table[0].c_sig) // This signature was updated at least once
-    {
+    if (table[0].c_sig) { // This signature was updated at least once
         // Search for prefetch candidates
 
         for (int i=0; i<L2_PT_WAY; i++)
         {
             temp_conf = (100*table[i].c_delta)/table[0].c_sig;
 
-            if (temp_conf >= PF_THRESHOLD) // This delta entry has enough confidence
-            {
-                if (check_same_page(curr_block, table[i].delta)) // Safe to prefetch in page boundary
-                {
+            if (temp_conf >= PF_THRESHOLD) { // This delta entry has enough confidence
+                if (check_same_page(curr_block, table[i].delta)) { // Safe to prefetch in page boundary
                     pf_buffer[cpu][num_pf[cpu]].delta = table[i].delta;
                     pf_buffer[cpu][num_pf[cpu]].signature = signature;
                     pf_buffer[cpu][num_pf[cpu]].depth = 1;
                     pf_buffer[cpu][num_pf[cpu]].conf = temp_conf;
 
                     if (warmup_complete[cpu])
-                    L2_PF_DEBUG(printf("PF_buffer cpu: %d idx: %d delta: %d signature: %x depth: %d conf: %d\n",
-                                cpu, 0, pf_buffer[cpu][num_pf[cpu]].delta, pf_buffer[cpu][num_pf[cpu]].signature, 
-                                pf_buffer[cpu][num_pf[cpu]].depth, pf_buffer[cpu][num_pf[cpu]].conf));
+                        L2_PF_DEBUG(printf("PF_buffer cpu: %d idx: %d delta: %d signature: %x depth: %d conf: %d\n",
+                            cpu, 0, pf_buffer[cpu][num_pf[cpu]].delta, pf_buffer[cpu][num_pf[cpu]].signature, 
+                            pf_buffer[cpu][num_pf[cpu]].depth, pf_buffer[cpu][num_pf[cpu]].conf));
 
                     num_pf[cpu]++;
                 }
-                else // Store it in the GHR
-                {
+                else { // Store it in the GHR
                     out_of_page[cpu]++;
                     if (warmup_complete[cpu])
-                    L2_PF_DEBUG(printf("PT_sig: %4x PF_check OOP high_curr_conf: %d  way: %d  delta: %d  counter: %d / %d  MAX_CONF: %d\n", 
-                                signature, temp_conf, i, table[i].delta, table[i].c_delta, table[0].c_sig, MAX_CONF[cpu]));
+                        L2_PF_DEBUG(printf("PT_sig: %4x PF_check OOP high_curr_conf: %d  way: %d  delta: %d  counter: %d / %d  MAX_CONF: %d\n", 
+                            signature, temp_conf, i, table[i].delta, table[i].c_delta, table[0].c_sig, MAX_CONF[cpu]));
 
-                    #ifdef L2_GHR_ON
+#ifdef L2_GHR_ON
                     GHR_update(cpu, signature, temp_conf, curr_block, table[i].delta);
-                    #endif
+#endif
                 }
 
                 // Track the maximum counter regardless of page boundary
-                if (pf_max < table[i].c_delta)
-                {
+                if (pf_max < table[i].c_delta) {
                     pf_max = table[i].c_delta;
                     pf_idx = i;
                     conf_max = temp_conf;
                 }
                 if (warmup_complete[cpu])
-                L2_PF_DEBUG(printf("PT_sig: %4x PF_check candidate  high_curr_conf: %d  way: %d  delta: %d  counter: %d / %d  MAX_CONF: %d\n", 
-                            signature, temp_conf, i, table[i].delta, table[i].c_delta, table[i].c_sig, MAX_CONF[cpu]));
+                    L2_PF_DEBUG(printf("PT_sig: %4x PF_check candidate  high_curr_conf: %d  way: %d  delta: %d  counter: %d / %d  MAX_CONF: %d\n", 
+                        signature, temp_conf, i, table[i].delta, table[i].c_delta, table[i].c_sig, MAX_CONF[cpu]));
             }
-            else
-            {
+            else {
                 not_enough_conf[cpu]++;
                 if (warmup_complete[cpu])
-                L2_PF_DEBUG(printf("PT_sig: %4x PF_check no candidate  low_curr_conf: %d  way: %d  stride: %d  counter: %d / %d  MAX_CONF: %d\n", 
-                            signature, temp_conf, i, table[i].delta, table[i].c_delta, table[i].c_sig, MAX_CONF[cpu]));
+                    L2_PF_DEBUG(printf("PT_sig: %4x PF_check no candidate  low_curr_conf: %d  way: %d  stride: %d  counter: %d / %d  MAX_CONF: %d\n", 
+                        signature, temp_conf, i, table[i].delta, table[i].c_delta, table[i].c_sig, MAX_CONF[cpu]));
             }
         }
 
         // Update the path confidence
-        if (pf_idx >= 0)
-        {
+        if (pf_idx >= 0) {
             curr_conf[cpu] = conf_max;
             curr_delta[cpu] = table[pf_idx].delta;
         }
-        else
-        {
+        else {
             curr_conf[cpu] = 0;
             curr_delta[cpu] = 0;
         }
     }
-    else
-    {
+    else {
         curr_conf[cpu] = 0;
         curr_delta[cpu] = 0;
     }
 
-    #ifdef LOOKAHEAD_ON
+#ifdef LOOKAHEAD_ON
     int la_signature = signature, la_pf_max, la_pf_idx, LA_idx;
     int last_delta = 0;
 
-    if (curr_conf[cpu] >= PF_THRESHOLD)
-    {
+    if (curr_conf[cpu] >= PF_THRESHOLD) {
         do
         {
             la_signature = get_new_signature(la_signature, curr_delta[cpu] - last_delta); 
             la_pf_max = 0; la_pf_idx = -1;
             LA_idx = la_signature % pt_prime; //L2_PT_PRIME;
             table = L2_PT[cpu][LA_idx];
-            if (table[0].c_sig) // This signature was updated at least once
-            {
+            if (table[0].c_sig) { // This signature was updated at least once
                 // Search for lookahead prefetch candidates
 
                 for (int i=0; i<L2_PT_WAY; i++)
@@ -242,38 +231,31 @@ int PF_check(uint32_t cpu, int signature, int curr_block)
                     // Calculate path confidence
                     temp_conf = curr_conf[cpu]*table[i].c_delta/table[0].c_sig*MAX_CONF[cpu]/100; 
 
-                    if (temp_conf >= PF_THRESHOLD) // This delta entry has enough confidence
-                    {
+                    if (temp_conf >= PF_THRESHOLD) { // This delta entry has enough confidence
                         // Track the maximum counter regardless of page boundary
-                        if (la_pf_max < table[i].c_delta)
-                        {
+                        if (la_pf_max < table[i].c_delta) {
                             la_pf_max = table[i].c_delta;
                             la_pf_idx = i;
                             conf_max = temp_conf;
                         }
                         if (warmup_complete[cpu])
-                        L2_PF_DEBUG(printf("PT_sig: %4x LA_check candidate  high_curr_conf: %d  way: %d  stride: %d  counter: %d / %d  MAX_CONF: %d\n", 
-                                    la_signature, temp_conf, i, table[i].delta, table[i].c_delta, table[0].c_sig, MAX_CONF[cpu]));
+                            L2_PF_DEBUG(printf("PT_sig: %4x LA_check candidate  high_curr_conf: %d  way: %d  stride: %d  counter: %d / %d  MAX_CONF: %d\n", 
+                                la_signature, temp_conf, i, table[i].delta, table[i].c_delta, table[0].c_sig, MAX_CONF[cpu]));
                     }
-                    else
-                    {
+                    else {
                         not_enough_conf[cpu]++;
                         if (warmup_complete[cpu])
-                        L2_PF_DEBUG(printf("PT_sig: %4x LA_check no candidate  low_curr_conf: %d  way: %d  stride: %d  counter: %d / %d  MAX_CONF: %d\n", 
-                                    la_signature, temp_conf, i, table[i].delta, table[i].c_delta, table[0].c_sig, MAX_CONF[cpu]));
+                            L2_PF_DEBUG(printf("PT_sig: %4x LA_check no candidate  low_curr_conf: %d  way: %d  stride: %d  counter: %d / %d  MAX_CONF: %d\n", 
+                                la_signature, temp_conf, i, table[i].delta, table[i].c_delta, table[0].c_sig, MAX_CONF[cpu]));
                     }
                 }
 
                 // Update the path confidence
-                if (la_pf_idx >= 0) 
-                {
-                    if (num_pf[cpu] < L2C_MSHR_SIZE)
-                    {
+                if (la_pf_idx >= 0) {
+                    if (num_pf[cpu] < L2C_MSHR_SIZE) {
                         // Safe to prefetch in page boundary
-                        if (check_same_page(curr_block, curr_delta[cpu] + table[la_pf_idx].delta))
-                        {
-                            if (curr_delta[cpu] + table[la_pf_idx].delta)
-                            {
+                        if (check_same_page(curr_block, curr_delta[cpu] + table[la_pf_idx].delta)) {
+                            if (curr_delta[cpu] + table[la_pf_idx].delta) {
                                 pf_buffer[cpu][num_pf[cpu]].delta = curr_delta[cpu] + table[la_pf_idx].delta;
                                 pf_buffer[cpu][num_pf[cpu]].signature = la_signature;
                                 pf_buffer[cpu][num_pf[cpu]].depth = num_pf[cpu]+1;
@@ -286,29 +268,26 @@ int PF_check(uint32_t cpu, int signature, int curr_block)
                         curr_conf[cpu] = conf_max;
                         curr_delta[cpu] += table[la_pf_idx].delta;
                     }
-                    else
-                    {
+                    else {
                         last_delta = curr_delta[cpu];
                         curr_conf[cpu] = 0;
                         curr_delta[cpu] = 0;
                     }
                 }
-                else
-                {
+                else {
                     last_delta = curr_delta[cpu];
                     curr_conf[cpu] = 0;
                     curr_delta[cpu] = 0;
                 }
             }
-            else
-            {
+            else {
                 last_delta = curr_delta[cpu];
                 curr_conf[cpu] = 0;
                 curr_delta[cpu] = 0;
             }
         } while (curr_conf[cpu] >= PF_THRESHOLD);
     }
-    #endif
+#endif
 
     return 0;
 }
@@ -349,7 +328,7 @@ int L2_ST_update(uint32_t cpu, uint64_t addr)
 
     for (match=0; match<L2_ST_WAY; match++) {
         if (table[match].valid && (table[match].tag == tag)) { // Hit 
-			delta_buffer = curr_block - table[match].last_block; // Buffer current delta
+   delta_buffer = curr_block - table[match].last_block; // Buffer current delta
             sig_buffer = table[match].signature; // Buffer old signature
 
             if (table[match].signature == 0) { // First hit in L2_ST
@@ -391,8 +370,8 @@ int L2_ST_update(uint32_t cpu, uint64_t addr)
                 l2_sig_dist[cpu][table[match].signature]++;
             }
 
-			// Update last_block
-			table[match].last_block = curr_block;
+   // Update last_block
+   table[match].last_block = curr_block;
             L2_ST_hit[cpu]++; L2_ST_access[cpu]++;
             break;
         }
@@ -429,7 +408,7 @@ int L2_ST_update(uint32_t cpu, uint64_t addr)
         table[match].signature = 0;
         table[match].first_hit = 0;
         table[match].last_block = curr_block;
-        
+
         for (int i=0; i<64; i++) {
             table[match].l2_pf[i] = 0;
             table[match].used[i] = 0;
@@ -655,7 +634,7 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
     uint64_t pf_addr = 0;
     int pf_block = 0;
     if (warmup_complete[cpu])
-    L2_PF_DEBUG(printf("pf_delta: "));
+        L2_PF_DEBUG(printf("pf_delta: "));
     for (int i=0; i<num_pf[cpu]; i++) {
         if (pf_buffer[cpu][i].delta == 0) {
             printf("pf_delta[%d][%d]: %d  num_pf_delta: %d\n", cpu, i, pf_buffer[cpu][i].delta, num_pf[cpu]);
@@ -663,11 +642,11 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
         }
         else {
             if (warmup_complete[cpu])
-            L2_PF_DEBUG(printf("%d ", pf_buffer[cpu][i].delta));
+                L2_PF_DEBUG(printf("%d ", pf_buffer[cpu][i].delta));
         }
     }
     if (warmup_complete[cpu])
-    L2_PF_DEBUG(printf("\n"));
+        L2_PF_DEBUG(printf("\n"));
 
     for (int i=0; i<num_pf[cpu]; i++) {
         if (pf_buffer[cpu][i].delta == 0) { 
@@ -682,20 +661,20 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
             // Check bitmap
             int l2_pf = L2_ST[cpu][l2_st_idx][l2_st_match].l2_pf[pf_block],
                 l2_demand = L2_ST[cpu][l2_st_idx][l2_st_match].used[pf_block];
-            
+
             //if (bitmap_check)
             if (l2_pf || l2_demand) {
                 if (warmup_complete[cpu])
-                L2_PF_DEBUG(printf("Prefetch is filtered  key: %lx\n", pf_addr >> LOG2_BLOCK_SIZE));
+                    L2_PF_DEBUG(printf("Prefetch is filtered  key: %lx\n", pf_addr >> LOG2_BLOCK_SIZE));
             }
             else {
                 if (pf_buffer[cpu][i].conf >= FILL_THRESHOLD) { // Prefetch to the L2
-		  if (prefetch_line(ip, addr, pf_addr, FILL_L2, 0)) {
+                    if (prefetch_line(ip, addr, pf_addr, FILL_L2, 0)) {
                         PF_inflight[cpu]++; 
                         if (warmup_complete[cpu])
-                        L2_PF_DEBUG(printf("L2_PREFETCH  cpu: %d base_cl: %lx pf_cl: %lx delta: %d d_sig: %x pf_sig: %x depth: %d conf: %d\n",
-                                    cpu, addr >> LOG2_BLOCK_SIZE, pf_addr >> LOG2_BLOCK_SIZE, pf_buffer[cpu][i].delta, 
-                                    pf_buffer[cpu][i].signature, pf_buffer[cpu][i].conf, pf_buffer[cpu][i].depth, pf_buffer[cpu][i].conf));
+                            L2_PF_DEBUG(printf("L2_PREFETCH  cpu: %d base_cl: %lx pf_cl: %lx delta: %d d_sig: %x pf_sig: %x depth: %d conf: %d\n",
+                                cpu, addr >> LOG2_BLOCK_SIZE, pf_addr >> LOG2_BLOCK_SIZE, pf_buffer[cpu][i].delta, 
+                                pf_buffer[cpu][i].signature, pf_buffer[cpu][i].conf, pf_buffer[cpu][i].depth, pf_buffer[cpu][i].conf));
 
                         // Mark bitmap (prefetch)
                         L2_ST[cpu][l2_st_idx][l2_st_match].l2_pf[pf_block] = 1;
@@ -710,12 +689,12 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
                     }
                 }
                 else if (pf_buffer[cpu][i].conf >= PF_THRESHOLD) { // Prefetch to the LLC
-		  if (prefetch_line(ip, addr, pf_addr, FILL_LLC, 0)) {
+                    if (prefetch_line(ip, addr, pf_addr, FILL_LLC, 0)) {
                         PF_inflight[cpu]++; 
                         if (warmup_complete[cpu])
-                        L2_PF_DEBUG(printf("LLC_PREFETCH cpu: %d base_cl: %lx pf_cl: %lx delta: %d d_sig: %x pf_sig: %x depth: %d conf: %d\n",
-                                    cpu, addr >> LOG2_BLOCK_SIZE, pf_addr >> LOG2_BLOCK_SIZE, pf_buffer[cpu][i].delta, 
-                                    pf_buffer[cpu][i].signature, pf_buffer[cpu][i].conf, pf_buffer[cpu][i].depth, pf_buffer[cpu][i].conf));
+                            L2_PF_DEBUG(printf("LLC_PREFETCH cpu: %d base_cl: %lx pf_cl: %lx delta: %d d_sig: %x pf_sig: %x depth: %d conf: %d\n",
+                                cpu, addr >> LOG2_BLOCK_SIZE, pf_addr >> LOG2_BLOCK_SIZE, pf_buffer[cpu][i].delta, 
+                                pf_buffer[cpu][i].signature, pf_buffer[cpu][i].conf, pf_buffer[cpu][i].depth, pf_buffer[cpu][i].conf));
                     }
                 }
             }
@@ -723,14 +702,14 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
     }
 
     if (warmup_complete[cpu])
-    L2_PF_DEBUG(printf("\n"));
+        L2_PF_DEBUG(printf("\n"));
 
     return metadata_in;
 }
 
 uint32_t CACHE::l2c_prefetcher_cache_fill(uint64_t addr, uint32_t set, uint32_t way, uint8_t prefetch, uint64_t evicted_addr, uint32_t metadata_in)
 {
-	// L2 FILL
+    // L2 FILL
     uint64_t evicted_cl = evicted_addr >> LOG2_BLOCK_SIZE;
 
     if (evicted_cl) {
@@ -756,7 +735,7 @@ uint32_t CACHE::l2c_prefetcher_cache_fill(uint64_t addr, uint32_t set, uint32_t 
                     // notify_sampler(cpu, evicted_addr, evicted_dirty, 0);
                 }
                 // else
-                    // notify_sampler(cpu, evicted_addr, evicted_dirty, 1);
+                // notify_sampler(cpu, evicted_addr, evicted_dirty, 1);
             }
             table[l2_st_match].l2_pf[evicted_block] = 0;
             table[l2_st_match].used[evicted_block] = 0;

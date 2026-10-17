@@ -12,10 +12,10 @@
 class AscibIndex : public Index {
 public:
     AscibIndex(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length,
-               BLOCK **arr, uint32_t x_fill_lvl, uint32_t x_cpu,
-               uint32_t x_candidate_bits=ASCIB_CANDIDATE_BITS)
+        BLOCK **arr, uint32_t x_fill_lvl, uint32_t x_cpu,
+        uint32_t x_candidate_bits=ASCIB_CANDIDATE_BITS)
         :Index(x_numset, x_numway, x_interval_length), block_array(arr),
-         FILL_LEVEL(x_fill_lvl), CPU_ID(x_cpu)
+        FILL_LEVEL(x_fill_lvl), CPU_ID(x_cpu)
     {
         IDX_SIZE = lg2(NUM_SET);
         CANDIDATE_BITS = std::min(x_candidate_bits, (uint32_t)MAX_ADDRESS_BITS);
@@ -23,7 +23,7 @@ public:
         for (uint32_t i=0; i < IDX_SIZE; ++i)
             index_bits.push_back(i);
         cout << "ASCIB index: " << NUM_SET << " sets, " << IDX_SIZE
-             << " index bits, tracking " << CANDIDATE_BITS << " address bits" << endl;
+            << " index bits, tracking " << CANDIDATE_BITS << " address bits" << endl;
     }
 
     ~AscibIndex() {}

@@ -18,11 +18,11 @@ void CACHE::llc_initialize_replacement()
 {
     // only works in single-core setup for now
     uint32_t appname_endpt;
-    
-    if(APP_PATH[0].find(".champsimtrace.xz") != -1){
+
+    if (APP_PATH[0].find(".champsimtrace.xz") != -1) {
         appname_endpt = APP_PATH[0].find(".champsimtrace.xz");
     }
-    else{
+    else {
         appname_endpt = APP_PATH[0].find(".champsimtrace.gz");
     }
 
@@ -43,7 +43,7 @@ void CACHE::llc_initialize_replacement()
             // skip zero address
             if (!address)
                 continue;
-            
+
             dead_blocks.push_back(address);
         }
         dblk_file.close();
@@ -89,7 +89,7 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
     // baseline LRU
     if (hit && (type == WRITEBACK)) // writeback hit does not update LRU state
         return;
-    
+
     if (!hit && is_dead_block(full_addr>>LOG2_BLOCK_SIZE)) {
         // put it in the LRU position
         for (uint32_t i=0; i<NUM_WAY; i++) {

@@ -26,7 +26,7 @@
 
 
 inline
-string matching_option_to_string(uint32_t opt) {
+    string matching_option_to_string(uint32_t opt) {
     string str;
     if (opt == 0)
         str = "A = maxETP, B = minETP";
@@ -42,7 +42,7 @@ string matching_option_to_string(uint32_t opt) {
 }
 
 inline
-vector<uint32_t> zeros_segment(uint32_t size) {
+    vector<uint32_t> zeros_segment(uint32_t size) {
     vector<uint32_t> zeros_segment;
     for (uint32_t i=0; i < size; ++i)
         zeros_segment.push_back(0);
@@ -53,7 +53,7 @@ struct BitEntropy {
 public:
     BitEntropy(uint32_t x_id, int32_t x_entropy=0)
         :m_id(x_id), m_entropy(x_entropy), m_is_segment(false) {}
-    
+
     BitEntropy(vector<uint32_t> x_segid, int32_t x_entropy=0)
         :m_segid(x_segid), m_entropy(x_entropy), m_id(MAX_ADDRESS_BITS), m_is_segment(true) {}
 
@@ -85,7 +85,7 @@ public:
             return str;
         }
     }
-    
+
     friend bool operator<  (const BitEntropy &b1, const BitEntropy &b2) { return b1.m_entropy <  b2.m_entropy; }
     friend bool operator<= (const BitEntropy &b1, const BitEntropy &b2) { return b1.m_entropy <= b2.m_entropy; }
     friend bool operator>  (const BitEntropy &b1, const BitEntropy &b2) { return b1.m_entropy >  b2.m_entropy; }
@@ -106,9 +106,9 @@ public:
 class EntropyIndex : public Index {
 public:
     EntropyIndex(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length,
-                 uint32_t remap_length, uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu, bool x_print_cfg=true)
+        uint32_t remap_length, uint32_t x_fill_lvl, BLOCK **arr, uint32_t cpu, bool x_print_cfg=true)
         :Index(x_numset, x_numway, x_interval_length), m_should_remap(false),
-         REMAP_INTERVAL(remap_length), FILL_LEVEL(x_fill_lvl), block_array(arr), CPU_ID(cpu)
+        REMAP_INTERVAL(remap_length), FILL_LEVEL(x_fill_lvl), block_array(arr), CPU_ID(cpu)
     {
         IDX_SIZE = lg2(NUM_SET);
 
@@ -151,7 +151,7 @@ public:
             cout << "m_next_seq_b: " << vec_to_string(m_next_seq_b) << endl;
             cout << endl;
         }
-        
+
         m_addr_hist.push_back(0);
         E_ACCESS    = new uint64_t [NUM_SET];
         PI_E_ACCESS = new uint64_t [NUM_SET];
@@ -162,7 +162,7 @@ public:
     }
 
     ~EntropyIndex() {}
-    
+
     uint32_t get_set(uint64_t address);
     uint32_t compute_index(uint64_t address, vector<uint32_t> x_seq_a, vector<uint32_t> x_seq_b);
     void     print_stats();
@@ -171,7 +171,7 @@ public:
     bool     is_same_sequence(vector<uint32_t> x_seq_a, vector<uint32_t> x_seq_b);
     bool     is_zero_segment(vector<uint32_t>& x_seq_a);
     bool     check_remap();
-    
+
     virtual void move_cache_data(MEMORY *lower_level);
     virtual void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     virtual void etp_tracker_access_update(uint64_t address);

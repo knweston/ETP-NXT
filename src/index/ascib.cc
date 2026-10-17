@@ -193,7 +193,7 @@ void AscibIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
                         uint64_t ones_i = bit_ones.empty() ? 0 : bit_ones[i];
                         uint64_t ones_j = bit_ones.empty() ? 0 : bit_ones[j];
                         victim_position = (std::min(ones_i, total-std::min(total, ones_i)) <=
-                                           std::min(ones_j, total-std::min(total, ones_j))) ? i : j;
+                            std::min(ones_j, total-std::min(total, ones_j))) ? i : j;
                         lowest_usefulness = usefulness;
                     }
                 }

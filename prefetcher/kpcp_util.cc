@@ -44,7 +44,7 @@ int L2_ST_update(uint32_t cpu, uint64_t addr)
 
     for (match=0; match<L2_ST_WAY; match++) {
         if (table[match].valid && (table[match].tag == tag)) { // Hit 
-			delta_buffer = curr_block - table[match].last_block; // Buffer current delta
+   delta_buffer = curr_block - table[match].last_block; // Buffer current delta
             sig_buffer = table[match].signature; // Buffer old signature
 
             if (table[match].signature == 0) { // First hit in L2_ST
@@ -86,8 +86,8 @@ int L2_ST_update(uint32_t cpu, uint64_t addr)
                 l2_sig_dist[cpu][table[match].signature]++;
             }
 
-			// Update last_block
-			table[match].last_block = curr_block;
+   // Update last_block
+   table[match].last_block = curr_block;
             L2_ST_hit[cpu]++; L2_ST_access[cpu]++;
             break;
         }
@@ -124,7 +124,7 @@ int L2_ST_update(uint32_t cpu, uint64_t addr)
         table[match].signature = 0;
         table[match].first_hit = 0;
         table[match].last_block = curr_block;
-        
+
         for (int i=0; i<64; i++) {
             table[match].l2_pf[i] = 0;
             table[match].used[i] = 0;
@@ -293,7 +293,7 @@ void L2_PT_update(uint32_t cpu, int signature, int delta)
 // Check sampler 
 //void notify_sampler(uint32_t cpu, int64_t address, int dirty, int useful)
 //{
-    /*
+/*
     int set = llc_get_set(address);
     int s_idx = is_it_sampled(set);
 
@@ -326,7 +326,7 @@ void L2_PT_update(uint32_t cpu, int signature, int delta)
 
                             printf("FILL_THRESHOLD goes down %d => %d at cycle: %ld\n", dynamic_fill_thrs[cpu]+1, dynamic_fill_thrs[cpu], ooo_cpu[cpu].current_cycle);
                         }
-                            
+
                         conf_counter[cpu] = 0;
                     }
 
@@ -342,7 +342,7 @@ void L2_PT_update(uint32_t cpu, int signature, int delta)
 
                 l2pf_match++;
             }
-            
+
             break;
         }
     }

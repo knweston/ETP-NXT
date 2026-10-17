@@ -16,7 +16,7 @@ void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
         PI_MISS[unhashed_index]++;
     }
     access_ctr++;
-    
+
     if (!UPDATE_MISS_ONLY)
         etp_tracker_access_update(address);
     else
@@ -82,7 +82,7 @@ void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
         memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-        
+
         num_interval++;
         map_ptr    = 0;
         access_ctr = 0;
@@ -132,7 +132,7 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
 
         // initiate a move if the source block is valid
         if (src_block->valid) {
-            
+
             // compute new index
             uint32_t dest_index = compute_index(src_block->address, m_curr_seq_a, m_curr_seq_b);
             uint32_t last_index = compute_index(src_block->address, m_last_seq_a, m_last_seq_b);
@@ -197,7 +197,7 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
                 rrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
                 // rlr_update(dest_index, dest_way, map_ptr, way);
             }
-            
+
             // invalidate the source block
             src_block->valid = 0;
 
@@ -293,7 +293,7 @@ uint32_t EntropyIndex::get_lru_victim(uint32_t set) {
         if (block_array[set][way].valid == false)
             break;
     }
-    
+
     // LRU victim
     if (way == NUM_WAY) {
         for (way=0; way<NUM_WAY; way++) {
@@ -301,7 +301,7 @@ uint32_t EntropyIndex::get_lru_victim(uint32_t set) {
                 break;
         }
     }
-    
+
     if (way >= NUM_WAY) {
         cout << "ERROR: way_id out of bound = " << way << endl;
         assert(false);
@@ -368,7 +368,7 @@ void EntropyIndex::compute_new_config(vector<BitEntropy> entropy, vector<uint32_
     else {
         for (uint32_t i=0; i < x_seq_a.size(); ++i) {
             x_seq_a[i] = entropy[entropy.size()-1-i].m_id;
-            
+
             if (FIX_SEQUENCE == 0)
                 x_seq_b[i] = entropy[i].m_id;
             else if (FIX_SEQUENCE == 3)
@@ -398,7 +398,7 @@ void EntropyIndex::compute_new_config(vector<BitEntropy> entropy, vector<uint32_
             for (uint32_t i=0; i < x_seq_a.size()*2; ++i) {
                 selected_bits.push_back(entropy[entropy.size()-1-i].m_id);
             }
-            
+
             // distribute to 2 sequences A,B
             sort(selected_bits.begin(), selected_bits.end());
             cout << "Sorted selected bits: " << vec_to_string(selected_bits) << endl;
@@ -451,21 +451,21 @@ void EntropyIndex::compute_new_config(vector<BitEntropy> entropy, vector<uint32_
             for (uint32_t i=0; i < x_seq_a.size(); ++i) {
                 next_etp += itv_entropy[x_seq_a[i]].m_entropy;
             }
-            
+
             for (uint32_t i=0; i < x_seq_b.size(); ++i) {
                 next_etp += itv_entropy[x_seq_b[i]].m_entropy;
             }
-            
+
             // compute curr_etp
             double curr_etp = 0;
             for (uint32_t i=0; i < m_curr_seq_a.size(); ++i) {
                 curr_etp += itv_entropy[m_curr_seq_a[i]].m_entropy;
             }
-            
+
             for (uint32_t i=0; i < m_curr_seq_b.size(); ++i) {
                 curr_etp += itv_entropy[m_curr_seq_b[i]].m_entropy;
             }
-            
+
             // compute etp difference
             double etp_diff = (next_etp-curr_etp)*100/abs(curr_etp);
 
@@ -492,21 +492,21 @@ void EntropyIndex::compute_new_config(vector<BitEntropy> entropy, vector<uint32_
             for (uint32_t i=0; i < x_seq_a.size(); ++i) {
                 next_etp += itv_entropy[x_seq_a[i]].m_entropy;
             }
-            
+
             for (uint32_t i=0; i < x_seq_b.size(); ++i) {
                 next_etp += itv_entropy[x_seq_b[i]].m_entropy;
             }
-            
+
             // compute last_etp
             double last_etp = 0;
             for (uint32_t i=0; i < m_last_seq_a.size(); ++i) {
                 last_etp += itv_entropy[m_last_seq_a[i]].m_entropy;
             }
-            
+
             for (uint32_t i=0; i < m_last_seq_b.size(); ++i) {
                 last_etp += itv_entropy[m_last_seq_b[i]].m_entropy;
             }
-            
+
             // compute etp difference
             double etp_diff = (next_etp-last_etp)*100/abs(last_etp);
 
@@ -537,7 +537,7 @@ void EntropyIndex::etp_tracker_access_update(uint64_t address) {
         // do not update the trackers if curr_addr == last_addr
         if (address == m_addr_hist[idx])
             continue;
-        
+
         // compare curr_addr vs. last_addr bit by bit
         for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
             if (((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1))    // A ^ B == 1 => A != B => high entropy => increment entropy
@@ -626,7 +626,7 @@ bool EntropyIndex::is_zero_segment(vector<uint32_t>& x_seq) {
 }
 
 uint32_t EntropyIndex::global_idx(uint32_t set, uint32_t way) {
-   return (set*NUM_WAY + way);
+    return (set*NUM_WAY + way);
 }
 
 uint32_t EntropyIndex::get_rlr_victim(uint32_t set) {
@@ -658,7 +658,7 @@ uint32_t EntropyIndex::get_rlr_victim(uint32_t set) {
             // do nothing
         }
     }
-    
+
     return victim_way;
 }
 

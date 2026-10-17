@@ -26,7 +26,7 @@ class Index {
 public:
     Index(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length, uint32_t x_warmup=0)
         :NUM_SET(x_numset), NUM_WAY(x_numway), 
-         INTERVAL_SIZE(x_interval_length), access_ctr(0), num_interval(0)
+        INTERVAL_SIZE(x_interval_length), access_ctr(0), num_interval(0)
     {
         EVICTION = new uint64_t [NUM_SET];
         N_ACCESS = new uint64_t [NUM_SET];
@@ -63,7 +63,7 @@ public:
         PI_EVICTION[set]++;
     }
 
-    
+
 
     void interval_size(uint32_t x_interval_length) {
         INTERVAL_SIZE = x_interval_length;
@@ -75,7 +75,7 @@ public:
         else
             idx_warmup_complete = false;
         cout << "cache: " << NUM_SET << " x " << NUM_WAY
-             << ". num warmup access: " << num_warmup_access << endl;
+            << ". num warmup access: " << num_warmup_access << endl;
     }
 
 public:
@@ -109,10 +109,10 @@ public:
 class NoHashIndex : public Index {
 public:
     NoHashIndex(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length)
-    :Index(x_numset, x_numway, x_interval_length) {}
+        :Index(x_numset, x_numway, x_interval_length) {}
 
     ~NoHashIndex() {}
-    
+
     uint32_t get_set(uint64_t address) {
         return (uint32_t) (address & ((1 << lg2(NUM_SET)) - 1));
     }
@@ -133,17 +133,17 @@ public:
 class PrimeHashIndex : public Index {
 public:
     PrimeHashIndex(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length)
-    :Index(x_numset, x_numway, x_interval_length) 
+        :Index(x_numset, x_numway, x_interval_length) 
     {
         switch(x_numset) {
             case 256:
                 m_prime_no = 251;
                 break;
-            
+
             case 512:
                 m_prime_no = 509;
                 break;
-            
+
             case 1024:
                 m_prime_no = 1021;
                 break;
@@ -253,7 +253,7 @@ protected:
 class XorHash : public Index {
 public:
     XorHash(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length)
-    :Index(x_numset, x_numway, x_interval_length) {
+        :Index(x_numset, x_numway, x_interval_length) {
         X_ACCESS    = new uint64_t [NUM_SET];
         PI_X_ACCESS = new uint64_t [NUM_SET];
         memset(X_ACCESS, 0, NUM_SET * sizeof(*X_ACCESS));

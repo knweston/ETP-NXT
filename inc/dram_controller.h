@@ -23,7 +23,7 @@ extern uint32_t DRAM_MTPS, DRAM_DBUS_RETURN_TIME;
 
 // DRAM
 class MEMORY_CONTROLLER : public MEMORY {
-  public:
+public:
     const string NAME;
 
     DRAM_ARRAY dram_array[DRAM_CHANNELS][DRAM_RANKS][DRAM_BANKS];
@@ -78,27 +78,27 @@ class MEMORY_CONTROLLER : public MEMORY {
 
     // functions
     int  add_rq(PACKET *packet),
-         add_wq(PACKET *packet),
-         add_pq(PACKET *packet);
+        add_wq(PACKET *packet),
+        add_pq(PACKET *packet);
 
     void return_data(PACKET *packet),
-         operate(),
-         increment_WQ_FULL(uint64_t address);
+        operate(),
+        increment_WQ_FULL(uint64_t address);
 
     uint32_t get_occupancy(uint8_t queue_type, uint64_t address),
-             get_size(uint8_t queue_type, uint64_t address);
+        get_size(uint8_t queue_type, uint64_t address);
 
     void schedule(PACKET_QUEUE *queue), process(PACKET_QUEUE *queue),
-         update_schedule_cycle(PACKET_QUEUE *queue),
-         update_process_cycle(PACKET_QUEUE *queue),
-         reset_remain_requests(PACKET_QUEUE *queue, uint32_t channel);
+        update_schedule_cycle(PACKET_QUEUE *queue),
+        update_process_cycle(PACKET_QUEUE *queue),
+        reset_remain_requests(PACKET_QUEUE *queue, uint32_t channel);
 
     uint32_t dram_get_channel(uint64_t address),
-             dram_get_rank   (uint64_t address),
-             dram_get_bank   (uint64_t address),
-             dram_get_row    (uint64_t address),
-             dram_get_column (uint64_t address),
-             drc_check_hit (uint64_t address, uint32_t cpu, uint32_t channel, uint32_t rank, uint32_t bank, uint32_t row);
+        dram_get_rank   (uint64_t address),
+        dram_get_bank   (uint64_t address),
+        dram_get_row    (uint64_t address),
+        dram_get_column (uint64_t address),
+        drc_check_hit (uint64_t address, uint32_t cpu, uint32_t channel, uint32_t rank, uint32_t bank, uint32_t row);
 
     uint64_t get_bank_earliest_cycle();
 

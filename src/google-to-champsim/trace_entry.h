@@ -482,7 +482,7 @@ type_is_prefetch(const trace_type_t type)
 {
     return (type >= TRACE_TYPE_PREFETCH && type <= TRACE_TYPE_PREFETCH_INSTR) ||
         (type >= TRACE_TYPE_PREFETCH_READ_L1_NT &&
-         type <= TRACE_TYPE_PREFETCH_WRITE_L3_NT) ||
+            type <= TRACE_TYPE_PREFETCH_WRITE_L3_NT) ||
         type == TRACE_TYPE_HARDWARE_PREFETCH;
 }
 
@@ -663,11 +663,11 @@ trace_arch_string(offline_file_type_t type)
     return TESTANY(OFFLINE_FILE_TYPE_ARCH_AARCH64, type)
         ? "aarch64"
         : (TESTANY(OFFLINE_FILE_TYPE_ARCH_ARM32, type)
-               ? "arm"
-               : (TESTANY(OFFLINE_FILE_TYPE_ARCH_X86_32, type)
-                      ? "i386"
-                      : (TESTANY(OFFLINE_FILE_TYPE_ARCH_X86_64, type) ? "x86_64"
-                                                                      : "unspecified")));
+            ? "arm"
+            : (TESTANY(OFFLINE_FILE_TYPE_ARCH_X86_32, type)
+                ? "i386"
+                : (TESTANY(OFFLINE_FILE_TYPE_ARCH_X86_64, type) ? "x86_64"
+                    : "unspecified")));
 }
 
 /* We have non-client targets including this header that do not include API
@@ -763,7 +763,7 @@ typedef struct _encoding_entry_t encoding_entry_t;
 START_PACKED_STRUCTURE
 struct schedule_entry_t {
     schedule_entry_t(uint64_t thread, uint64_t timestamp, uint64_t cpu,
-                     uint64_t instr_count)
+        uint64_t instr_count)
         : thread(thread)
         , timestamp(timestamp)
         , cpu(cpu)

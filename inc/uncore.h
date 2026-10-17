@@ -8,7 +8,7 @@
 
 // uncore
 class UNCORE {
-  public:
+public:
 
     // LLC
     CACHE LLC{"LLC", LLC_SET, LLC_WAY, LLC_SET*LLC_WAY, LLC_WQ_SIZE, LLC_RQ_SIZE, LLC_PQ_SIZE, LLC_MSHR_SIZE};

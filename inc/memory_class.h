@@ -14,13 +14,13 @@
 #define PF_USEFUL 5
 
 extern uint32_t tRP,  // Row Precharge (RP) latency
-                tRCD, // Row address to Column address (RCD) latency
-                tCAS; // Column Address Strobe (CAS) latency
+    tRCD, // Row address to Column address (RCD) latency
+    tCAS; // Column Address Strobe (CAS) latency
 
 extern uint64_t l2pf_access;
 
 class MEMORY {
-  public:
+public:
     // memory interface
     MEMORY *upper_level_icache[NUM_CPUS], *upper_level_dcache[NUM_CPUS], *lower_level, *extra_interface;
 
@@ -52,19 +52,19 @@ class MEMORY {
 };
 
 class BANK_REQUEST {
-  public:
+public:
     uint64_t cycle_available,
-             address,
-             full_addr;
+        address,
+        full_addr;
 
     uint32_t open_row;
 
     uint8_t working,
-            working_type,
-            row_buffer_hit,
-            drc_hit,
-            is_write,
-            is_read;
+        working_type,
+        row_buffer_hit,
+        drc_hit,
+        is_write,
+        is_read;
 
     int request_index;
 

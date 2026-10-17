@@ -7,12 +7,12 @@
 #include "google-to-champsim/google-workload-to-champsim.cpp"
 
 uint8_t warmup_complete[NUM_CPUS], 
-        simulation_complete[NUM_CPUS], 
-        all_warmup_complete = 0, 
-        all_simulation_complete = 0,
-        MAX_INSTR_DESTINATIONS = NUM_INSTR_DESTINATIONS,
-        knob_cloudsuite = 0,
-        knob_low_bandwidth = 0;
+    simulation_complete[NUM_CPUS], 
+    all_warmup_complete = 0, 
+    all_simulation_complete = 0,
+    MAX_INSTR_DESTINATIONS = NUM_INSTR_DESTINATIONS,
+    knob_cloudsuite = 0,
+    knob_low_bandwidth = 0;
 
 uint64_t warmup_instructions     = 1000000,
          simulation_instructions = 10000000,
@@ -52,14 +52,14 @@ map <uint64_t, uint64_t> page_table, inverse_table, recent_page, unique_cl[NUM_C
 uint64_t previous_ppage, num_adjacent_page, num_cl[NUM_CPUS], allocated_pages, num_page[NUM_CPUS], minor_fault[NUM_CPUS], major_fault[NUM_CPUS];
 
 string google_to_champsim(string path){
-	string in_path = path;
-	string out_path = path.replace(path.find(".memtrace.gz"), path.length() -1, ".champsimtrace.gz");
-	
-	cout << "Converting google trace to champsim format. Output file: " << out_path << endl;
-	
-	google_workload_to_champsim(in_path.c_str(), out_path.c_str());
-	
-	return out_path;
+    string in_path = path;
+    string out_path = path.replace(path.find(".memtrace.gz"), path.length() -1, ".champsimtrace.gz");
+
+    cout << "Converting google trace to champsim format. Output file: " << out_path << endl;
+
+    google_workload_to_champsim(in_path.c_str(), out_path.c_str());
+
+    return out_path;
 }
 
 void record_roi_stats(uint32_t cpu, CACHE *cache)
@@ -136,17 +136,17 @@ void print_branch_stats()
         cout << endl << "CPU " << i << " Branch Prediction Accuracy: ";
         cout << (100.0*(ooo_cpu[i].num_branch - ooo_cpu[i].branch_mispredictions)) / ooo_cpu[i].num_branch;
         cout << "% MPKI: " << (1000.0*ooo_cpu[i].branch_mispredictions)/(ooo_cpu[i].num_retired - ooo_cpu[i].warmup_instructions);
-	cout << " Average ROB Occupancy at Mispredict: " << (1.0*ooo_cpu[i].total_rob_occupancy_at_branch_mispredict)/ooo_cpu[i].branch_mispredictions << endl << endl;
-	
-	cout << "Branch types" << endl;
-	cout << "NOT_BRANCH: " << ooo_cpu[i].total_branch_types[0] << " " << (100.0*ooo_cpu[i].total_branch_types[0])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_DIRECT_JUMP: " << ooo_cpu[i].total_branch_types[1] << " " << (100.0*ooo_cpu[i].total_branch_types[1])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_INDIRECT: " << ooo_cpu[i].total_branch_types[2] << " " << (100.0*ooo_cpu[i].total_branch_types[2])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_CONDITIONAL: " << ooo_cpu[i].total_branch_types[3] << " " << (100.0*ooo_cpu[i].total_branch_types[3])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_DIRECT_CALL: " << ooo_cpu[i].total_branch_types[4] << " " << (100.0*ooo_cpu[i].total_branch_types[4])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_INDIRECT_CALL: " << ooo_cpu[i].total_branch_types[5] << " " << (100.0*ooo_cpu[i].total_branch_types[5])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_RETURN: " << ooo_cpu[i].total_branch_types[6] << " " << (100.0*ooo_cpu[i].total_branch_types[6])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
-	cout << "BRANCH_OTHER: " << ooo_cpu[i].total_branch_types[7] << " " << (100.0*ooo_cpu[i].total_branch_types[7])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl << endl;
+        cout << " Average ROB Occupancy at Mispredict: " << (1.0*ooo_cpu[i].total_rob_occupancy_at_branch_mispredict)/ooo_cpu[i].branch_mispredictions << endl << endl;
+
+        cout << "Branch types" << endl;
+        cout << "NOT_BRANCH: " << ooo_cpu[i].total_branch_types[0] << " " << (100.0*ooo_cpu[i].total_branch_types[0])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_DIRECT_JUMP: " << ooo_cpu[i].total_branch_types[1] << " " << (100.0*ooo_cpu[i].total_branch_types[1])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_INDIRECT: " << ooo_cpu[i].total_branch_types[2] << " " << (100.0*ooo_cpu[i].total_branch_types[2])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_CONDITIONAL: " << ooo_cpu[i].total_branch_types[3] << " " << (100.0*ooo_cpu[i].total_branch_types[3])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_DIRECT_CALL: " << ooo_cpu[i].total_branch_types[4] << " " << (100.0*ooo_cpu[i].total_branch_types[4])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_INDIRECT_CALL: " << ooo_cpu[i].total_branch_types[5] << " " << (100.0*ooo_cpu[i].total_branch_types[5])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_RETURN: " << ooo_cpu[i].total_branch_types[6] << " " << (100.0*ooo_cpu[i].total_branch_types[6])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl;
+        cout << "BRANCH_OTHER: " << ooo_cpu[i].total_branch_types[7] << " " << (100.0*ooo_cpu[i].total_branch_types[7])/(ooo_cpu[i].num_retired - ooo_cpu[i].begin_sim_instr) << "%" << endl << endl;
     }
 }
 
@@ -237,7 +237,7 @@ void finish_warmup()
 
         for(uint32_t j=0; j<8; j++)
             ooo_cpu[i].total_branch_types[j] = 0;
-        
+
         reset_cache_stats(i, &ooo_cpu[i].L1I);
         reset_cache_stats(i, &ooo_cpu[i].L1D);
         reset_cache_stats(i, &ooo_cpu[i].L2C);
@@ -303,8 +303,8 @@ void print_deadlock(uint32_t i)
 
 void signal_handler(int signal) 
 {
-	cout << "Caught signal: " << signal << endl;
-	exit(1);
+    cout << "Caught signal: " << signal << endl;
+    exit(1);
 }
 
 // log base 2 function from efectiu
@@ -339,7 +339,7 @@ uint64_t rotr64 (uint64_t n, unsigned int c)
 RANDOM champsim_rand(champsim_seed);
 uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_vpage, uint8_t is_code)
 {
-    
+
 #ifdef SANITY_CHECK
     if (va == 0) {
         cout << "___va_to_pa___ cpu: " << cpu << " instr_id: " << instr_id << " va: " << va << " unique_vpage: " << unique_vpage << " is_code: " << is_code << endl;
@@ -350,7 +350,7 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
     uint8_t  swap = 0;
     uint64_t high_bit_mask = rotr64(cpu, lg2(NUM_CPUS)),
              unique_va = va | high_bit_mask;
-    
+
     uint64_t vpage = unique_vpage | high_bit_mask,
              voffset = unique_va & ((1<<LOG2_PAGE_SIZE) - 1);
 
@@ -392,15 +392,15 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
                     break;
                 }
             }
-            #ifdef SANITY_CHECK
+#ifdef SANITY_CHECK
             if (found_NRU == 0)
                 assert(0);
 
             if (pr == page_table.end())
                 assert(0);
-            #endif
+#endif
             DP ( if (warmup_complete[cpu]) {
-            cout << "[SWAP] update page table NRU_vpage: " << hex << pr->first << " new_vpage: " << vpage << " ppage: " << pr->second << dec << endl; });
+                cout << "[SWAP] update page table NRU_vpage: " << hex << pr->first << " new_vpage: " << vpage << " ppage: " << pr->second << dec << endl; });
 
             // update page table with new VA => PA mapping
             // since we cannot change the key value already inserted in a map structure, we need to erase the old node and add a new node
@@ -410,10 +410,10 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
 
             // update inverse table with new PA => VA mapping
             ppage_check = inverse_table.find(mapped_ppage);
-            #ifdef SANITY_CHECK
+#ifdef SANITY_CHECK
             if (ppage_check == inverse_table.end())
                 assert(0);
-            #endif
+#endif
             ppage_check->second = vpage;
 
             DP ( if (warmup_complete[cpu]) {
@@ -439,7 +439,7 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
             // swap complete
             swap = 1;
         } 
-        
+
         else {
             uint8_t fragmented = 0;
             if (num_adjacent_page > 0) {
@@ -460,14 +460,14 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
                 ppage_check = inverse_table.find(random_ppage); // check if this page can be allocated 
                 if (ppage_check != inverse_table.end()) { // random_ppage is not available
                     DP ( if (warmup_complete[cpu]) {
-                    cout << "vpage: " << hex << ppage_check->first << " is already mapped to ppage: " << random_ppage << dec << endl; }); 
-                    
+                        cout << "vpage: " << hex << ppage_check->first << " is already mapped to ppage: " << random_ppage << dec << endl; }); 
+
                     if (num_adjacent_page > 0)
                         fragmented = 1;
 
                     // try one more time
                     random_ppage = champsim_rand.draw_rand();
-                    
+
                     // encoding cpu number 
                     //random_ppage &= (~((NUM_CPUS-1)<<(32-LOG2_PAGE_SIZE)));
                     //random_ppage |= (cpu<<(32-LOG2_PAGE_SIZE)); 
@@ -490,7 +490,7 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
             if (fragmented) {
                 num_adjacent_page = 1 << ((rand()%10)+5);
                 DP ( if (warmup_complete[cpu]) {
-                cout << "Recalculate num_adjacent_page: " << num_adjacent_page << endl; });
+                    cout << "Recalculate num_adjacent_page: " << num_adjacent_page << endl; });
             }
         }
 
@@ -523,14 +523,13 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
     // }
 
     // as a hack for code prefetching, code translations are magical and do not pay these penalties
-    if(!is_code)
-      {
-	// if it's data, pay these penalties
-	if (swap)
-	  stall_cycle[cpu] = current_core_cycle[cpu] + SWAP_LATENCY;
-	else
-	  stall_cycle[cpu] = current_core_cycle[cpu] + PAGE_TABLE_LATENCY;
-      }
+    if (!is_code) {
+        // if it's data, pay these penalties
+        if (swap)
+            stall_cycle[cpu] = current_core_cycle[cpu] + SWAP_LATENCY;
+        else
+            stall_cycle[cpu] = current_core_cycle[cpu] + PAGE_TABLE_LATENCY;
+    }
 
     //cout << "cpu: " << cpu << " allocated unique_vpage: " << hex << unique_vpage << " to ppage: " << ppage << dec << endl;
 
@@ -539,23 +538,23 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
 
 void cpu_l1i_prefetcher_cache_operate(uint32_t cpu_num, uint64_t v_addr, uint8_t cache_hit, uint8_t prefetch_hit)
 {
-  ooo_cpu[cpu_num].l1i_prefetcher_cache_operate(v_addr, cache_hit, prefetch_hit);
+    ooo_cpu[cpu_num].l1i_prefetcher_cache_operate(v_addr, cache_hit, prefetch_hit);
 }
 
 void cpu_l1i_prefetcher_cache_fill(uint32_t cpu_num, uint64_t addr, uint32_t set, uint32_t way, uint8_t prefetch, uint64_t evicted_addr)
 {
-  ooo_cpu[cpu_num].l1i_prefetcher_cache_fill(addr, set, way, prefetch, evicted_addr);
+    ooo_cpu[cpu_num].l1i_prefetcher_cache_fill(addr, set, way, prefetch, evicted_addr);
 }
 
 
 int main(int argc, char** argv)
 {
-	// interrupt signal hanlder
-	struct sigaction sigIntHandler;
-	sigIntHandler.sa_handler = signal_handler;
-	sigemptyset(&sigIntHandler.sa_mask);
-	sigIntHandler.sa_flags = 0;
-	sigaction(SIGINT, &sigIntHandler, NULL);
+    // interrupt signal hanlder
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = signal_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
 
     cout << endl << "*** ChampSim Multicore Out-of-Order Simulator ***" << endl << endl;
 
@@ -652,7 +651,7 @@ int main(int argc, char** argv)
     DRAM_DBUS_RETURN_TIME = (BLOCK_SIZE / DRAM_CHANNEL_WIDTH) * (CPU_FREQ / DRAM_MTPS);
 
     printf("Off-chip DRAM Size: %u MB Channels: %u Width: %u-bit Data Rate: %u MT/s\n",
-            DRAM_SIZE, DRAM_CHANNELS, 8*DRAM_CHANNEL_WIDTH, DRAM_MTPS);
+        DRAM_SIZE, DRAM_CHANNELS, 8*DRAM_CHANNEL_WIDTH, DRAM_MTPS);
 
     // end consequence of knobs
 
@@ -661,13 +660,12 @@ int main(int argc, char** argv)
     int count_traces = 0;
     cout << endl;
     for (int i=0; i<argc; i++) {
-        if (found_traces)
-        {
-			// Convert google trace files
-			string temp_path(argv[i]);
-			if (temp_path.find(".memtrace.gz") != -1){
-				strcpy(argv[i], &google_to_champsim(temp_path)[0]);
-			}
+        if (found_traces) {
+            // Convert google trace files
+            string temp_path(argv[i]);
+            if (temp_path.find(".memtrace.gz") != -1) {
+                strcpy(argv[i], &google_to_champsim(temp_path)[0]);
+            }
             printf("CPU %d runs %s\n", count_traces, argv[i]);
             sprintf(ooo_cpu[count_traces].trace_string, "%s", argv[i]);
 
@@ -676,24 +674,20 @@ int main(int argc, char** argv)
 
             std::string fmtstr;
             std::string decomp_program;
-            if (full_name.substr(0,4) == "http")
-            {
+            if (full_name.substr(0,4) == "http") {
                 // Check file exists
                 char testfile_command[4096];
                 sprintf(testfile_command, "wget -q --spider %s", argv[i]);
                 FILE *testfile = popen(testfile_command, "r");
-                if (pclose(testfile))
-                {
+                if (pclose(testfile)) {
                     std::cerr << "TRACE FILE NOT FOUND" << std::endl;
                     assert(0);
                 }
                 fmtstr = "wget -qO- %2$s | %1$s -dc";
             }
-            else
-            {
+            else {
                 std::ifstream testfile(argv[i]);
-                if (!testfile.good())
-                {
+                if (!testfile.good()) {
                     std::cerr << "TRACE FILE NOT FOUND" << std::endl;
                     assert(0);
                 }
@@ -715,18 +709,18 @@ int main(int argc, char** argv)
             string path = argv[i];
             string app_name;
             uint32_t appname_startpt = 0;
-			uint32_t appname_endpt;
+            uint32_t appname_endpt;
 
-			if(path.find(".champsimtrace.xz") != -1) {
-				appname_endpt = path.find(".champsimtrace.xz");
-			}
-			else if (path.find(".champsimtrace.gz") != -1) {
-				appname_endpt = path.find(".champsimtrace.gz");
-			}
+            if (path.find(".champsimtrace.xz") != -1) {
+                appname_endpt = path.find(".champsimtrace.xz");
+            }
+            else if (path.find(".champsimtrace.gz") != -1) {
+                appname_endpt = path.find(".champsimtrace.gz");
+            }
             else {
                 appname_endpt = path.find(".trace.xz");
             }
-			
+
             for (uint32_t i=0; i<path.size(); ++i) {
                 if (path[i] == '/')
                     appname_startpt = i+1;
@@ -734,7 +728,7 @@ int main(int argc, char** argv)
             for (uint32_t i=appname_startpt; i<appname_endpt; ++i) {
                 app_name += path[i];
             }
-            
+
             APP_LIST.push_back(app_name);
             APP_PATH.push_back(path);
 
@@ -745,7 +739,7 @@ int main(int argc, char** argv)
                     app_name += path[i];
                 }
             }
-            
+
             for (uint32_t i=0; i<app_name.size(); ++i) {
                 seed_number += app_name[i];
                 printf("%c %d %d\n", app_name[i], i, seed_number);
@@ -763,7 +757,7 @@ int main(int argc, char** argv)
                 assert(0);
             }
         }
-        else if(strcmp(argv[i],"-traces") == 0) {
+        else if (strcmp(argv[i],"-traces") == 0) {
             found_traces = 1;
         }
     }
@@ -817,7 +811,7 @@ int main(int argc, char** argv)
         // TLBs
         ooo_cpu[i].ITLB.cpu = i;
         ooo_cpu[i].ITLB.cache_type = IS_ITLB;
-	    ooo_cpu[i].ITLB.MAX_READ = 2;
+        ooo_cpu[i].ITLB.MAX_READ = 2;
         ooo_cpu[i].ITLB.fill_level = FILL_L1;
         ooo_cpu[i].ITLB.extra_interface = &ooo_cpu[i].L1I;
         ooo_cpu[i].ITLB.lower_level = &ooo_cpu[i].STLB; 
@@ -845,8 +839,8 @@ int main(int argc, char** argv)
         ooo_cpu[i].L1I.fill_level = FILL_L1;
         ooo_cpu[i].L1I.lower_level = &ooo_cpu[i].L2C; 
         ooo_cpu[i].l1i_prefetcher_initialize();
-	    ooo_cpu[i].L1I.l1i_prefetcher_cache_operate = cpu_l1i_prefetcher_cache_operate;
-	    ooo_cpu[i].L1I.l1i_prefetcher_cache_fill = cpu_l1i_prefetcher_cache_fill;
+        ooo_cpu[i].L1I.l1i_prefetcher_cache_operate = cpu_l1i_prefetcher_cache_operate;
+        ooo_cpu[i].L1I.l1i_prefetcher_cache_fill = cpu_l1i_prefetcher_cache_fill;
 
         ooo_cpu[i].L1D.cpu = i;
         ooo_cpu[i].L1D.cache_type = IS_L1D;
@@ -885,7 +879,7 @@ int main(int argc, char** argv)
         simulation_complete[i] = 0;
         current_core_cycle[i] = 0;
         stall_cycle[i] = 0;
-        
+
         previous_ppage = 0;
         num_adjacent_page = 0;
         num_cl[i] = 0;
@@ -904,15 +898,15 @@ int main(int argc, char** argv)
             uncore.LLC.m_index = new PrimeHashIndex(LLC_SET, LLC_WAY, interval_size_ncore);
         }
     }
-    
+
     else if (LLC_INDEX_TYPE == 2) { 
         if (NUM_CPUS == 1) { // single core
             uncore.LLC.m_index = new CeaserIndex(LLC_SET, LLC_WAY, LLC_SET*LLC_WAY*100,
-                                             100*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
+                100*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
         }
         else {
             uncore.LLC.m_index = new CeaserIndex(LLC_SET, LLC_WAY, LLC_SET*LLC_WAY*100,
-                                             100*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
+                100*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
         }
     }
 
@@ -929,7 +923,7 @@ int main(int argc, char** argv)
         else
             uncore.LLC.m_index = new GeneticIndex(LLC_SET, LLC_WAY, interval_size_ncore, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
     }
-    
+
     else if (LLC_INDEX_TYPE == 5) {
         if (NUM_CPUS == 1) { // single core
             uncore.LLC.m_index = new EntropyIndex(LLC_SET, LLC_WAY, interval_size_1core, 5*LLC_WAY, FILL_LLC, uncore.LLC.block, 0);
@@ -1022,7 +1016,7 @@ int main(int argc, char** argv)
 
     uncore.LLC.llc_initialize_replacement();
     uncore.LLC.llc_prefetcher_initialize();
-    
+
     // simulation entry point
     start_time = time(NULL);
     uint8_t run_simulation = 1;
@@ -1067,18 +1061,18 @@ int main(int argc, char** argv)
                 ooo_cpu[i].update_rob();
 
                 // decode
-                if(ooo_cpu[i].DECODE_BUFFER.occupancy > 0) {
+                if (ooo_cpu[i].DECODE_BUFFER.occupancy > 0) {
                     ooo_cpu[i].decode_and_dispatch();
                 }
-                
+
                 // fetch
                 ooo_cpu[i].fetch_instruction();
-                
+
                 // read from trace
                 if ((ooo_cpu[i].IFETCH_BUFFER.occupancy < ooo_cpu[i].IFETCH_BUFFER.SIZE) && (ooo_cpu[i].fetch_stall == 0)) {
                     ooo_cpu[i].read_from_trace();
                 }
-	        }
+            }
 
             // heartbeat information
             if (show_heartbeat && (ooo_cpu[i].num_retired >= ooo_cpu[i].next_print_instruction)) {
@@ -1145,7 +1139,7 @@ int main(int argc, char** argv)
              elapsed_hour = elapsed_minute / 60;
     elapsed_minute -= elapsed_hour*60;
     elapsed_second -= (elapsed_hour*3600 + elapsed_minute*60);
-    
+
     cout << endl << "ChampSim completed all CPUs" << endl;
     if (NUM_CPUS > 1) {
         cout << endl << "Total Simulation Statistics (not including warmup)" << endl;
@@ -1156,9 +1150,9 @@ int main(int argc, char** argv)
             print_sim_stats(i, &ooo_cpu[i].L1D);
             print_sim_stats(i, &ooo_cpu[i].L1I);
             print_sim_stats(i, &ooo_cpu[i].L2C);
-	        ooo_cpu[i].l1i_prefetcher_final_stats();
+            ooo_cpu[i].l1i_prefetcher_final_stats();
             ooo_cpu[i].L1D.l1d_prefetcher_final_stats();
-	        ooo_cpu[i].L2C.l2c_prefetcher_final_stats();
+            ooo_cpu[i].L2C.l2c_prefetcher_final_stats();
 #endif
             print_sim_stats(i, &uncore.LLC);
         }

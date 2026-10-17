@@ -34,7 +34,7 @@ void EntropyV3::move_cache_data(MEMORY *lower_level) {
             // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
             if (fill_ready) {
                 if (dest_block->valid)
-                increment_eviction(dest_index);
+                    increment_eviction(dest_index);
                 override_block(src_block, dest_block);
                 replacement_update(dest_index, dest_way, map_ptr, way);  // etp3c: no update, etp3d: original SRRIP update
             }
@@ -54,21 +54,19 @@ bool EntropyV3::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
     bool overwrite_dest = true;
 
     // prefetch -> dirty
-    if (!dest->prefetch) {
+    if (!dest->prefetch && src->prefetch) {
         // dest NOT prefetch but the src is, drop the src, regardless of src dirty state
-        if (src->prefetch) {
-            num_drop++;
-            overwrite_dest = false;
-            if (src->dirty) {
-                bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
-                if (writeback_success) {
+        num_drop++;
+        overwrite_dest = false;
+        if (src->dirty) {
+            bool writeback_success = force_writeback(src, lower_level, FILL_LEVEL, CPU_ID);
+            if (writeback_success) {
                 num_writeback++;
-                }
             }
         }
     }
     else if (dest->dirty) {
-        // dest is prefetch dirty
+        // destination is dirty, regardless of its prefetch state
         if (!src->dirty) {
             // if the destination block is dirty but the source block is clean, drop the source block (do not fill)
             num_drop++;
@@ -82,7 +80,7 @@ bool EntropyV3::remap_tie_break(BLOCK* src, BLOCK* dest, MEMORY *lower_level) {
         }
     }
     else {
-        // dest prefetch clean -> just overwrite, no further action
+        // destination is clean -> just overwrite, no further action
     }
     return overwrite_dest;
 }
@@ -190,8 +188,8 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
         cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_E_ACCESS, NUM_SET) << endl;
         cout << "   eviction_count: " << std::fixed << compute_sum(PI_EVICTION, NUM_SET) << "(" 
-                                                    << compute_sum(PI_EVICTION, NUM_SET)*100/INTERVAL_SIZE 
-                                                    << "%)" << endl;
+             << compute_sum(PI_EVICTION, NUM_SET)*100/INTERVAL_SIZE 
+             << "%)" << endl;
         cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
         cout << "   num_reset_itv:         " << num_reset_itv << endl;
         cout << "   num_reset_cor:         " << num_reset_cor << endl;
@@ -222,7 +220,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-        
+
         num_interval++;
         map_ptr    = 0;
         access_ctr = 0;
@@ -248,7 +246,7 @@ void EntropyV3::etp_tracker_access_update(uint64_t address) {
 
         uint64_t bit_flips = address ^ m_addr_hist[idx];
         uint32_t correl_table_idx = 0;
-        
+
         for (uint32_t i=0; i < IDX_SIZE; ++i) {
             for (uint32_t j=IDX_SIZE; j < MAX_ADDRESS_BITS; ++j) {
                 uint32_t bit_i_j_flip_correl = ((bit_flips >> i) & 1) ^ ((bit_flips >> j) & 1);
@@ -270,7 +268,7 @@ void EntropyV3::etp_tracker_access_update(uint64_t address) {
         // do not update the trackers if curr_addr == last_addr
         if (address == m_addr_hist[idx])
             continue;
-        
+
         // compare curr_addr vs. last_addr bit by bit
         for (uint32_t i=0; i < MAX_ADDRESS_BITS; ++i) {
             bool is_flipped = (bool) ((address >> i) & 1) ^ ((m_addr_hist[idx] >> i) & 1);
@@ -384,7 +382,7 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     sort(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
     std::reverse(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
     cout << "Sorted BPE:   " << etp_vector_to_string(sorted_bitpair_etp) << endl;
- 
+
     vector<BitEntropy> sorted_bitpair_pattern = bitpair_ptn_ctr;
     sort(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
     std::reverse(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
@@ -545,7 +543,7 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
         for (uint32_t i=0; i < itv_ptn_entropy.size(); ++i) {
             itv_ptn_entropy[i].m_entropy /= 2;
         }
-        
+
         if ((num_interval > 0) && (bp_etp_diff <= 0)) {   // etp3b11/etp3b12/etp3tst14
             x_seq_a = m_last_seq_a;
             x_seq_b = m_last_seq_b;
@@ -572,7 +570,7 @@ void EntropyV3::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
  * swap the bits in seq_b based on its correlation with seq_a corresponding bits.
  */
 void EntropyV3::get_cfg_1(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_itv = itv_entropy;
     sort(sorted_itv.begin(), sorted_itv.end());
     std::reverse(sorted_itv.begin(), sorted_itv.end());
@@ -609,7 +607,7 @@ void EntropyV3::get_cfg_1(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
  * get the lowest correlation bit to pair with each bit in A. 
  */
 void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                           vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_itv = itv_entropy;
     sort(sorted_itv.begin(), sorted_itv.end());
     std::reverse(sorted_itv.begin(), sorted_itv.end());
@@ -618,7 +616,7 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
     vector<uint32_t> avail_bits;
     for (uint32_t i=0; i < sorted_itv.size(); ++i) {
         if ((sorted_itv[i].m_id >= IDX_SIZE) && (avail_bits.size() < ETP_CUTOFF_STARTRATE)) {
-        // if ((sorted_itv[i].m_id >= IDX_SIZE) && (sorted_itv[i].m_entropy > ETP_CUTOFF_STARTRATE)) {
+            // if ((sorted_itv[i].m_id >= IDX_SIZE) && (sorted_itv[i].m_entropy > ETP_CUTOFF_STARTRATE)) {
             avail_bits.push_back(sorted_itv[i].m_id);
         }
     }
@@ -642,7 +640,7 @@ void EntropyV3::get_cfg_7(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
  * for each seq_a bit, find the corresponding bit that has the highest BPP with it and put it in seq_b 
  */
 void EntropyV3::get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_bitpair_pattern = bitpair_ptn_ctr;
     sort(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
     std::reverse(sorted_bitpair_pattern.begin(), sorted_bitpair_pattern.end());
@@ -664,7 +662,7 @@ void EntropyV3::get_cfg_2(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
 }
 
 void EntropyV3::get_cfg_etp(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_itv = itv_entropy;
     sort(sorted_itv.begin(), sorted_itv.end());
     std::reverse(sorted_itv.begin(), sorted_itv.end());
@@ -703,7 +701,7 @@ void EntropyV3::get_cfg_etp(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b
  * CUTOFF_PRORATE * correl of the previous selected bitpair in A/B
  */
 void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_corr = correl_table;
     sort(sorted_corr.begin(), sorted_corr.end());
 
@@ -744,7 +742,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         while (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                 if ((correl_table[j].m_entropy <= next_cutoff_corr) && !is_existed(correl_table[j].m_segid[1], used_bits)
-                                                                    && (itv_entropy[correl_table[j].m_segid[1]].m_entropy > itv_entropy[sorted_nohash_idx_sequence_corr_based[i]].m_entropy*ETP_CUTOFF_RATE))
+                    && (itv_entropy[correl_table[j].m_segid[1]].m_entropy > itv_entropy[sorted_nohash_idx_sequence_corr_based[i]].m_entropy*ETP_CUTOFF_RATE))
                     extracted_bit_correl_table.push_back(correl_table[j]);
             }
             sort(extracted_bit_correl_table.begin(), extracted_bit_correl_table.end());
@@ -759,7 +757,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                 extracted_bit_correl_table.resize(0);
                 for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                     if ((correl_table[j].m_entropy > next_cutoff_corr) && !is_existed(correl_table[j].m_segid[1], used_bits)
-                                                                    && (itv_entropy[correl_table[j].m_segid[1]].m_entropy > itv_entropy[sorted_nohash_idx_sequence_corr_based[i]].m_entropy*ETP_CUTOFF_RATE))
+                        && (itv_entropy[correl_table[j].m_segid[1]].m_entropy > itv_entropy[sorted_nohash_idx_sequence_corr_based[i]].m_entropy*ETP_CUTOFF_RATE))
                         extracted_bit_correl_table.push_back(correl_table[j]);
                 }
                 sort(extracted_bit_correl_table.begin(), extracted_bit_correl_table.end());
@@ -773,7 +771,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                 if (!found) {
                     ETP_CUTOFF_RATE -= 0.01;
                     cout << "extracted_bit_correl_table empty. Reduce cutoff rate to: " << ETP_CUTOFF_RATE << endl;
-                    
+
                     if (ETP_CUTOFF_RATE < 0) {
                         cout << "CORR: " << endl;
                         for (uint32_t i=start_search_idx; i < end_search_idx; ++i) {
@@ -789,11 +787,11 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         for (uint32_t i=0; i < extracted_bit_correl_table.size(); ++i) {
             uint32_t index = compute_pair_table_idx(extracted_bit_correl_table[i].m_segid[0], extracted_bit_correl_table[i].m_segid[1]);
             cout << extracted_bit_correl_table[i].to_string() 
-                << ". BPE: " << bitpair_entropy[index].to_string() 
-                << ". BPP: " << bitpair_ptn_ctr[index].to_string()
-                << ". ETP[" << extracted_bit_correl_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bit_correl_table[i].m_segid[0]].m_entropy
-                << ". ETP[" << extracted_bit_correl_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bit_correl_table[i].m_segid[1]].m_entropy
-                << endl;
+                 << ". BPE: " << bitpair_entropy[index].to_string() 
+                 << ". BPP: " << bitpair_ptn_ctr[index].to_string()
+                 << ". ETP[" << extracted_bit_correl_table[i].m_segid[0] << "]: " << itv_entropy[extracted_bit_correl_table[i].m_segid[0]].m_entropy
+                 << ". ETP[" << extracted_bit_correl_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bit_correl_table[i].m_segid[1]].m_entropy
+                 << endl;
         }
         cout << "used_bits: " << vec_to_string(used_bits) << endl;
     }
@@ -851,7 +849,7 @@ void EntropyV3::get_cfg_3(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
  * equivalent to get_cfg_1 (ETP)
  */
 void EntropyV3::get_cfg_4(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_itv_ptn = itv_ptn_entropy;
     sort(sorted_itv_ptn.begin(), sorted_itv_ptn.end());
     std::reverse(sorted_itv_ptn.begin(), sorted_itv_ptn.end());
@@ -905,7 +903,7 @@ void EntropyV3::get_cfg_4(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
  * equivalent to get_cfg_3 (CORR)
  */
 void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_bitpair_etp = bitpair_entropy;
     sort(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
     std::reverse(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
@@ -947,7 +945,7 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         while (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                 if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                    && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_PT)) {
+                    && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_PT)) {
                     extracted_bpe_table.push_back(bitpair_entropy[j]);
                 }
             }
@@ -961,7 +959,7 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
             if (!found) {
                 for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                     if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                        && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_PT)) {
+                        && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_PT)) {
                         extracted_bpe_table.push_back(bitpair_entropy[j]);
                     }
                 }
@@ -1020,7 +1018,7 @@ void EntropyV3::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
 }
 
 void EntropyV3::get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     c_seq_a = x_seq_a;    // one sequence must be the nohash index
     vector<uint32_t> used_bits;
     for (int32_t i=c_seq_a.size()-1; i >= 0; --i) {
@@ -1031,8 +1029,8 @@ void EntropyV3::get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                 continue;
 
             uint32_t ptn_distance = (itv_ptn_entropy[c_seq_a[i]].m_entropy/2 > itv_ptn_entropy[j].m_entropy)? 
-                                     (itv_ptn_entropy[c_seq_a[i]].m_entropy/2 - itv_ptn_entropy[j].m_entropy) : 
-                                     (itv_ptn_entropy[j].m_entropy - itv_ptn_entropy[c_seq_a[i]].m_entropy/2);
+                (itv_ptn_entropy[c_seq_a[i]].m_entropy/2 - itv_ptn_entropy[j].m_entropy) : 
+                (itv_ptn_entropy[j].m_entropy - itv_ptn_entropy[c_seq_a[i]].m_entropy/2);
             if (ptn_distance < closest_mid_ptn) {
                 closest_mid_ptn = ptn_distance;
                 closest_mid_idx = itv_ptn_entropy[j].m_id;
@@ -1066,7 +1064,7 @@ void EntropyV3::get_cfg_6(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
  * the same as get_cfg_5, but start from the lowest BPE bit
  */
 void EntropyV3::get_cfg_8(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                          vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     vector<BitEntropy> sorted_bitpair_etp = bitpair_entropy;
     sort(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
     std::reverse(sorted_bitpair_etp.begin(), sorted_bitpair_etp.end());
@@ -1106,7 +1104,7 @@ void EntropyV3::get_cfg_8(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
 
         for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
             if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                  && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
+                && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
                 extracted_bpe_table.push_back(bitpair_entropy[j]);
             }
         }
@@ -1120,7 +1118,7 @@ void EntropyV3::get_cfg_8(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         if (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
                 if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                                                                     && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
+                    && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > 0)) {
                     extracted_bpe_table.push_back(bitpair_entropy[j]);
                 }
             }
@@ -1146,7 +1144,7 @@ void EntropyV3::get_cfg_8(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                  << ". ETP["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
                  << ". PTN["  << extracted_bpe_table[i].m_segid[0] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[0]].m_entropy
                  << ". PTN["  << extracted_bpe_table[i].m_segid[1] << "]: " << itv_ptn_entropy[extracted_bpe_table[i].m_segid[1]].m_entropy
-                << endl;
+                 << endl;
         }
         cout << "used_bits: " << vec_to_string(used_bits) << endl;
     }
@@ -1202,11 +1200,11 @@ vector<uint32_t> EntropyV3::parse_config(string input_line) {
     stringstream ss(str_sequence);
     while (ss >> element)
         read_sequence.push_back(element);
-    
+
     return read_sequence;
 }
 void EntropyV3::get_cfg_genetic(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b, 
-                                vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
+    vector<uint32_t>& c_seq_a, vector<uint32_t>& c_seq_b) {
     c_seq_a = m_genetic_cfg_a;    // one sequence must be the nohash index
     c_seq_b = m_genetic_cfg_b;
 

@@ -28,7 +28,7 @@
 #include "set.h"
 
 class input_instr {
-  public:
+public:
 
     // instruction pointer or PC (Program Counter)
     uint64_t ip;
@@ -61,7 +61,7 @@ class input_instr {
 };
 
 class cloudsuite_instr {
-  public:
+public:
 
     // instruction pointer or PC (Program Counter)
     uint64_t ip;
@@ -99,33 +99,33 @@ class cloudsuite_instr {
 };
 
 class ooo_model_instr {
-  public:
+public:
     uint64_t instr_id,
-             ip,
-             fetch_producer,
-             producer_id,
-             translated_cycle,
-             fetched_cycle,
-             execute_begin_cycle,
-             retired_cycle,
-             event_cycle;
+        ip,
+        fetch_producer,
+        producer_id,
+        translated_cycle,
+        fetched_cycle,
+        execute_begin_cycle,
+        retired_cycle,
+        event_cycle;
 
     uint8_t is_branch,
-            is_memory,
-            branch_taken,
-            branch_mispredicted,
-            branch_prediction_made,
-            translated,
-            data_translated,
-            source_added[NUM_INSTR_SOURCES],
-            destination_added[NUM_INSTR_DESTINATIONS_SPARC],
-            is_producer,
-            is_consumer,
-            reg_RAW_producer,
-            reg_ready,
-            mem_ready,
-            asid[2],
-            reg_RAW_checked[NUM_INSTR_SOURCES];
+        is_memory,
+        branch_taken,
+        branch_mispredicted,
+        branch_prediction_made,
+        translated,
+        data_translated,
+        source_added[NUM_INSTR_SOURCES],
+        destination_added[NUM_INSTR_DESTINATIONS_SPARC],
+        is_producer,
+        is_consumer,
+        reg_RAW_producer,
+        reg_ready,
+        mem_ready,
+        asid[2],
+        reg_RAW_checked[NUM_INSTR_SOURCES];
 
     uint8_t branch_type;
     uint64_t branch_target;
@@ -145,7 +145,7 @@ class ooo_model_instr {
     // these are indices of instructions in the window that depend on me
     //uint8_t registers_instrs_depend_on_me[ROB_SIZE], registers_index_depend_on_me[ROB_SIZE][NUM_INSTR_SOURCES];
     fastset
-	registers_instrs_depend_on_me, registers_index_depend_on_me[NUM_INSTR_SOURCES];
+        registers_instrs_depend_on_me, registers_index_depend_on_me[NUM_INSTR_SOURCES];
 
 
     // memory addresses that may cause dependencies between instructions
@@ -166,8 +166,8 @@ class ooo_model_instr {
     fastset memory_instrs_depend_on_me;
 
     uint32_t lq_index[NUM_INSTR_SOURCES],
-             sq_index[NUM_INSTR_DESTINATIONS_SPARC],
-             forwarding_index[NUM_INSTR_DESTINATIONS_SPARC];
+        sq_index[NUM_INSTR_DESTINATIONS_SPARC],
+        forwarding_index[NUM_INSTR_DESTINATIONS_SPARC];
 
     ooo_model_instr() {
         instr_id = 0;
@@ -184,7 +184,7 @@ class ooo_model_instr {
         is_memory = 0;
         branch_taken = 0;
         branch_mispredicted = 0;
-	branch_prediction_made = 0;
+        branch_prediction_made = 0;
         translated = 0;
         data_translated = 0;
         is_producer = 0;
@@ -198,8 +198,8 @@ class ooo_model_instr {
         asid[0] = UINT8_MAX;
         asid[1] = UINT8_MAX;
 
-	branch_type = NOT_BRANCH;
-	branch_target = 0;
+        branch_type = NOT_BRANCH;
+        branch_target = 0;
 
         instruction_pa = 0;
         data_pa = 0;
@@ -239,34 +239,34 @@ class ooo_model_instr {
 #endif
     };
 
-  void print_instr()
-  {
-    cout << "*** " << instr_id << " ***" << endl;
-    cout << hex << "0x" << (uint64_t)ip << dec << endl;
-    cout << (uint32_t)is_branch << " " << (uint32_t)branch_taken << endl;
-    for(uint32_t i=0; i<NUM_INSTR_SOURCES; i++)
-      {
-	cout << (uint32_t)source_registers[i] << " ";
-      }
-    cout << endl;
-    for(uint32_t i=0; i<NUM_INSTR_SOURCES; i++)
-      {
-	cout << hex << "0x" << (uint32_t)source_memory[i] << dec << " ";
-      }
-    cout << endl;
-    for(uint32_t i=0; i<NUM_INSTR_DESTINATIONS; i++)
-      {
-	cout << (uint32_t)destination_registers[i] << " ";
-      }
-    cout << endl;
-    for(uint32_t i=0; i<NUM_INSTR_DESTINATIONS; i++)
-      {
-        cout << hex << "0x" << (uint32_t)destination_memory[i] << dec << " ";
-      }
-    cout << endl;
-    
-    cout << endl;
-  }
+    void print_instr()
+    {
+        cout << "*** " << instr_id << " ***" << endl;
+        cout << hex << "0x" << (uint64_t)ip << dec << endl;
+        cout << (uint32_t)is_branch << " " << (uint32_t)branch_taken << endl;
+        for(uint32_t i=0; i<NUM_INSTR_SOURCES; i++)
+        {
+            cout << (uint32_t)source_registers[i] << " ";
+        }
+        cout << endl;
+        for(uint32_t i=0; i<NUM_INSTR_SOURCES; i++)
+        {
+            cout << hex << "0x" << (uint32_t)source_memory[i] << dec << " ";
+        }
+        cout << endl;
+        for(uint32_t i=0; i<NUM_INSTR_DESTINATIONS; i++)
+        {
+            cout << (uint32_t)destination_registers[i] << " ";
+        }
+        cout << endl;
+        for(uint32_t i=0; i<NUM_INSTR_DESTINATIONS; i++)
+        {
+            cout << hex << "0x" << (uint32_t)destination_memory[i] << dec << " ";
+        }
+        cout << endl;
+
+        cout << endl;
+    }
 };
 
 #endif

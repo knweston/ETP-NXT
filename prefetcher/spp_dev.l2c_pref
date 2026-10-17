@@ -15,13 +15,13 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
 {
     uint64_t page = addr >> LOG2_PAGE_SIZE;
     uint32_t page_offset = (addr >> LOG2_BLOCK_SIZE) & (PAGE_SIZE / BLOCK_SIZE - 1),
-             last_sig = 0,
-             curr_sig = 0,
-             confidence_q[L2C_MSHR_SIZE],
-             depth = 0;
+            last_sig = 0,
+            curr_sig = 0,
+            confidence_q[L2C_MSHR_SIZE],
+            depth = 0;
 
     int32_t  delta = 0,
-             delta_q[L2C_MSHR_SIZE];
+            delta_q[L2C_MSHR_SIZE];
 
     for (uint32_t i = 0; i < L2C_MSHR_SIZE; i++){
         confidence_q[i] = 0;
@@ -29,7 +29,7 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
     }
     confidence_q[0] = 100;
     GHR.global_accuracy = GHR.pf_issued ? ((100 * GHR.pf_useful) / GHR.pf_issued)  : 0;
-    
+
     SPP_DP (
         cout << endl << "[ChampSim] " << __func__ << " addr: " << hex << addr << " cache_line: " << (addr >> LOG2_BLOCK_SIZE);
         cout << " page: " << page << " page_offset: " << dec << page_offset << endl;
@@ -49,8 +49,8 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
     // Stage 3: Start prefetching
     uint64_t base_addr = addr;
     uint32_t lookahead_conf = 100,
-             pf_q_head = 0, 
-             pf_q_tail = 0;
+            pf_q_head = 0, 
+            pf_q_tail = 0;
     uint8_t  do_lookahead = 0;
 
 #ifdef LOOKAHEAD_ON
@@ -66,7 +66,7 @@ uint32_t CACHE::l2c_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
 
                 if ((addr & ~(PAGE_SIZE - 1)) == (pf_addr & ~(PAGE_SIZE - 1))) { // Prefetch request is in the same physical page
                     if (FILTER.check(pf_addr, ((confidence_q[i] >= FILL_THRESHOLD) ? SPP_L2C_PREFETCH : SPP_LLC_PREFETCH))) {
-		      prefetch_line(ip, addr, pf_addr, ((confidence_q[i] >= FILL_THRESHOLD) ? FILL_L2 : FILL_LLC), 0); // Use addr (not base_addr) to obey the same physical page boundary
+                        prefetch_line(ip, addr, pf_addr, ((confidence_q[i] >= FILL_THRESHOLD) ? FILL_L2 : FILL_LLC), 0); // Use addr (not base_addr) to obey the same physical page boundary
 
                         if (confidence_q[i] >= FILL_THRESHOLD) {
                             GHR.pf_issued++;
@@ -155,8 +155,8 @@ uint64_t get_hash(uint64_t key)
 void SIGNATURE_TABLE::read_and_update_sig(uint64_t page, uint32_t page_offset, uint32_t &last_sig, uint32_t &curr_sig, int32_t &delta)
 {
     uint32_t set = get_hash(page) % ST_SET,
-             match = ST_WAY,
-             partial_page = page & ST_TAG_MASK;
+            match = ST_WAY,
+            partial_page = page & ST_TAG_MASK;
     uint8_t  ST_hit = 0;
     int      sig_delta = 0;
 
@@ -229,13 +229,13 @@ void SIGNATURE_TABLE::read_and_update_sig(uint64_t page, uint32_t page_offset, u
             }
         }
 
-        #ifdef SPP_SANITY_CHECK
+#ifdef SPP_SANITY_CHECK
         // Assertion
         if (match == ST_WAY) {
             cout << "[ST] Cannot find a replacement victim!" << endl;
             assert(0);
         }
-        #endif
+#endif
     }
 
 #ifdef GHR_ON
@@ -254,13 +254,13 @@ void SIGNATURE_TABLE::read_and_update_sig(uint64_t page, uint32_t page_offset, u
         if (lru[set][way] < lru[set][match]) {
             lru[set][way]++;
 
-            #ifdef SPP_SANITY_CHECK
+#ifdef SPP_SANITY_CHECK
             // Assertion
             if (lru[set][way] >= ST_WAY) {
                 cout << "[ST] LRU value is wrong! set: " << set << " way: " << way << " lru: " << lru[set][way] << endl;
                 assert(0);
             }
-            #endif
+#endif
         }
     }
     lru[set][match] = 0; // Promote to the MRU position
@@ -270,7 +270,7 @@ void PATTERN_TABLE::update_pattern(uint32_t last_sig, int curr_delta)
 {
     // Update (sig, delta) correlation
     uint32_t set = get_hash(last_sig) % PT_SET,
-             match = 0;
+            match = 0;
 
     // Case 1: Hit
     for (match = 0; match < PT_WAY; match++) {
@@ -295,7 +295,7 @@ void PATTERN_TABLE::update_pattern(uint32_t last_sig, int curr_delta)
     // Case 2: Miss
     if (match == PT_WAY) {
         uint32_t victim_way = PT_WAY,
-                 min_counter = C_SIG_MAX;
+                min_counter = C_SIG_MAX;
 
         for (match = 0; match < PT_WAY; match++) {
             if (c_delta[set][match] < min_counter) { // Select an entry with the minimum c_delta
@@ -318,13 +318,13 @@ void PATTERN_TABLE::update_pattern(uint32_t last_sig, int curr_delta)
             cout << " delta: " << delta[set][victim_way] << " c_delta: " << c_delta[set][victim_way] << " c_sig: " << c_sig[set] << endl;
         );
 
-        #ifdef SPP_SANITY_CHECK
+#ifdef SPP_SANITY_CHECK
         // Assertion
         if (victim_way == PT_WAY) {
             cout << "[PT] Cannot find a replacement victim!" << endl;
             assert(0);
         }
-        #endif
+#endif
     }
 }
 
@@ -332,9 +332,9 @@ void PATTERN_TABLE::read_pattern(uint32_t curr_sig, int *delta_q, uint32_t *conf
 {
     // Update (sig, delta) correlation
     uint32_t set = get_hash(curr_sig) % PT_SET,
-             local_conf = 0,
-             pf_conf = 0,
-             max_conf = 0;
+            local_conf = 0,
+            pf_conf = 0,
+            max_conf = 0;
 
     if (c_sig[set]) {
         for (uint32_t way = 0; way < PT_WAY; way++) {
@@ -375,9 +375,9 @@ void PATTERN_TABLE::read_pattern(uint32_t curr_sig, int *delta_q, uint32_t *conf
 bool PREFETCH_FILTER::check(uint64_t check_addr, FILTER_REQUEST filter_request)
 {
     uint64_t cache_line = check_addr >> LOG2_BLOCK_SIZE,
-             hash = get_hash(cache_line),
-             quotient = (hash >> REMAINDER_BIT) & ((1 << QUOTIENT_BIT) - 1),
-             remainder = hash % (1 << REMAINDER_BIT);
+            hash = get_hash(cache_line),
+            quotient = (hash >> REMAINDER_BIT) & ((1 << QUOTIENT_BIT) - 1),
+            remainder = hash % (1 << REMAINDER_BIT);
 
     SPP_DP (
         cout << "[FILTER] check_addr: " << hex << check_addr << " check_cache_line: " << (check_addr >> LOG2_BLOCK_SIZE);
@@ -467,7 +467,7 @@ void GLOBAL_REGISTER::update_entry(uint32_t pf_sig, uint32_t pf_confidence, uint
     // NOTE: GHR implementation is slightly different from the original paper
     // Instead of matching (last_offset + delta), GHR simply stores and matches the pf_offset
     uint32_t min_conf = 100,
-             victim_way = MAX_GHR_ENTRY;
+            victim_way = MAX_GHR_ENTRY;
 
     SPP_DP (
         cout << "[GHR] Crossing the page boundary pf_sig: " << hex << pf_sig << dec;
@@ -476,7 +476,7 @@ void GLOBAL_REGISTER::update_entry(uint32_t pf_sig, uint32_t pf_confidence, uint
 
     for (uint32_t i = 0; i < MAX_GHR_ENTRY; i++) {
         //if (sig[i] == pf_sig) { // TODO: Which one is better and consistent?
-            // If GHR already holds the same pf_sig, update the GHR entry with the latest info
+        // If GHR already holds the same pf_sig, update the GHR entry with the latest info
         if (valid[i] && (offset[i] == pf_offset)) {
             // If GHR already holds the same pf_offset, update the GHR entry with the latest info
             sig[i] = pf_sig;
@@ -518,7 +518,7 @@ void GLOBAL_REGISTER::update_entry(uint32_t pf_sig, uint32_t pf_confidence, uint
 uint32_t GLOBAL_REGISTER::check_entry(uint32_t page_offset)
 {
     uint32_t max_conf = 0,
-             max_conf_way = MAX_GHR_ENTRY;
+            max_conf_way = MAX_GHR_ENTRY;
 
     for (uint32_t i = 0; i < MAX_GHR_ENTRY; i++) {
         if ((offset[i] == page_offset) && (max_conf < confidence[i])) {

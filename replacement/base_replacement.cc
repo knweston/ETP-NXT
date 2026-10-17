@@ -93,7 +93,7 @@ void CACHE::replacement_final_stats()
 #ifdef NO_CRC2_COMPILE
 void InitReplacementState()
 {
-    
+
 }
 
 uint32_t GetVictimInSet (uint32_t cpu, uint32_t set, const BLOCK *current_set, uint64_t PC, uint64_t paddr, uint32_t type)
@@ -103,12 +103,12 @@ uint32_t GetVictimInSet (uint32_t cpu, uint32_t set, const BLOCK *current_set, u
 
 void UpdateReplacementState (uint32_t cpu, uint32_t set, uint32_t way, uint64_t paddr, uint64_t PC, uint64_t victim_addr, uint32_t type, uint8_t hit)
 {
-    
+
 }
 
 void PrintStats_Heartbeat()
 {
-    
+
 }
 
 void PrintStats()
