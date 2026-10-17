@@ -654,20 +654,23 @@ void CACHE::handle_read()
                     }
                 }
 
-                // [Kevin]
-                if (m_index) {
-                    if (block[set][way].prefetch)
-                        m_index->update(RQ.entry[index].address, lower_level, true, PF_USEFUL);
-                    else
-                        m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
-                }
+                // Save the hit classification before clearing the prefetch bit.
+                bool useful_prefetch = block[set][way].prefetch;
 
-                // update prefetch stats and reset prefetch bit
-                if (block[set][way].prefetch) {
+                // Update the hit line before the index hook can relocate it.
+                if (useful_prefetch) {
                     pf_useful++;
                     block[set][way].prefetch = 0;
                 }
                 block[set][way].used = 1;
+
+                // [Kevin]
+                if (m_index) {
+                    if (useful_prefetch)
+                        m_index->update(RQ.entry[index].address, lower_level, true, PF_USEFUL);
+                    else
+                        m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
+                }
 
                 HIT[RQ.entry[index].type]++;
                 ACCESS[RQ.entry[index].type]++;
