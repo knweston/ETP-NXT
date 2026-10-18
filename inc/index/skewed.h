@@ -6,12 +6,14 @@
 // 0: H XOR perfshuff^way(L)
 // 1: L XOR (perfshuff^(way/2)(H) AND mask), with T on even ways
 //    and its index-width complement on odd ways.
+// 2: H XOR perfshuff^way(L) for ways 0-9; H2 XOR perfshuff^(way-10)(L)
+//    for ways 10-15, where H2 is the next index-width chunk above H.
 #ifndef SKEWED_INDEX_FORMULA
-#define SKEWED_INDEX_FORMULA 1
+#define SKEWED_INDEX_FORMULA 2
 #endif
 
-#if SKEWED_INDEX_FORMULA != 0 && SKEWED_INDEX_FORMULA != 1
-#error "SKEWED_INDEX_FORMULA must be 0 (old) or 1 (paired masks)"
+#if SKEWED_INDEX_FORMULA != 0 && SKEWED_INDEX_FORMULA != 1 && SKEWED_INDEX_FORMULA != 2
+#error "SKEWED_INDEX_FORMULA must be 0 (old), 1 (paired masks), or 2 (H2)"
 #endif
 
 class SkewedIndex : public Index {
@@ -22,7 +24,7 @@ public:
         m_last_victim_address(0), m_last_invalid_mask(0), m_last_ru0_mask(0),
         m_last_clean_mask(0), m_last_dirty_mask(0), m_last_victim_set(0), m_last_victim_way(0)
     {
-        cout << "SKEWED_INDEX_FORMULA: " << (SKEWED_INDEX_FORMULA ? "new" : "old") << endl;
+        cout << "SKEWED_INDEX_FORMULA: " << (SKEWED_INDEX_FORMULA == 2 ? "new (H2)" : (SKEWED_INDEX_FORMULA == 1 ? "new" : "old")) << endl;
 
 #if SKEWED_INDEX_FORMULA == 1
         assert(NUM_SET && !(NUM_SET & (NUM_SET - 1)) &&
@@ -44,9 +46,23 @@ public:
         m_shuffled_bit_sels.push_back(perfect_shuffle(lg2(NUM_SET), 0, lg2(NUM_SET)));
         reverse(m_shuffled_bit_sels.back().begin(), m_shuffled_bit_sels.back().end());
         for (uint32_t way=0; way < NUM_WAY; ++way) {
+#if SKEWED_INDEX_FORMULA == 2
+            const uint32_t rounds = way < 10 ? way : way - 10;
+            m_shuffled_bit_sels.push_back(perfect_shuffle(lg2(NUM_SET), rounds));
+#else
             m_shuffled_bit_sels.push_back(perfect_shuffle(lg2(NUM_SET), way));
+#endif
             reverse(m_shuffled_bit_sels.back().begin(), m_shuffled_bit_sels.back().end());
         }
+#endif
+
+#if SKEWED_INDEX_FORMULA == 2
+        assert(NUM_SET && !(NUM_SET & (NUM_SET - 1)) &&
+            "H2 skewed hashing requires a power-of-two number of sets");
+        assert(NUM_WAY <= 16 && "H2 skewed hashing supports up to 16 ways");
+        // Keep H2 after the per-way L selectors; H remains selector zero.
+        m_shuffled_bit_sels.push_back(perfect_shuffle(lg2(NUM_SET), 0, 2 * lg2(NUM_SET)));
+        reverse(m_shuffled_bit_sels.back().begin(), m_shuffled_bit_sels.back().end());
 #endif
 
         for (uint32_t layer=0; layer < m_shuffled_bit_sels.size(); ++layer) {

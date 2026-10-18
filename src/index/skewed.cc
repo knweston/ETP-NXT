@@ -44,7 +44,12 @@ bool SkewedIndex::lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
 }
 
 uint32_t SkewedIndex::compute_index(uint64_t address, uint32_t way) {
+#if SKEWED_INDEX_FORMULA == 2
+    // Ways 0-9 use H; ways 10-15 use the next higher chunk H2.
+    const vector<uint32_t>& x_seq_a = way < 10 ? m_shuffled_bit_sels[0] : m_shuffled_bit_sels.back();
+#else
     const vector<uint32_t>& x_seq_a = m_shuffled_bit_sels[0];
+#endif
     const vector<uint32_t>& x_seq_b = m_shuffled_bit_sels[way+1];
     uint32_t index_a = 0;
     uint32_t index_b = 0;
@@ -58,7 +63,7 @@ uint32_t SkewedIndex::compute_index(uint64_t address, uint32_t way) {
     uint32_t mask = (way & 1) ? ((NUM_SET - 1) ^ m_mask_t) : m_mask_t;
     return index_a ^ (index_b & mask);
 #else
-    // index_a is H; index_b is perfshuff^way(L).
+    // Formula 0 uses H and perfshuff^way(L); formula 2 uses H/H2 with its per-way L permutation.
     return index_a ^ index_b;
 #endif
 }
