@@ -51,14 +51,13 @@
 # python3 autoslurm-1core.py -a parsec -o parsec-entropy1c -e entropy1c -r parsec-entropy1c -w 2
 # python3 autoslurm-1core.py -a parsec -o parsec-entropy1cpf_db_2i -e entropy1cpf_db_2i -r parsec-entropy1cpf_db_2i -w 2
 
-python3 autoslurm-1core.py -a parsec -o parsec-fxetp -e fxetp -r parsec-fxetp -w 2
-python3 autoslurm-1core.py -a parsec -o parsec-fxetppf_db_2i -e fxetppf_db_2i -r parsec-fxetppf_db_2i -w 2
-python3 autoslurm-1core.py -a dpc4-ml -o ml-fxetp -e fxetp -r ml-fxetp -w 2 -t dpc4-traces
-python3 autoslurm-1core.py -a dpc4-ml -o ml-fxetppf_db_2i -e fxetppf_db_2i -r ml-fxetppf_db_2i -w 2 -t dpc4-traces
-
-# python3 autoslurm-1core.py -a parsec -o parsec-etpminmax -e etpminmax -r parsec-etpminmax -w 2
-# python3 autoslurm-1core.py -a parsec -o parsec-etpminmaxpf_db_2i -e etpminmaxpf_db_2i -r parsec-etpminmaxpf_db_2i -w 2
-# python3 autoslurm-1core.py -a dpc4-ml -o ml-etpminmax -e etpminmax -r ml-etpminmax -w 2 -t dpc4-traces
-# python3 autoslurm-1core.py -a dpc4-ml -o ml-etpminmaxpf_db_2i -e etpminmaxpf_db_2i -r ml-etpminmaxpf_db_2i -w 2 -t dpc4-traces
-# python3 autoslurm-1core.py -a cvp1 -o cvp1-fxetp -e fxetp -r cvp1-fxetp -w 2 -t cvp1-traces
-# python3 autoslurm-1core.py -a cvp1 -o cvp1-fxetppf_db_2i -e fxetppf_db_2i -r cvp1-fxetppf_db_2i -w 2 -t cvp1-traces
+python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r dpc3-skewed_fix_modrpfh2 -w 2
+python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r dpc3-skewed_fix_modrpfh2 -w 2
+python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r dpc3-skewed_fix_modrpfh2pf_db_2i -w 2
+python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r dpc3-skewed_fix_modrpfh2pf_db_2i -w 2
+python3 autoslurm-1core.py -a parsec -o parsec-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r parsec-skewed_fix_modrpfh2 -w 2
+python3 autoslurm-1core.py -a parsec -o parsec-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r parsec-skewed_fix_modrpfh2pf_db_2i -w 2
+python3 autoslurm-1core.py -a dpc4-ml -o ml-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r ml-skewed_fix_modrpfh2 -w 2 -t dpc4-traces
+python3 autoslurm-1core.py -a dpc4-ml -o ml-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r ml-skewed_fix_modrpfh2pf_db_2i -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a cvp1 -o cvp1-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r cvp1-skewed_fix_modrpfh2 -w 2 -t cvp1-traces
+# python3 autoslurm-1core.py -a cvp1 -o cvp1-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r cvp1-skewed_fix_modrpfh2pf_db_2i -w 2 -t cvp1-traces
