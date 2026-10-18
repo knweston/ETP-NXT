@@ -281,8 +281,7 @@ uint32_t EntropyIndex::get_rrip_victim(uint32_t set) {
 }
 
 void EntropyIndex::rrip_update(uint32_t set, uint32_t way, uint32_t src_rrpv) {
-    if (rrpv[set][way] > src_rrpv)
-        rrpv[set][way] = src_rrpv;
+    rrpv[set][way] = src_rrpv;
 }
 
 uint32_t EntropyIndex::get_lru_victim(uint32_t set) {

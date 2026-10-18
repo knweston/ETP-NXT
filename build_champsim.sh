@@ -64,6 +64,32 @@ if [ ! -f ./replacement/${LLC_REPLACEMENT}.llc_repl ]; then
     exit 1
 fi
 
+# Match GeoIndex migration to the selected LLC replacement policy.
+llc_index_type=$(awk \
+    '$1 == "#define" && $2 == "LLC_INDEX_TYPE" {
+        gsub(/\r/, "", $3); print $3
+    }' inc/cache_global.h)
+
+if [ "$llc_index_type" = "9" ]; then
+    case "$LLC_REPLACEMENT" in
+        lru)   migration_policy=0 ;;
+        srrip) migration_policy=1 ;;
+        rlr)   migration_policy=2 ;;
+        *)
+            echo "[ERROR] GeoIndex migration does not support $LLC_REPLACEMENT"
+            exit 1
+            ;;
+    esac
+
+    if ! grep -Eq '^#define[[:space:]]+REPLACEMENT_POLICY[[:space:]]+[0-9]+' inc/index/etpv3.h; then
+        echo "[ERROR] Cannot find GeoIndex migration replacement policy"
+        exit 1
+    fi
+    sed -i -E \
+        "s/^#define[[:space:]]+REPLACEMENT_POLICY[[:space:]]+[0-9]+/#define REPLACEMENT_POLICY ${migration_policy}/" \
+        inc/index/etpv3.h || exit 1
+fi
+
 # Check num_core
 re='^[0-9]+$'
 if ! [[ $NUM_CORE =~ $re ]] ; then

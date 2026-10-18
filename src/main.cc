@@ -377,7 +377,6 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
 
     pr = page_table.find(vpage);
     if (pr == page_table.end()) { // no VA => PA translation found 
-
         if (allocated_pages >= DRAM_PAGES) { // not enough memory
             // TODO: elaborate page replacement algorithm
             // here, ChampSim randomly selects a page that is not recently used and we only track 32K recently accessed pages
@@ -385,7 +384,6 @@ uint64_t va_to_pa(uint32_t cpu, uint64_t instr_id, uint64_t va, uint64_t unique_
             uint64_t NRU_vpage = 0; // implement it
             // map <uint64_t, uint64_t>::iterator pr2 = recent_page.begin();
             for (pr = page_table.begin(); pr != page_table.end(); pr++) {
-
                 NRU_vpage = pr->first;
                 if (recent_page.find(NRU_vpage) == recent_page.end()) {
                     found_NRU = 1;
