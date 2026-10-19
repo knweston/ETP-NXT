@@ -24,7 +24,6 @@ bool SkewedIndex::lookup(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
          - result: hit or miss
    */
     bool is_hit = false;
-
     for (uint32_t way=0; way < NUM_WAY; ++way) {
         uint32_t hashed_index = compute_index(address, way);
         is_hit = (block_array[hashed_index][way].valid && (block_array[hashed_index][way].tag == address));

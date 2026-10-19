@@ -4,10 +4,9 @@
     - Hit/New Allocated:
         - ru_bit[set_id][way_id] = 1 when way_id is accessed
         - reset when num_accesses == RESET_PERIOD
-    - Miss: victimize in this order; the knob below controls ties
-        1. among ru_bit[set_id][way_id] = 0
-        2. among ru_bit[set_id][way_id] = 1 and dirty == 0
-        3. among ru_bit[set_id][way_id] = 1 and dirty == 1
+    - Miss: prefer invalid ways, then RU=0 ways.
+    - Among RU=1 ways, optionally prefer clean victims over dirty victims.
+    - Ties among eligible ways use the configured tie-break policy below.
 */
 
 #include "cache.h"
@@ -23,6 +22,16 @@
 #error "SKEWED_RANDOM_VICTIM_TIEBREAK must be 0 (old) or 1 (random ties)"
 #endif
 
+// 1: prefer clean RU=1 ways, preserving dirty RU=1 ways when possible.
+// 0: choose among clean and dirty RU=1 ways without a dirty-line preference.
+#ifndef SKEWED_PRIORITIZE_DIRTY_TIEBREAK
+#define SKEWED_PRIORITIZE_DIRTY_TIEBREAK 0
+#endif
+
+#if SKEWED_PRIORITIZE_DIRTY_TIEBREAK != 0 && SKEWED_PRIORITIZE_DIRTY_TIEBREAK != 1
+#error "SKEWED_PRIORITIZE_DIRTY_TIEBREAK must be 0 or 1"
+#endif
+
 #define RESET_PERIOD LLC_SET*LLC_WAY*BLOCK_SIZE/4
 uint32_t num_accesses = 0;
 
@@ -35,6 +44,8 @@ void CACHE::llc_initialize_replacement() {
     }
 
     cout << "RESET_PERIOD: " << RESET_PERIOD << endl;
+    cout << "SKEWED_PRIORITIZE_DIRTY_TIEBREAK: "
+         << (SKEWED_PRIORITIZE_DIRTY_TIEBREAK ? "enabled" : "disabled") << endl;
 }
 
 // find replacement victim
@@ -44,9 +55,16 @@ uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, c
     SkewedIndex* m_skewed_index = static_cast<SkewedIndex*>(m_index);
 
     // call get_victim from SkewedIndex class
+    const uint64_t address = full_addr >> LOG2_BLOCK_SIZE;
     uint32_t set_id = 0;
     uint32_t way_id = 0;
-    m_skewed_index->get_victim(full_addr>>LOG2_BLOCK_SIZE, &set_id, &way_id);
+    m_skewed_index->get_victim(address, &set_id, &way_id);
+
+#if LLC_ACCESS_DIAGNOSTICS
+    const BLOCK& victim = block[set_id][way_id];
+    print_llc_access_diagnostic("skewed", "victim", cpu, instr_id, type,
+        full_addr, set_id, false, -1, way_id, victim.valid, victim.full_addr);
+#endif
 
     return way_id;
 }
@@ -68,7 +86,6 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
 
 void CACHE::llc_replacement_final_stats()
 {
-    // do nothing
 }
 
 void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_id) {
@@ -107,9 +124,17 @@ void SkewedIndex::get_victim(uint64_t address, uint32_t* set_id, uint32_t* way_i
     }
 #endif
 
-    uint64_t eligible_mask = invalid_mask ? invalid_mask :
-        (ru0_mask ? ru0_mask :
-        (clean_mask ? clean_mask : dirty_mask));
+    uint64_t eligible_mask = invalid_mask;
+    if (!eligible_mask) {
+        eligible_mask = ru0_mask;
+    }
+    if (!eligible_mask) {
+#if SKEWED_PRIORITIZE_DIRTY_TIEBREAK == 1
+        eligible_mask = clean_mask ? clean_mask : dirty_mask;
+#else
+        eligible_mask = clean_mask | dirty_mask;
+#endif
+    }
     vector<uint32_t> candidates;
     for (uint32_t way = 0; way < NUM_WAY; ++way) {
         if (eligible_mask & (uint64_t{1} << way))

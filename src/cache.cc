@@ -6,6 +6,75 @@
 
 uint64_t l2pf_access = 0;
 
+void print_llc_access_diagnostic(const char* scheme, const char* phase,
+    uint32_t cpu, uint64_t instr_id, uint32_t type, uint64_t access_pa,
+    uint32_t index, bool hit, int hit_way, int victim_way,
+    bool victim_valid, uint64_t victim_pa)
+{
+#if LLC_ACCESS_DIAGNOSTICS
+    if (cpu >= NUM_CPUS || !warmup_complete[cpu])
+        return;
+
+    static const char* type_names[NUM_TYPES] = {"LOAD", "RFO", "PREFETCH", "WRITEBACK"};
+    const char* type_name = type < NUM_TYPES ? type_names[type] : "UNKNOWN";
+    const bool victim_pending = !hit && phase[0] == 'l';
+
+    cout << "[LLC_ACCESS] scheme=" << scheme
+         << " phase=" << phase
+         << " cpu=" << cpu
+         << " instr=" << instr_id
+         << " type=" << type_name
+         << " pa=0x" << hex << access_pa << dec
+         << " index=" << index
+         << " result=" << (hit ? "HIT" : "MISS")
+         << " hit_way=";
+    if (hit_way >= 0)
+        cout << hit_way;
+    else
+        cout << "-";
+
+    cout << " victim_way=";
+    if (victim_way >= 0)
+        cout << victim_way;
+    else if (victim_pending)
+        cout << "pending";
+    else
+        cout << "-";
+
+    cout << " victim_valid=";
+    if (victim_way >= 0)
+        cout << (victim_valid ? "yes" : "no");
+    else if (victim_pending)
+        cout << "pending";
+    else
+        cout << "-";
+
+    cout << " victim_pa=";
+    if (victim_way >= 0 && victim_valid)
+        cout << "0x" << hex << victim_pa << dec;
+    else if (victim_way >= 0)
+        cout << "-";
+    else if (victim_pending)
+        cout << "pending";
+    else
+        cout << "-";
+    cout << endl;
+#else
+    (void)scheme;
+    (void)phase;
+    (void)cpu;
+    (void)instr_id;
+    (void)type;
+    (void)access_pa;
+    (void)index;
+    (void)hit;
+    (void)hit_way;
+    (void)victim_way;
+    (void)victim_valid;
+    (void)victim_pa;
+#endif
+}
+
 // for testing static index hash functions (bit_sel) 
 uint32_t compute_index(uint32_t address, uint32_t* bit_sel) {
     uint32_t selected_pairs[NUM_GROUPS] = {0};
@@ -1184,6 +1253,22 @@ int CACHE::check_hit(PACKET *packet) {
             break;
         }
     }
+
+#if LLC_ACCESS_DIAGNOSTICS
+    if (cache_type == IS_LLC) {
+        const char* scheme = nullptr;
+        if (dynamic_cast<SkewedIndex*>(m_index) != nullptr)
+            scheme = "skewed";
+        else if (dynamic_cast<NoHashIndex*>(m_index) != nullptr)
+            scheme = "nohash";
+
+        if (scheme != nullptr) {
+            print_llc_access_diagnostic(scheme, "lookup", packet->cpu, packet->instr_id,
+                packet->type, packet->full_addr, set, match_way >= 0, match_way,
+                -1, false, 0);
+        }
+    }
+#endif
 
     return match_way;
 }

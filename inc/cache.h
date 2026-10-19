@@ -11,6 +11,15 @@
 #include "index/skewed.h"
 #include "index/buddy.h"
 
+#ifndef LLC_ACCESS_DIAGNOSTICS
+#define LLC_ACCESS_DIAGNOSTICS 0
+#endif
+
+void print_llc_access_diagnostic(const char* scheme, const char* phase,
+    uint32_t cpu, uint64_t instr_id, uint32_t type, uint64_t access_pa,
+    uint32_t index, bool hit, int hit_way, int victim_way,
+    bool victim_valid, uint64_t victim_pa);
+
 // PAGE
 extern uint32_t PAGE_TABLE_LATENCY, SWAP_LATENCY;
 

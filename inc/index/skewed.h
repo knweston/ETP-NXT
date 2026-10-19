@@ -9,7 +9,7 @@
 // 2: H XOR perfshuff^way(L) for ways 0-9; H2 XOR perfshuff^(way-10)(L)
 //    for ways 10-15, where H2 is the next index-width chunk above H.
 #ifndef SKEWED_INDEX_FORMULA
-#define SKEWED_INDEX_FORMULA 2
+#define SKEWED_INDEX_FORMULA 1
 #endif
 
 #if SKEWED_INDEX_FORMULA != 0 && SKEWED_INDEX_FORMULA != 1 && SKEWED_INDEX_FORMULA != 2

@@ -10,7 +10,17 @@ void CACHE::llc_initialize_replacement()
 uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
 {
     // baseline LRU
-    return lru_victim(cpu, instr_id, set, current_set, ip, full_addr, type); 
+    const uint32_t victim_way = lru_victim(cpu, instr_id, set, current_set, ip, full_addr, type);
+
+#if LLC_ACCESS_DIAGNOSTICS
+    if (dynamic_cast<NoHashIndex*>(m_index) != nullptr) {
+        const BLOCK& victim = current_set[victim_way];
+        print_llc_access_diagnostic("nohash", "victim", cpu, instr_id, type,
+            full_addr, set, false, -1, victim_way, victim.valid, victim.full_addr);
+    }
+#endif
+
+    return victim_way;
 }
 
 // called on every cache hit and cache fill
@@ -49,5 +59,4 @@ void CACHE::llc_update_replacement_state(uint32_t cpu, uint32_t set, uint32_t wa
 
 void CACHE::llc_replacement_final_stats()
 {
-
 }
