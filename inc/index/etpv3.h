@@ -3,6 +3,13 @@
 
 #include "index/entropy.h"
 
+#ifndef V3_SKIP_TRAINING_DURING_REMAP
+#define V3_SKIP_TRAINING_DURING_REMAP 0
+#endif
+#if V3_SKIP_TRAINING_DURING_REMAP != 0 && V3_SKIP_TRAINING_DURING_REMAP != 1
+#error "V3_SKIP_TRAINING_DURING_REMAP must be 0 or 1"
+#endif
+
 #define V3_ETP_CTR_MAX 65536  // 20-bit: 1048576
 #define V3_COR_CTR_MAX 65536  // 20-bit
 #define V3_SKIP_UPDATE_PF 1
@@ -85,6 +92,8 @@ public:
             cout << "m_last_seq_b: " << vec_to_string(m_last_seq_b) << endl;
             cout << "m_curr_seq_a: " << vec_to_string(m_curr_seq_a) << endl;
             cout << "m_curr_seq_b: " << vec_to_string(m_curr_seq_b) << endl;
+            cout << "V3_SKIP_TRAINING_DURING_REMAP: "
+                 << (V3_SKIP_TRAINING_DURING_REMAP ? "Yes" : "No") << endl;
             cout << endl;
         }
     }

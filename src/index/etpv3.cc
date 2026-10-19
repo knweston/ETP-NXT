@@ -167,7 +167,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
     }
     access_ctr++;
 
-    if (should_update(is_hit, type)) {
+    if (should_update(is_hit, type) && (!V3_SKIP_TRAINING_DURING_REMAP || !m_should_remap)) {
         etp_tracker_access_update(address);
         // m_etpv3_addr_hist.push_back(address);
         num_updates++;
