@@ -167,7 +167,7 @@ public:
     ~GeneticIndex() {}
     uint32_t get_set(uint64_t address);
     void     print_stats();
-    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
+    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address);
     void     move_cache_data(MEMORY *lower_level);
     uint32_t compute_index(uint64_t address, uint32_t candidate_idx);
 

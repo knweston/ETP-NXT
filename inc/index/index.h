@@ -24,6 +24,9 @@ vector<uint64_t> get_significant_indices(uint64_t* array, uint32_t array_size, d
 //========================================================================//
 class Index {
 public:
+    // -1 denotes no victim; zero remains a valid block address.
+    static constexpr uint64_t NO_EVICTION_ADDRESS = static_cast<uint64_t>(-1);
+
     Index(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length, uint32_t x_warmup=0)
         :NUM_SET(x_numset), NUM_WAY(x_numway), 
         INTERVAL_SIZE(x_interval_length), access_ctr(0), num_interval(0)
@@ -54,7 +57,7 @@ public:
     }
 
     virtual uint32_t get_set(uint64_t address) = 0;
-    virtual void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
+    virtual void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address);
     virtual void     print_stats() = 0;
     virtual void     eviction_update(BLOCK &victim_blk) {}
 
@@ -183,7 +186,7 @@ public:
     ~PrimeHashIndex() {}
     uint32_t get_set(uint64_t address) { return address % m_prime_no; }
 
-    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) override {
+    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) override {
         uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
         uint32_t hashed_index   = get_set(address);
         N_ACCESS[unhashed_index]++;
@@ -272,7 +275,7 @@ public:
         return unhashed_index ^ bitmask;
     }
 
-    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) override {
+    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) override {
         uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
         uint32_t hashed_index   = get_set(address);
         N_ACCESS[unhashed_index]++;

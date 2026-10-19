@@ -26,7 +26,7 @@ uint32_t GeneticIndex::compute_index(uint64_t address, uint32_t candidate_idx) {
     }
 }
 
-void GeneticIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
+void GeneticIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) {
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;

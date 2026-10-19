@@ -105,7 +105,7 @@ public:
     }
     ~EntropyV2() {}
 
-    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
+    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address);
     void     etp_tracker_access_update(uint64_t address);
     // void etp_tracker_access_update(bool is_hit, uint32_t type, uint64_t address);
     void     compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);

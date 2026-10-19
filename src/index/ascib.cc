@@ -164,8 +164,8 @@ void AscibIndex::finish_selection(MEMORY *lower_level) {
     candidate_transitions.clear();
 }
 
-void AscibIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
-    Index::update(address, dram, is_hit, type);
+void AscibIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) {
+    Index::update(address, dram, is_hit, type, eviction_address);
     ++phase_cycles;
 
     if (phase == BIT_VICTIMIZATION) {

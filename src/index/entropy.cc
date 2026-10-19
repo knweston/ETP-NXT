@@ -1,6 +1,6 @@
 #include "index/entropy.h"
 
-void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
+void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) {
     // Note: to reproduce MICRO24 results, skip update pref hit (both etp access update and interval access ctr), but keep updating pref miss
     // if ((type == PREFETCH) && is_hit)
     //     return;

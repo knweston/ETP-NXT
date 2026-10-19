@@ -175,7 +175,7 @@ public:
     virtual void move_cache_data(MEMORY *lower_level);
     virtual void compute_new_config(vector<BitEntropy> entropy, vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b);
     virtual void etp_tracker_access_update(uint64_t address);
-    virtual void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
+    virtual void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address);
     virtual void etp_tracker_interval_update();
 
     // replacement policy

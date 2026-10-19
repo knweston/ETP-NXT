@@ -70,7 +70,14 @@ llc_index_type=$(awk \
         gsub(/\r/, "", $3); print $3
     }' inc/cache_global.h)
 
-if [ "$llc_index_type" = "9" ]; then
+if [ "$llc_index_type" = "9" ] || [ "$llc_index_type" = "11" ]; then
+    if [ "$llc_index_type" = "11" ]; then
+        migration_header=inc/index/etpv5.h
+        migration_macro=V5_REPLACEMENT_POLICY
+    else
+        migration_header=inc/index/etpv3.h
+        migration_macro=REPLACEMENT_POLICY
+    fi
     case "$LLC_REPLACEMENT" in
         lru)   migration_policy=0 ;;
         srrip) migration_policy=1 ;;
@@ -81,13 +88,13 @@ if [ "$llc_index_type" = "9" ]; then
             ;;
     esac
 
-    if ! grep -Eq '^#define[[:space:]]+REPLACEMENT_POLICY[[:space:]]+[0-9]+' inc/index/etpv3.h; then
+    if ! grep -Eq "^#define[[:space:]]+${migration_macro}[[:space:]]+[0-9]+" "$migration_header"; then
         echo "[ERROR] Cannot find GeoIndex migration replacement policy"
         exit 1
     fi
     sed -i -E \
-        "s/^#define[[:space:]]+REPLACEMENT_POLICY[[:space:]]+[0-9]+/#define REPLACEMENT_POLICY ${migration_policy}/" \
-        inc/index/etpv3.h || exit 1
+        "s/^#define[[:space:]]+${migration_macro}[[:space:]]+[0-9]+/#define ${migration_macro} ${migration_policy}/" \
+        "$migration_header" || exit 1
 fi
 
 # Check num_core

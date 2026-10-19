@@ -47,7 +47,7 @@ public:
     ~CeaserIndex();
 
     uint32_t get_set(uint64_t address);
-    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
+    void     update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address);
     void     print_stats();
 
     uint32_t compute_index(uint64_t address, uint64_t full_key);

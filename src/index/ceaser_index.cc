@@ -13,7 +13,7 @@ uint32_t CeaserIndex::get_set(uint64_t address) {
 }
 
 //========================================================================//
-void CeaserIndex::update(uint64_t address, MEMORY *lower_level, bool is_hit, uint32_t type) {
+void CeaserIndex::update(uint64_t address, MEMORY *lower_level, bool is_hit, uint32_t type, uint64_t eviction_address) {
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;

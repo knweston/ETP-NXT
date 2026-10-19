@@ -105,7 +105,7 @@ public:
     ~BuddyIndex() {}
 
     uint32_t         get_set(uint64_t address);
-    void             update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type);
+    void             update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address);
     void             print_stats();
     vector<uint32_t> buddy_table_interval_update(uint64_t* counter_arr);
     void             print_buddy_interval_stats(uint64_t* counter_arr);

@@ -159,7 +159,7 @@ uint32_t EntropyV2::compute_sum_correl_bit_vs_sequence(uint32_t bit_a, vector<ui
     return sum_correl;
 }
 
-void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
+void EntropyV2::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) {
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;

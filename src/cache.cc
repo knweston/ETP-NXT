@@ -98,7 +98,7 @@ void CACHE::handle_fill()
 
             // [Kevin]
             if (m_index) {
-                m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
+                m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type, Index::NO_EVICTION_ADDRESS);
             }
 
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -201,6 +201,10 @@ void CACHE::handle_fill()
             sim_miss[fill_cpu][MSHR.entry[mshr_index].type]++;
             sim_access[fill_cpu][MSHR.entry[mshr_index].type]++;
 
+            // Preserve the victim before fill_cache overwrites its slot.
+            const uint64_t eviction_address = block[set][way].valid
+                ? block[set][way].address : Index::NO_EVICTION_ADDRESS;
+
             fill_cache(set, way, &MSHR.entry[mshr_index]);
 
             // RFO marks cache line dirty
@@ -253,7 +257,7 @@ void CACHE::handle_fill()
 
             // [Kevin]
             if (m_index) {                
-                m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type);
+                m_index->update(MSHR.entry[mshr_index].address, lower_level, false, MSHR.entry[mshr_index].type, eviction_address);
             }
 
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -326,7 +330,7 @@ void CACHE::handle_writeback()
 
             // [Kevin]
             if (m_index) {
-                m_index->update(WQ.entry[index].address, lower_level, true, WQ.entry[index].type);
+                m_index->update(WQ.entry[index].address, lower_level, true, WQ.entry[index].type, Index::NO_EVICTION_ADDRESS);
             }
 
             // remove this entry from WQ
@@ -531,6 +535,10 @@ void CACHE::handle_writeback()
                     sim_miss[writeback_cpu][WQ.entry[index].type]++;
                     sim_access[writeback_cpu][WQ.entry[index].type]++;
 
+                    // Preserve the victim before fill_cache overwrites its slot.
+                    const uint64_t eviction_address = block[set][way].valid
+                        ? block[set][way].address : Index::NO_EVICTION_ADDRESS;
+
                     fill_cache(set, way, &WQ.entry[index]);
 
                     // mark dirty
@@ -559,7 +567,7 @@ void CACHE::handle_writeback()
 
                     // [Kevin]
                     if (m_index) {
-                        m_index->update(WQ.entry[index].address, lower_level, false, WQ.entry[index].type);
+                        m_index->update(WQ.entry[index].address, lower_level, false, WQ.entry[index].type, eviction_address);
                     }
 
                     // remove this entry from WQ
@@ -667,9 +675,9 @@ void CACHE::handle_read()
                 // [Kevin]
                 if (m_index) {
                     if (useful_prefetch)
-                        m_index->update(RQ.entry[index].address, lower_level, true, PF_USEFUL);
+                        m_index->update(RQ.entry[index].address, lower_level, true, PF_USEFUL, Index::NO_EVICTION_ADDRESS);
                     else
-                        m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type);
+                        m_index->update(RQ.entry[index].address, lower_level, true, RQ.entry[index].type, Index::NO_EVICTION_ADDRESS);
                 }
 
                 HIT[RQ.entry[index].type]++;
@@ -903,7 +911,7 @@ void CACHE::handle_prefetch()
 
                 // Remove to reproduce results in MICRO'24 [Kevin]
                 // if (m_index) {
-                //     m_index->update(PQ.entry[index].address, lower_level, true, PQ.entry[index].type);
+                //     m_index->update(PQ.entry[index].address, lower_level, true, PQ.entry[index].type, Index::NO_EVICTION_ADDRESS);
                 // }
 
                 // run prefetcher on prefetches from higher caches

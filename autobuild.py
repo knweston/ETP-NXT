@@ -17,6 +17,7 @@ class INDEX(Enum):
    ENTROPYV2   = 8
    ENTROPYV3   = 9
    PRIMEREAL   = 10  # Build option: uses PRIMEIDEAL (type 1) with five-cycle latency.
+   ENTROPYV5   = 11
 
 def parse_index_type(str_type):
    if str_type == "nohash":
@@ -41,12 +42,14 @@ def parse_index_type(str_type):
       return INDEX.ENTROPYV2
    elif str_type == "entropyv3":
       return INDEX.ENTROPYV3
+   elif str_type in ("entropyv5", "etpv5"):
+      return INDEX.ENTROPYV5
    else:
       print("Index not found: ", str_type)
 
 # From left to right, the latency (in cycles) of:
-# nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, ascib, etpv2, etpv3, primereal
-LATENCY = [0,0,2,0,0,0,0,0,0,0,5]
+# nohash, primeideal, ceaser, xorhash, genetic, entropy, skewed, ascib, etpv2, etpv3, primereal, etpv5
+LATENCY = [0,0,2,0,0,0,0,0,0,0,5,0]
 
 
 

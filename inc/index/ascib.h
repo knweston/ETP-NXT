@@ -29,7 +29,7 @@ public:
     ~AscibIndex() {}
 
     uint32_t get_set(uint64_t address) override;
-    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) override;
+    void update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) override;
     void print_stats() override;
 
 protected:

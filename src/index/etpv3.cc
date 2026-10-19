@@ -150,7 +150,7 @@ uint32_t EntropyV3::compute_pair_table_idx(uint32_t bit_a, uint32_t bit_b) {
     }
 }
 
-void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type) {
+void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) {
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;
@@ -168,7 +168,6 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         // m_etpv3_addr_hist.push_back(address);
         num_updates++;
     }
-
 
     // should remap when last index config != current index config
     if (m_should_remap) {
