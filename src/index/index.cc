@@ -69,11 +69,14 @@ vector<uint64_t> get_significant_indices(uint64_t* array, uint32_t array_size, d
 
 void Index::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, uint64_t eviction_address) {
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
+    uint32_t hashed_index = get_set(address);
     N_ACCESS[unhashed_index]++;
     PI_N_ACCESS[unhashed_index]++;
+    H_ACCESS[hashed_index]++;
+    PI_H_ACCESS[hashed_index]++;
     if (!is_hit) {
-        MISS[unhashed_index]++;
-        PI_MISS[unhashed_index]++;
+        MISS[hashed_index]++;
+        PI_MISS[hashed_index]++;
     }
     access_ctr++;
     if (INTERVAL_SIZE && (access_ctr >= INTERVAL_SIZE)) {
@@ -86,8 +89,9 @@ void Index::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, u
         cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
         cout << "========================================================================" << endl;
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-        memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
+        memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         access_ctr = 0;
         num_interval++;
     }
@@ -97,11 +101,13 @@ void Index::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t type, u
             cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
             finish_warmup();
             memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+            memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
+            memset(MISS, 0, NUM_SET * sizeof(*MISS));
             memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+            memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
+            memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
             memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
             memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
-            memset(MISS, 0, NUM_SET * sizeof(*MISS));
-            memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
             access_ctr = 0;
             idx_warmup_complete = true;   
         }

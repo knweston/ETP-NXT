@@ -25,10 +25,6 @@ public:
         next_key = key_gen();
         last_key = curr_key;
 
-        C_ACCESS    = new uint64_t [NUM_SET];
-        PI_C_ACCESS = new uint64_t [NUM_SET];
-        memset(C_ACCESS, 0, NUM_SET * sizeof(*C_ACCESS));
-        memset(PI_C_ACCESS, 0, NUM_SET * sizeof(*PI_C_ACCESS));
 
         cout << endl;
         cout << "========================================================================" << endl;
@@ -88,8 +84,6 @@ protected:
     uint32_t S_BOX_XORING[ENCRYPTING_ADDR_PART_SIZE] = {12, 3, 5, 9, 4, 2, 11, 7, 10, 1, 8, 6, 0};
 
     BLOCK**  block_array; // ptr to the cache set data array
-    uint64_t* C_ACCESS;     // ceaser-hashed access (overall)
-    uint64_t* PI_C_ACCESS;  // ceaser-hashed access (per-interval)
 
     /*
         4-stage Feistel-Network, each F function use a 13-bit key => total 52 bits

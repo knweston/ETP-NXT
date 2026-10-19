@@ -158,10 +158,6 @@ public:
 
         m_scoreboard = vector<uint32_t>(m_population.size(), 0);
 
-        G_ACCESS    = new uint64_t [NUM_SET];
-        PI_G_ACCESS = new uint64_t [NUM_SET];
-        memset(G_ACCESS, 0, NUM_SET * sizeof(*G_ACCESS));
-        memset(PI_G_ACCESS, 0, NUM_SET * sizeof(*PI_G_ACCESS));
     }
 
     ~GeneticIndex() {}
@@ -185,8 +181,6 @@ protected:
     uint32_t current_candidate_idx;
     uint32_t last_candidate_idx;
 
-    uint64_t* G_ACCESS;     
-    uint64_t* PI_G_ACCESS;  
 
     uint32_t m_num_warmup_interval;
     bool m_evaluation_done;

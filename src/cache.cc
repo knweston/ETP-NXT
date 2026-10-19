@@ -205,6 +205,9 @@ void CACHE::handle_fill()
             const uint64_t eviction_address = block[set][way].valid
                 ? block[set][way].address : Index::NO_EVICTION_ADDRESS;
 
+            if (m_index && eviction_address != Index::NO_EVICTION_ADDRESS)
+                m_index->increment_eviction(set);
+
             fill_cache(set, way, &MSHR.entry[mshr_index]);
 
             // RFO marks cache line dirty
@@ -538,6 +541,9 @@ void CACHE::handle_writeback()
                     // Preserve the victim before fill_cache overwrites its slot.
                     const uint64_t eviction_address = block[set][way].valid
                         ? block[set][way].address : Index::NO_EVICTION_ADDRESS;
+
+                    if (m_index && eviction_address != Index::NO_EVICTION_ADDRESS)
+                        m_index->increment_eviction(set);
 
                     fill_cache(set, way, &WQ.entry[index]);
 

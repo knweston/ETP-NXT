@@ -33,15 +33,19 @@ public:
     {
         EVICTION = new uint64_t [NUM_SET];
         N_ACCESS = new uint64_t [NUM_SET];
-        MISS     = new uint64_t [NUM_SET];
+        H_ACCESS = new uint64_t [NUM_SET];
+        MISS = new uint64_t [NUM_SET];
         PI_EVICTION = new uint64_t [NUM_SET];
         PI_N_ACCESS = new uint64_t [NUM_SET];
-        PI_MISS     = new uint64_t [NUM_SET];
+        PI_H_ACCESS = new uint64_t [NUM_SET];
+        PI_MISS = new uint64_t [NUM_SET];
         memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
         memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+        memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
         memset(MISS, 0, NUM_SET * sizeof(*MISS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
 
         warmup_access(x_warmup);
@@ -50,9 +54,11 @@ public:
     ~Index() {
         delete[] EVICTION;
         delete[] N_ACCESS;
+        delete[] H_ACCESS;
         delete[] MISS;
         delete[] PI_EVICTION;
         delete[] PI_N_ACCESS;
+        delete[] PI_H_ACCESS;
         delete[] PI_MISS;
     }
 
@@ -92,12 +98,14 @@ public:
     static string  m_ipaddr;
 
     // runtime stats
-    uint64_t* N_ACCESS;     // nohash access (overall)
-    uint64_t* PI_N_ACCESS;  // nohash access (per-interval)
+    uint64_t* N_ACCESS;     // access count under the unhashed index
+    uint64_t* PI_N_ACCESS;  // per-interval unhashed access count
+    uint64_t* H_ACCESS;     // access count under the active hashed index
+    uint64_t* PI_H_ACCESS;  // per-interval hashed access count
     uint64_t* EVICTION;     // eviction      (overall)
     uint64_t* PI_EVICTION;  // eviction      (per-interval)
-    uint64_t* MISS;         // miss          (overall)
-    uint64_t* PI_MISS;      // miss          (per-interval)
+    uint64_t* MISS;       // miss count under the active hashed index
+    uint64_t* PI_MISS;    // per-interval hashed miss count
     uint32_t INTERVAL_SIZE;
     uint64_t access_ctr;
     uint32_t num_interval;
@@ -121,11 +129,11 @@ public:
     }
 
     void print_stats() {
-        cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(N_ACCESS, NUM_SET) / compute_mean(N_ACCESS, NUM_SET) << endl;
+        cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
         cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
         cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
         cout << "PER-SET EVICTION STATS: " << arr_to_string(EVICTION, NUM_SET, ", ") << endl;
-        cout << "PER-SET ACCESS STATS:   " << arr_to_string(N_ACCESS, NUM_SET, ", ") << endl;
+        cout << "PER-SET ACCESS STATS:   " << arr_to_string(H_ACCESS, NUM_SET, ", ") << endl;
     }
 };
 
@@ -177,10 +185,6 @@ public:
         }
         cout << "PRIME NUMBER: " << m_prime_no << endl;
 
-        P_ACCESS    = new uint64_t [NUM_SET];
-        PI_P_ACCESS = new uint64_t [NUM_SET];
-        memset(P_ACCESS, 0, NUM_SET * sizeof(*P_ACCESS));
-        memset(PI_P_ACCESS, 0, NUM_SET * sizeof(*PI_P_ACCESS));
     }
 
     ~PrimeHashIndex() {}
@@ -190,9 +194,14 @@ public:
         uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
         uint32_t hashed_index   = get_set(address);
         N_ACCESS[unhashed_index]++;
-        P_ACCESS[hashed_index]++;
+        H_ACCESS[hashed_index]++;
         PI_N_ACCESS[unhashed_index]++;
-        PI_P_ACCESS[hashed_index]++;
+        PI_H_ACCESS[hashed_index]++;
+        if (!is_hit) {
+            MISS[hashed_index]++;
+            PI_MISS[hashed_index]++;
+        }
+
         access_ctr++;
 
         if (INTERVAL_SIZE && (access_ctr >= INTERVAL_SIZE)) {
@@ -201,12 +210,13 @@ public:
             cout << "End of interval # " << num_interval << " Summary" << endl;
             cout << "========================================================================" << endl;
             cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-            cout << "   prime_stdev:    " << std::fixed << compute_std_dev(PI_P_ACCESS, NUM_SET) << endl;
+            cout << "   prime_stdev:    " << std::fixed << compute_std_dev(PI_H_ACCESS, NUM_SET) << endl;
             cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
             cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
             cout << "========================================================================" << endl;
             memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-            memset(PI_P_ACCESS, 0, NUM_SET * sizeof(*PI_P_ACCESS));
+            memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
+            memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
             memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
             access_ctr = 0;
             num_interval++;
@@ -217,13 +227,13 @@ public:
                 cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
                 finish_warmup();
                 memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+                memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
+                memset(MISS, 0, NUM_SET * sizeof(*MISS));
                 memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+                memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
+                memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
                 memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
                 memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
-                memset(MISS, 0, NUM_SET * sizeof(*MISS));
-                memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-                memset(P_ACCESS, 0, NUM_SET * sizeof(*P_ACCESS));
-                memset(PI_P_ACCESS, 0, NUM_SET * sizeof(*PI_P_ACCESS));
                 access_ctr = 0;
                 idx_warmup_complete = true;   
             }
@@ -231,23 +241,16 @@ public:
     }
 
     void print_stats() {
-        cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(P_ACCESS, NUM_SET) / compute_mean(P_ACCESS, NUM_SET) << endl;
+        cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
         cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
         cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
         cout << "PER-SET EVICTION STATS: " << arr_to_string(EVICTION, NUM_SET, ", ") << endl;
-        cout << "PER-SET ACCESS STATS:   " << arr_to_string(P_ACCESS, NUM_SET, ", ") << endl;
+        cout << "PER-SET ACCESS STATS:   " << arr_to_string(H_ACCESS, NUM_SET, ", ") << endl;
     }
 
 protected:
     uint32_t m_prime_no;
 
-    /* total runtime access counters:
-        P_ACCESS + PI_P_ACCESS (this class)
-        N_ACCESS + PI_N_ACCESS (base class)
-        EVICTION + PI_EVICTION (base class)
-    */
-    uint64_t* P_ACCESS;     // prime-hashed access (overall)
-    uint64_t* PI_P_ACCESS;  // prime-hashed access (per-interval)
 };
 
 //========================================================================//
@@ -257,15 +260,9 @@ class XorHash : public Index {
 public:
     XorHash(uint32_t x_numset, uint32_t x_numway, uint32_t x_interval_length)
         :Index(x_numset, x_numway, x_interval_length) {
-        X_ACCESS    = new uint64_t [NUM_SET];
-        PI_X_ACCESS = new uint64_t [NUM_SET];
-        memset(X_ACCESS, 0, NUM_SET * sizeof(*X_ACCESS));
-        memset(PI_X_ACCESS, 0, NUM_SET * sizeof(*PI_X_ACCESS));
     }
 
     ~XorHash() {
-        delete[] X_ACCESS;
-        delete[] PI_X_ACCESS;
         delete[] bit_sel;
     }
 
@@ -279,9 +276,14 @@ public:
         uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
         uint32_t hashed_index   = get_set(address);
         N_ACCESS[unhashed_index]++;
-        X_ACCESS[hashed_index]++;
+        H_ACCESS[hashed_index]++;
         PI_N_ACCESS[unhashed_index]++;
-        PI_X_ACCESS[hashed_index]++;
+        PI_H_ACCESS[hashed_index]++;
+        if (!is_hit) {
+            MISS[hashed_index]++;
+            PI_MISS[hashed_index]++;
+        }
+
         access_ctr++;
 
         if (INTERVAL_SIZE && (access_ctr >= INTERVAL_SIZE)) {
@@ -290,12 +292,13 @@ public:
             cout << "End of interval # " << num_interval << " Summary" << endl;
             cout << "========================================================================" << endl;
             cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-            cout << "   xorhash_stdev:  " << std::fixed << compute_std_dev(PI_X_ACCESS, NUM_SET) << endl;
+            cout << "   xorhash_stdev:  " << std::fixed << compute_std_dev(PI_H_ACCESS, NUM_SET) << endl;
             cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
             cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
             cout << "========================================================================" << endl;
             memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-            memset(PI_X_ACCESS, 0, NUM_SET * sizeof(*PI_X_ACCESS));
+            memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
+            memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
             memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
             access_ctr = 0;
             num_interval++;
@@ -306,13 +309,13 @@ public:
                 cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
                 finish_warmup();
                 memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+                memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
+                memset(MISS, 0, NUM_SET * sizeof(*MISS));
                 memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+                memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
+                memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
                 memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
                 memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
-                memset(MISS, 0, NUM_SET * sizeof(*MISS));
-                memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-                memset(X_ACCESS, 0, NUM_SET * sizeof(*X_ACCESS));
-                memset(PI_X_ACCESS, 0, NUM_SET * sizeof(*PI_X_ACCESS));
                 access_ctr = 0;
                 idx_warmup_complete = true;   
             }
@@ -320,7 +323,7 @@ public:
     }
 
     void print_stats() {
-        cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(X_ACCESS, NUM_SET) / compute_mean(X_ACCESS, NUM_SET) << endl;
+        cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
         cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
         cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
         cout << "PER-SET EVICTION STATS:" << endl;
@@ -329,12 +332,10 @@ public:
 
         cout << "PER-SET ACCESS STATS: " << endl;
         for (uint32_t i=0; i < NUM_SET; ++i)
-            cout << X_ACCESS[i] << endl;
+            cout << H_ACCESS[i] << endl;
     }
 
 protected:
-    uint64_t* X_ACCESS;     // xor-hashed access (overall)
-    uint64_t* PI_X_ACCESS;  // xor-hashed access (per-interval)
     uint64_t* bit_sel;
 };
 

@@ -9,11 +9,11 @@ void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;
     PI_N_ACCESS[unhashed_index]++;
-    E_ACCESS[hashed_index]++;
-    PI_E_ACCESS[hashed_index]++;
+    H_ACCESS[hashed_index]++;
+    PI_H_ACCESS[hashed_index]++;
     if (!is_hit) {
-        MISS[unhashed_index]++;
-        PI_MISS[unhashed_index]++;
+        MISS[hashed_index]++;
+        PI_MISS[hashed_index]++;
     }
     access_ctr++;
 
@@ -40,7 +40,7 @@ void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
         cout << "End of interval # " << num_interval << " Summary" << endl;
         cout << "========================================================================" << endl;
         cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-        cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_E_ACCESS, NUM_SET) << endl;
+        cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_H_ACCESS, NUM_SET) << endl;
         cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
         cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
         cout << "   map_ptr:        " << map_ptr << endl;
@@ -79,7 +79,7 @@ void EntropyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
 
         memcpy(PAST_PI_EVICTION, PI_EVICTION, NUM_SET * sizeof(*PI_N_ACCESS));
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-        memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
 
@@ -102,13 +102,13 @@ void EntropyIndex::warmup_check() {
             cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
             finish_warmup();
             memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+            memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
             memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+            memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
             memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
             memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
             memset(MISS, 0, NUM_SET * sizeof(*MISS));
             memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-            memset(E_ACCESS, 0, NUM_SET * sizeof(*E_ACCESS));
-            memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
             access_ctr = 0;
             idx_warmup_complete = true;   
         }
@@ -198,6 +198,10 @@ void EntropyIndex::move_cache_data(MEMORY *lower_level) {
                 // rlr_update(dest_index, dest_way, map_ptr, way);
             }
 
+            // A dropped source line leaves its current physical set.
+            if (!fill_ready)
+                increment_eviction(map_ptr);
+
             // invalidate the source block
             src_block->valid = 0;
 
@@ -229,11 +233,11 @@ uint32_t EntropyIndex::compute_index(uint64_t address, vector<uint32_t> x_seq_a,
 void EntropyIndex::print_stats() {
     cout << "remapping_read:      " << num_read << endl;
     cout << "remapping_writeback: " << num_writeback << endl;
-    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(E_ACCESS, NUM_SET) / compute_mean(E_ACCESS, NUM_SET) << endl;
+    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
     cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
     cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
     cout << "PER-SET EVICTION STATS:   " << arr_to_string(EVICTION, NUM_SET, ", ") << endl;
-    cout << "PER-SET ACCESS STATS:     " << arr_to_string(E_ACCESS, NUM_SET, ", ") << endl;
+    cout << "PER-SET ACCESS STATS:     " << arr_to_string(H_ACCESS, NUM_SET, ", ") << endl;
 }
 
 string EntropyIndex::etp_vector_to_string(vector<BitEntropy>& entropy) {

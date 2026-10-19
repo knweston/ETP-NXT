@@ -39,6 +39,10 @@ void EntropyV3::move_cache_data(MEMORY *lower_level) {
                 replacement_update(dest_index, dest_way, map_ptr, way);  // etp3c: no update, etp3d: original SRRIP update
             }
 
+            // A dropped source line leaves its current physical set.
+            if (!fill_ready)
+                increment_eviction(map_ptr);
+
             // invalidate the source block
             src_block->valid = 0;
             // update extra read statistics
@@ -155,11 +159,11 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;
     PI_N_ACCESS[unhashed_index]++;
-    E_ACCESS[hashed_index]++;
-    PI_E_ACCESS[hashed_index]++;
+    H_ACCESS[hashed_index]++;
+    PI_H_ACCESS[hashed_index]++;
     if (!is_hit) {
-        MISS[unhashed_index]++;
-        PI_MISS[unhashed_index]++;
+        MISS[hashed_index]++;
+        PI_MISS[hashed_index]++;
     }
     access_ctr++;
 
@@ -185,7 +189,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         cout << "End of interval # " << num_interval << " Summary" << endl;
         cout << "========================================================================" << endl;
         cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-        cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_E_ACCESS, NUM_SET) << endl;
+        cout << "   entropy_stdev:  " << std::fixed << compute_std_dev(PI_H_ACCESS, NUM_SET) << endl;
         cout << "   eviction_count: " << std::fixed << compute_sum(PI_EVICTION, NUM_SET) << "(" 
              << compute_sum(PI_EVICTION, NUM_SET)*100/INTERVAL_SIZE 
              << "%)" << endl;
@@ -216,7 +220,7 @@ void EntropyV3::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
 
         memcpy(PAST_PI_EVICTION, PI_EVICTION, NUM_SET * sizeof(*PI_N_ACCESS));
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-        memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
 

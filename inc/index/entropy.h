@@ -153,11 +153,7 @@ public:
         }
 
         m_addr_hist.push_back(0);
-        E_ACCESS    = new uint64_t [NUM_SET];
-        PI_E_ACCESS = new uint64_t [NUM_SET];
         PAST_PI_EVICTION = new uint64_t [NUM_SET];
-        memset(E_ACCESS, 0, NUM_SET * sizeof(*E_ACCESS));
-        memset(PI_E_ACCESS, 0, NUM_SET * sizeof(*PI_E_ACCESS));
         memset(PAST_PI_EVICTION, 0, NUM_SET * sizeof(*PAST_PI_EVICTION));
     }
 
@@ -211,8 +207,6 @@ protected:
     uint64_t num_drop      = 0;
     uint64_t num_read      = 0;
 
-    uint64_t* E_ACCESS;     
-    uint64_t* PI_E_ACCESS;
     uint64_t* PAST_PI_EVICTION;
 };
 

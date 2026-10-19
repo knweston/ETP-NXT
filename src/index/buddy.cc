@@ -19,11 +19,11 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;
     PI_N_ACCESS[unhashed_index]++;
-    B_ACCESS[hashed_index]++;
-    PI_B_ACCESS[hashed_index]++;
+    H_ACCESS[hashed_index]++;
+    PI_H_ACCESS[hashed_index]++;
     if (!is_hit) {
-        MISS[unhashed_index]++;
-        PI_MISS[unhashed_index]++;
+        MISS[hashed_index]++;
+        PI_MISS[hashed_index]++;
     }
     access_ctr++;
 
@@ -33,7 +33,7 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
         cout << "End of interval # " << num_interval << " Summary" << endl;
         cout << "========================================================================" << endl;
         cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-        cout << "   buddy_stdev:    " << std::fixed << compute_std_dev(PI_B_ACCESS, NUM_SET) << endl;
+        cout << "   buddy_stdev:    " << std::fixed << compute_std_dev(PI_H_ACCESS, NUM_SET) << endl;
         cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
         cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
         cout << "========================================================================" << endl;
@@ -57,8 +57,8 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
                     }
                     else {
                         replaced_block->valid = 0;
+                        increment_eviction(replaced_idx);
                     }
-                    // increment_eviction(i);  // this will change the eviction distribution, affecting future reconfiguration
                 }
             }
         }
@@ -66,7 +66,7 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
         m_table.print();
 
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-        memset(PI_B_ACCESS, 0, NUM_SET * sizeof(*PI_B_ACCESS));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
 
@@ -80,13 +80,13 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
             cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
             finish_warmup();
             memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+            memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
             memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+            memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
             memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
             memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
             memset(MISS, 0, NUM_SET * sizeof(*MISS));
             memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-            memset(B_ACCESS, 0, NUM_SET * sizeof(*B_ACCESS));
-            memset(PI_B_ACCESS, 0, NUM_SET * sizeof(*PI_B_ACCESS));
             access_ctr = 0;
             idx_warmup_complete = true;   
         }
@@ -94,13 +94,13 @@ void BuddyIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t ty
 }
 
 void BuddyIndex::print_stats() {
-    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(B_ACCESS, NUM_SET) / compute_mean(B_ACCESS, NUM_SET) << endl;
+    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
     cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
     cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
     cout << "Ovr. Writebacks:          " << num_writeback << endl;
     cout << "Ovr. Buddy hits:          " << num_buddy_hit << endl;
     cout << "PER-SET EVICTION STATS:   " << arr_to_string(EVICTION, NUM_SET, ", ") << endl;
-    cout << "PER-SET ACCESS STATS:     " << arr_to_string(B_ACCESS, NUM_SET, ", ") << endl;
+    cout << "PER-SET ACCESS STATS:     " << arr_to_string(H_ACCESS, NUM_SET, ", ") << endl;
 }
 
 void BuddyIndex::print_buddy_interval_stats(uint64_t* counter_arr) {

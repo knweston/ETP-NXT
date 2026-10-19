@@ -96,10 +96,6 @@ public:
         cout << "Oneshot pairing:  " << ONESHOT_PAIRING << endl;
         cout << "========================================================================" << endl;
 
-        B_ACCESS    = new uint64_t [NUM_SET];
-        PI_B_ACCESS = new uint64_t [NUM_SET];
-        memset(B_ACCESS, 0, NUM_SET * sizeof(*B_ACCESS));
-        memset(PI_B_ACCESS, 0, NUM_SET * sizeof(*PI_B_ACCESS));
     }
 
     ~BuddyIndex() {}
@@ -136,8 +132,6 @@ protected:
     uint64_t num_spills    = 0;   // num victim spilled over to buddy set
     bool     table_loaded  = false;
 
-    uint64_t* B_ACCESS;     
-    uint64_t* PI_B_ACCESS;
 };
 
 #endif // BUDDY_INDEX_H

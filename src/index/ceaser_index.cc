@@ -17,12 +17,12 @@ void CeaserIndex::update(uint64_t address, MEMORY *lower_level, bool is_hit, uin
     uint32_t unhashed_index = address & ((1 << lg2(NUM_SET)) - 1);
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;
-    C_ACCESS[hashed_index]++;
+    H_ACCESS[hashed_index]++;
     PI_N_ACCESS[unhashed_index]++;
-    PI_C_ACCESS[hashed_index]++;
+    PI_H_ACCESS[hashed_index]++;
     if (!is_hit) {
-        MISS[unhashed_index]++;
-        PI_MISS[unhashed_index]++;
+        MISS[hashed_index]++;
+        PI_MISS[hashed_index]++;
     }
     access_ctr++;
 
@@ -45,7 +45,7 @@ void CeaserIndex::update(uint64_t address, MEMORY *lower_level, bool is_hit, uin
         next_key = key_gen();
 
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-        memset(PI_C_ACCESS, 0, NUM_SET * sizeof(*PI_C_ACCESS));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
         num_interval++;
@@ -58,13 +58,13 @@ void CeaserIndex::update(uint64_t address, MEMORY *lower_level, bool is_hit, uin
             cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
             finish_warmup();
             memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+            memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
             memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
+            memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
             memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
             memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
             memset(MISS, 0, NUM_SET * sizeof(*MISS));
             memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
-            memset(C_ACCESS, 0, NUM_SET * sizeof(*C_ACCESS));
-            memset(PI_C_ACCESS, 0, NUM_SET * sizeof(*PI_C_ACCESS));
             access_ctr = 0;
             idx_warmup_complete = true;   
         }
@@ -79,11 +79,11 @@ void CeaserIndex::print_stats() {
     cout << "Extra READ: " << num_read << endl;
     cout << "Total DROP: " << num_drop << endl;
     cout << "========================================================================" << endl;
-    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(C_ACCESS, NUM_SET) / compute_mean(C_ACCESS, NUM_SET) << endl;
+    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
     cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
     cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
     cout << "PER-SET EVICTION STATS: " << arr_to_string(EVICTION, NUM_SET, ", ") << endl;
-    cout << "PER-SET ACCESS STATS:   " << arr_to_string(C_ACCESS, NUM_SET, ", ") << endl;
+    cout << "PER-SET ACCESS STATS:   " << arr_to_string(H_ACCESS, NUM_SET, ", ") << endl;
 }
 
 //========================================================================//
@@ -211,9 +211,15 @@ void CeaserIndex::move_cache_data(MEMORY *lower_level) {
             // override destination block with source block
             // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
             if (fill_ready) {
+                if (block_array[dest_index][dest_way].valid)
+                    increment_eviction(dest_index);
                 override_block(block, &block_array[dest_index][dest_way]);
                 lru_update(dest_index, dest_way);
             }
+
+            // A dropped source line leaves its current physical set.
+            if (!fill_ready)
+                increment_eviction(map_ptr);
 
             // invalidate the source block
             block->valid   = 0;

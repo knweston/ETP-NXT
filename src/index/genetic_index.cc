@@ -31,8 +31,8 @@ void GeneticIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
     uint32_t hashed_index   = get_set(address);
     N_ACCESS[unhashed_index]++;
     PI_N_ACCESS[unhashed_index]++;
-    G_ACCESS[hashed_index]++;
-    PI_G_ACCESS[hashed_index]++;
+    H_ACCESS[hashed_index]++;
+    PI_H_ACCESS[hashed_index]++;
     if (!is_hit) {
         MISS[hashed_index]++;
         PI_MISS[hashed_index]++;
@@ -93,12 +93,12 @@ void GeneticIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
         cout << "   curr_cand_idx:  " << current_candidate_idx << endl;
         cout << "   last_cand_idx:  " << last_candidate_idx << endl;
         cout << "   unhashed_stdev: " << std::fixed << compute_std_dev(PI_N_ACCESS, NUM_SET) << endl;
-        cout << "   genetic_stdev:  " << std::fixed << compute_std_dev(PI_G_ACCESS, NUM_SET) << endl;
+        cout << "   genetic_stdev:  " << std::fixed << compute_std_dev(PI_H_ACCESS, NUM_SET) << endl;
         cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
         cout << "   eviction_rate:  " << std::fixed << (double)compute_sum(PI_EVICTION, NUM_SET)/INTERVAL_SIZE << endl;
         cout << "========================================================================" << endl;
         memset(PI_N_ACCESS, 0, NUM_SET * sizeof(*PI_N_ACCESS));
-        memset(PI_G_ACCESS, 0, NUM_SET * sizeof(*PI_G_ACCESS));
+        memset(PI_H_ACCESS, 0, NUM_SET * sizeof(*PI_H_ACCESS));
         memset(PI_EVICTION, 0, NUM_SET * sizeof(*PI_EVICTION));
         memset(PI_MISS, 0, NUM_SET * sizeof(*PI_MISS));
         num_interval++;
@@ -109,9 +109,9 @@ void GeneticIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
             cout << "total access: " << compute_sum(N_ACCESS, NUM_SET) << endl;
             finish_warmup();
             memset(N_ACCESS, 0, NUM_SET * sizeof(*N_ACCESS));
+            memset(H_ACCESS, 0, NUM_SET * sizeof(*H_ACCESS));
             memset(EVICTION, 0, NUM_SET * sizeof(*EVICTION));
             memset(MISS, 0, NUM_SET * sizeof(*MISS));
-            memset(G_ACCESS, 0, NUM_SET * sizeof(*G_ACCESS));
             access_ctr = 0;
             idx_warmup_complete = true;   
         }
@@ -119,7 +119,7 @@ void GeneticIndex::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t 
 }
 
 void GeneticIndex::print_stats() {
-    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(G_ACCESS, NUM_SET) / compute_mean(G_ACCESS, NUM_SET) << endl;
+    cout << "Ovr. Access Stdev/Mean:   " << compute_std_dev(H_ACCESS, NUM_SET) / compute_mean(H_ACCESS, NUM_SET) << endl;
     cout << "Ovr. Eviction Stdev/Mean: " << compute_std_dev(EVICTION, NUM_SET) / compute_mean(EVICTION, NUM_SET) << endl; 
     cout << "Ovr. Evictions:           " << compute_sum(EVICTION, NUM_SET) << endl; 
     cout << "PER-SET EVICTION STATS:" << endl;
@@ -128,7 +128,7 @@ void GeneticIndex::print_stats() {
 
     cout << "PER-SET ACCESS STATS:" << endl;
     for (uint32_t i=0; i < NUM_SET; ++i)
-        cout << G_ACCESS[i] << endl;
+        cout << H_ACCESS[i] << endl;
 }
 
 vector<uint32_t> GeneticIndex::read_dna_config(string app_name) {
@@ -233,10 +233,16 @@ void GeneticIndex::move_cache_data(MEMORY *lower_level) {
             // override destination block with source block
             // we need not to up-invalidate the data in the destination block since the cache is non-inclusive
             if (fill_ready) {
+                if (block_array[dest_index][dest_way].valid)
+                    increment_eviction(dest_index);
                 override_block(block, &block_array[dest_index][dest_way]);
                 // drrip_update(dest_index, dest_way, rrpv[map_ptr][way]);
                 lru_update(dest_index, dest_way);
             }
+
+            // A dropped source line leaves its current physical set.
+            if (!fill_ready)
+                increment_eviction(map_ptr);
 
             // invalidate the source block
             block->valid   = 0;
@@ -301,9 +307,6 @@ uint32_t GeneticIndex::get_drrip_victim(uint32_t set) {
     {
         for (int i=0; i<LLC_WAY; i++)
             if (rrpv[set][i] == maxRRPV) {
-                if (block_array[set][i].valid) {
-                    increment_eviction(set);
-                }
                 return i;
             }
 

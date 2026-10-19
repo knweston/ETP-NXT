@@ -61,7 +61,6 @@ uint32_t CACHE::lru_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const 
         // }
 
         if (m_index) {
-            m_index->increment_eviction(set);
             if (type == WRITEBACK)
                 m_index->eviction_update(block[set][way]);
         }
