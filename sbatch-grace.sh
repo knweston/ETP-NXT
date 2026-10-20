@@ -29,5 +29,15 @@
 # python3 autoslurm-1core.py -a dpc4-ml -o ml-entropy1c -e entropy1c -r ml-entropy1c -w 2 -t dpc4-traces
 # python3 autoslurm-1core.py -a dpc4-ml -o ml-entropy1cpf_db_2i -e entropy1cpf_db_2i -r ml-entropy1cpf_db_2i -w 2 -t dpc4-traces
 
-# python3 autoslurm-1core.py -a cvp1 -o cvp1-etpminmax -e etpminmax -r cvp1-etpminmax -w 2 -t cvp1-traces
-# python3 autoslurm-1core.py -a cvp1 -o cvp1-etpminmaxpf_db_2i -e etpminmaxpf_db_2i -r cvp1-etpminmaxpf_db_2i -w 2 -t cvp1-traces
+
+
+# python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-etp3r_trn0 -e etp3r_trn0 -r dpc3-etp3r_trn0 -w 2
+# python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-etp3r_trn0 -e etp3r_trn0 -r dpc3-etp3r_trn0 -w 2
+# python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-etp3r_trn0pf_db_2i -e etp3r_trn0pf_db_2i -r dpc3-etp3r_trn0pf_db_2i -w 2
+# python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-etp3r_trn0pf_db_2i -e etp3r_trn0pf_db_2i -r dpc3-etp3r_trn0pf_db_2i -w 2
+# python3 autoslurm-1core.py -a parsec -o parsec-etp3r_trn0 -e etp3r_trn0 -r parsec-etp3r_trn0 -w 2
+# python3 autoslurm-1core.py -a parsec -o parsec-etp3r_trn0pf_db_2i -e etp3r_trn0pf_db_2i -r parsec-etp3r_trn0pf_db_2i -w 2
+# python3 autoslurm-1core.py -a dpc4-ml -o ml-etp3r_trn0 -e etp3r_trn0 -r ml-etp3r_trn0 -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a dpc4-ml -o ml-etp3r_trn0pf_db_2i -e etp3r_trn0pf_db_2i -r ml-etp3r_trn0pf_db_2i -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a cvp1 -o cvp1-etp3r_trn0 -e etp3r_trn0 -r cvp1-etp3r_trn0 -w 2 -t cvp1-traces
+# python3 autoslurm-1core.py -a cvp1 -o cvp1-etp3r_trn0pf_db_2i -e etp3r_trn0pf_db_2i -r cvp1-etp3r_trn0pf_db_2i -w 2 -t cvp1-traces

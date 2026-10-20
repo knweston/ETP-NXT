@@ -51,13 +51,35 @@
 # python3 autoslurm-1core.py -a parsec -o parsec-entropy1c -e entropy1c -r parsec-entropy1c -w 2
 # python3 autoslurm-1core.py -a parsec -o parsec-entropy1cpf_db_2i -e entropy1cpf_db_2i -r parsec-entropy1cpf_db_2i -w 2
 
-python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r dpc3-skewed_fix_modrpfh2 -w 2
-python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r dpc3-skewed_fix_modrpfh2 -w 2
-python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r dpc3-skewed_fix_modrpfh2pf_db_2i -w 2
-python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r dpc3-skewed_fix_modrpfh2pf_db_2i -w 2
-python3 autoslurm-1core.py -a parsec -o parsec-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r parsec-skewed_fix_modrpfh2 -w 2
-python3 autoslurm-1core.py -a parsec -o parsec-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r parsec-skewed_fix_modrpfh2pf_db_2i -w 2
-python3 autoslurm-1core.py -a dpc4-ml -o ml-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r ml-skewed_fix_modrpfh2 -w 2 -t dpc4-traces
-python3 autoslurm-1core.py -a dpc4-ml -o ml-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r ml-skewed_fix_modrpfh2pf_db_2i -w 2 -t dpc4-traces
-# python3 autoslurm-1core.py -a cvp1 -o cvp1-skewed_fix_modrpfh2 -e skewed_fix_modrpfh2 -r cvp1-skewed_fix_modrpfh2 -w 2 -t cvp1-traces
-# python3 autoslurm-1core.py -a cvp1 -o cvp1-skewed_fix_modrpfh2pf_db_2i -e skewed_fix_modrpfh2pf_db_2i -r cvp1-skewed_fix_modrpfh2pf_db_2i -w 2 -t cvp1-traces
+# python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-etp3r_rmpmax1trn0 -e etp3r_rmpmax1trn0 -r dpc3-etp3r_rmpmax1trn0 -w 2
+# python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-etp3r_rmpmax1trn0 -e etp3r_rmpmax1trn0 -r dpc3-etp3r_rmpmax1trn0 -w 2
+# python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-etp3r_rmpmax1trn0pf_db_2i -e etp3r_rmpmax1trn0pf_db_2i -r dpc3-etp3r_rmpmax1trn0pf_db_2i -w 2
+# python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-etp3r_rmpmax1trn0pf_db_2i -e etp3r_rmpmax1trn0pf_db_2i -r dpc3-etp3r_rmpmax1trn0pf_db_2i -w 2
+# python3 autoslurm-1core.py -a parsec -o parsec-etp3r_rmpmax1trn0 -e etp3r_rmpmax1trn0 -r parsec-etp3r_rmpmax1trn0 -w 2
+# python3 autoslurm-1core.py -a parsec -o parsec-etp3r_rmpmax1trn0pf_db_2i -e etp3r_rmpmax1trn0pf_db_2i -r parsec-etp3r_rmpmax1trn0pf_db_2i -w 2
+# python3 autoslurm-1core.py -a dpc4-ml -o ml-etp3r_rmpmax1trn0 -e etp3r_rmpmax1trn0 -r ml-etp3r_rmpmax1trn0 -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a dpc4-ml -o ml-etp3r_rmpmax1trn0pf_db_2i -e etp3r_rmpmax1trn0pf_db_2i -r ml-etp3r_rmpmax1trn0pf_db_2i -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a geoidx-cvp1 -o cvp1-etp3r_rmpmax1trn0 -e etp3r_rmpmax1trn0 -r cvp1-etp3r_rmpmax1trn0 -w 2 -t cvp1-traces
+# python3 autoslurm-1core.py -a geoidx-cvp1 -o cvp1-etp3r_rmpmax1trn0pf_db_2i -e etp3r_rmpmax1trn0pf_db_2i -r cvp1-etp3r_rmpmax1trn0pf_db_2i -w 2 -t cvp1-traces
+
+# python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-skewedh1 -e skewedh1 -r dpc3-skewedh1 -w 2
+# python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-skewedh1 -e skewedh1 -r dpc3-skewedh1 -w 2
+# python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-skewedh1pf_db_2i -e skewedh1pf_db_2i -r dpc3-skewedh1pf_db_2i -w 2
+# python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-skewedh1pf_db_2i -e skewedh1pf_db_2i -r dpc3-skewedh1pf_db_2i -w 2
+# python3 autoslurm-1core.py -a parsec -o parsec-skewedh1 -e skewedh1 -r parsec-skewedh1 -w 2
+# python3 autoslurm-1core.py -a parsec -o parsec-skewedh1pf_db_2i -e skewedh1pf_db_2i -r parsec-skewedh1pf_db_2i -w 2
+# python3 autoslurm-1core.py -a dpc4-ml -o ml-skewedh1 -e skewedh1 -r ml-skewedh1 -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a dpc4-ml -o ml-skewedh1pf_db_2i -e skewedh1pf_db_2i -r ml-skewedh1pf_db_2i -w 2 -t dpc4-traces
+# python3 autoslurm-1core.py -a geoidx-cvp1 -o cvp1-skewedh1 -e skewedh1 -r cvp1-skewedh1 -w 2 -t cvp1-traces
+# python3 autoslurm-1core.py -a geoidx-cvp1 -o cvp1-skewedh1pf_db_2i -e skewedh1pf_db_2i -r cvp1-skewedh1pf_db_2i -w 2 -t cvp1-traces
+
+python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-etp3r_trn1 -e etp3r_trn1 -r dpc3-etp3r_trn1 -w 2
+python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-etp3r_trn1 -e etp3r_trn1 -r dpc3-etp3r_trn1 -w 2
+python3 autoslurm-1core.py -a dpc3-simpoint -o dpc3-etp3r_trn1pf_db_2i -e etp3r_trn1pf_db_2i -r dpc3-etp3r_trn1pf_db_2i -w 2
+python3 autoslurm-1core.py -a dpc3-specmore -o dpc3-etp3r_trn1pf_db_2i -e etp3r_trn1pf_db_2i -r dpc3-etp3r_trn1pf_db_2i -w 2
+python3 autoslurm-1core.py -a parsec -o parsec-etp3r_trn1 -e etp3r_trn1 -r parsec-etp3r_trn1 -w 2
+python3 autoslurm-1core.py -a parsec -o parsec-etp3r_trn1pf_db_2i -e etp3r_trn1pf_db_2i -r parsec-etp3r_trn1pf_db_2i -w 2
+python3 autoslurm-1core.py -a dpc4-ml -o ml-etp3r_trn1 -e etp3r_trn1 -r ml-etp3r_trn1 -w 2 -t dpc4-traces
+python3 autoslurm-1core.py -a dpc4-ml -o ml-etp3r_trn1pf_db_2i -e etp3r_trn1pf_db_2i -r ml-etp3r_trn1pf_db_2i -w 2 -t dpc4-traces
+python3 autoslurm-1core.py -a geoidx-cvp1 -o cvp1-etp3r_trn1 -e etp3r_trn1 -r cvp1-etp3r_trn1 -w 2 -t cvp1-traces
+python3 autoslurm-1core.py -a geoidx-cvp1 -o cvp1-etp3r_trn1pf_db_2i -e etp3r_trn1pf_db_2i -r cvp1-etp3r_trn1pf_db_2i -w 2 -t cvp1-traces
