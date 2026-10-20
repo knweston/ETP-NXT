@@ -17,7 +17,7 @@
 // Accept a candidate when MIN * N <= E <= MAX * N.
 // Use long-double literals (L suffix) to preserve precision at the boundaries.
 #ifndef V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT
-#define V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT 1.99L
+#define V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT 1.6L
 #endif
 #ifndef V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT
 #define V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT 2.4L

@@ -162,7 +162,7 @@ def parse_apps(apps):
                      "xs.XXL64unionized-188B",\
                      "xs.XXL64unionized-24B"]
 
-   elif apps == "geoidx-hpca26":
+   elif apps == "geoidx-spec":
       requested_apps = ["403.gcc-16B","410","433","434.zeusmp-10B","437","450","456.hmmer-327B","459","462","471","473","482",\
                         "602.gcc_s-2226B","603.bwaves_s-891B","607","620","621","627","628","649","654.roms_s-1007B"]
 
