@@ -175,7 +175,6 @@ void EntropyV5::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
         cout << "   eviction_stdev: " << std::fixed << compute_std_dev(PI_EVICTION, NUM_SET) << endl; 
         cout << "   num_reset_itv:         " << num_reset_itv << endl;
         cout << "   num_reset_bitpair_etp: " << num_reset_bitpair_etp << endl;
-        cout << "   num_total_updates:     " << num_updates << endl;
         cout << "   num_eviction_pairs:    " << num_eviction_pairs << endl;
         cout << "========================================================================" << endl;
 
@@ -205,7 +204,6 @@ void EntropyV5::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
 
         num_interval++;
         access_ctr = 0;
-        num_updates= 0;
         reset_eviction_pair_counters();
     }
     warmup_check();
@@ -213,32 +211,41 @@ void EntropyV5::update(uint64_t address, MEMORY *dram, bool is_hit, uint32_t typ
 
 
 void EntropyV5::eviction_pair_update(uint64_t address, uint64_t eviction_address) {
-    // Scale all related counters and their sample weight together.
-    const uint32_t counter_limit = V5_ETP_CTR_MAX;
-    if (num_updates >= counter_limit) {
-        for (auto &counter : itv_entropy)
-            counter.m_entropy /= 2;
-        for (auto &counter : bitpair_entropy)
-            counter.m_entropy /= 2;
-        num_updates /= 2;
-        num_reset_itv++;
-        num_reset_bitpair_etp++;
-    }
-
+    bool should_reset_entropy = false;
+    bool should_reset_bitpair_entropy = false;
     const uint64_t difference = address ^ eviction_address;
     for (uint32_t i = 0; i < itv_entropy.size(); ++i) {
-        if ((difference >> i) & 1ULL)
+        if ((difference >> i) & 1ULL) {
             itv_entropy[i].m_entropy++;
+            if (itv_entropy[i].m_entropy >= V5_ETP_CTR_MAX)
+                should_reset_entropy = true;
+        }
     }
     for (uint32_t k = 0; k < bitpair_entropy.size(); ++k) {
         const uint32_t i = bitpair_entropy[k].m_segid[0];
         const uint32_t j = bitpair_entropy[k].m_segid[1];
         const bool separates = ((difference >> i) ^ (difference >> j)) & 1ULL;
-        if (separates)
+        if (separates) {
             bitpair_entropy[k].m_entropy++;
+            if (bitpair_entropy[k].m_entropy >= V5_ETP_CTR_MAX)
+                should_reset_bitpair_entropy = true;
+        }
     }
-    num_updates++;
+
     num_eviction_pairs++;
+    scaled_num_eviction_pairs++;
+
+    if (should_reset_entropy) {
+        num_reset_itv++;
+        for (auto &counter : itv_entropy)
+            counter.m_entropy /= 2;
+    }
+    if (should_reset_bitpair_entropy) {
+        num_reset_bitpair_etp++;
+        for (auto &counter : bitpair_entropy)
+            counter.m_entropy /= 2;
+        scaled_num_eviction_pairs /= 2;
+    }
 }
 
 void EntropyV5::reset_eviction_pair_counters() {
@@ -247,8 +254,8 @@ void EntropyV5::reset_eviction_pair_counters() {
         counter.m_entropy = 0;
     for (auto &counter : bitpair_entropy)
         counter.m_entropy = 0;
-    num_updates = 0;
     num_eviction_pairs = 0;
+    scaled_num_eviction_pairs = 0;
 }
 
 void EntropyV5::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b) {
@@ -258,21 +265,33 @@ void EntropyV5::compute_new_config(vector<uint32_t>& x_seq_a, vector<uint32_t>& 
     }
     vector<uint32_t> candidate_a, candidate_b;
     get_cfg_5(x_seq_a, x_seq_b, candidate_a, candidate_b);
-    uint64_t separation_score = 0;
+    uint64_t candidate_total_bitpair_entropy = 0;
     for (uint32_t i = 0; i < candidate_a.size(); ++i) {
         const uint32_t index = compute_pair_table_idx(candidate_a[i], candidate_b[i]);
-        separation_score += bitpair_entropy[index].m_entropy;
+        candidate_total_bitpair_entropy += bitpair_entropy[index].m_entropy;
     }
-    cout << "Candidate separation score: " << separation_score << endl;
+    // Compare E and N using the same halving scale as the bit-pair table.
+    const long double minimum_total_bitpair_entropy =
+        static_cast<long double>(V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT) * scaled_num_eviction_pairs;
+    const long double maximum_total_bitpair_entropy =
+        static_cast<long double>(V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT) * scaled_num_eviction_pairs;
+    const bool accept_candidate = candidate_total_bitpair_entropy > 0
+        && candidate_total_bitpair_entropy >= minimum_total_bitpair_entropy
+        && candidate_total_bitpair_entropy <= maximum_total_bitpair_entropy;
+
+    cout << "Candidate total bit-pair entropy: " << candidate_total_bitpair_entropy << endl;
     cout << "Eviction-pair samples:      " << num_eviction_pairs << endl;
-    // Relative improvement over the current mapping can divide by zero.
-    if (separation_score > 0) {
+    cout << "Scaled eviction-pair samples (N): " << scaled_num_eviction_pairs << endl;
+    cout << "Candidate entropy acceptance range: ["
+         << minimum_total_bitpair_entropy << ", "
+         << maximum_total_bitpair_entropy << "]" << endl;
+    if (accept_candidate) {
         x_seq_a = candidate_a;
         x_seq_b = candidate_b;
-        cout << "Use candidate selected from eviction-pair separation counters." << endl;
+        cout << "Candidate total bit-pair entropy is within range; use candidate." << endl;
     }
     else {
-        cout << "No separation benefit; keep current candidate." << endl;
+        cout << "Candidate total bit-pair entropy is outside range; keep current mapping." << endl;
     }
 }
 
@@ -299,13 +318,12 @@ void EntropyV5::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
         uint32_t start_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],IDX_SIZE);
         uint32_t end_search_idx=compute_pair_table_idx(sorted_nohash_idx_sequence_bpe_based[i],MAX_ADDRESS_BITS-1)+1;
         vector<BitEntropy> extracted_bpe_table;
-        int32_t ETP_CUTOFF_PT = V5_ETP_CUTOFF_STARTRATE*num_updates/100;
 
 
         while (!found) {
             for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-                if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                    && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_PT)) {
+                if ((bitpair_entropy[j].m_entropy <= next_cutoff_bpe)
+                    && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)) {
                     extracted_bpe_table.push_back(bitpair_entropy[j]);
                 }
             }
@@ -318,8 +336,8 @@ void EntropyV5::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
             }
             if (!found) {
                 for (uint32_t j=start_search_idx; j < end_search_idx; ++j) {
-                    if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe) && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)
-                        && (itv_entropy[bitpair_entropy[j].m_segid[1]].m_entropy > ETP_CUTOFF_PT)) {
+                    if ((bitpair_entropy[j].m_entropy > next_cutoff_bpe)
+                        && !is_existed(bitpair_entropy[j].m_segid[1], used_bits)) {
                         extracted_bpe_table.push_back(bitpair_entropy[j]);
                     }
                 }
@@ -330,13 +348,11 @@ void EntropyV5::get_cfg_5(vector<uint32_t>& x_seq_a, vector<uint32_t>& x_seq_b,
                     next_cutoff_bpe = extracted_bpe_table[0].m_entropy * V5_CUTOFF_PRORATE;
                     found = true;
                 }
-
-                if (!found) {
-                    if (ETP_CUTOFF_PT > 0)
-                        ETP_CUTOFF_PT -= (((double)num_updates)*0.005);
-                    else
-                        ETP_CUTOFF_PT = -1;
-                    cout << "No eligible pair. Reduce cutoff to: " << ETP_CUTOFF_PT << endl;
+                else {
+                    cout << "No unused bit-pair candidate; keep current mapping." << endl;
+                    c_seq_a = x_seq_a;
+                    c_seq_b = x_seq_b;
+                    return;
                 }
             }
         }

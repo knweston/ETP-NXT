@@ -14,7 +14,18 @@
 #define V5_SKIP_UPDATE_PF 1
 #define V5_SKIP_UPDATE_WB 0
 #define V5_CUTOFF_PRORATE 0.5
-#define V5_ETP_CUTOFF_STARTRATE 0
+// Accept a candidate when MIN * N <= E <= MAX * N.
+// Use long-double literals (L suffix) to preserve precision at the boundaries.
+#ifndef V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT
+#define V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT 1.99L
+#endif
+#ifndef V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT
+#define V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT 2.4L
+#endif
+static_assert(V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT >= 0.0,
+    "V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT must be nonnegative");
+static_assert(V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT >= V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT,
+    "V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT must be at least the minimum coefficient");
 #define V5_REPLACEMENT_POLICY 1    // 0: LRU, 1: SRRIP, 2: RLR
 
 class EntropyV5 : public EntropyIndex {
@@ -42,7 +53,6 @@ public:
             cout << "Skip Writeback:       " << (V5_SKIP_UPDATE_WB? "Yes" : "No") << endl;
             cout << "V5_ETP_CTR_MAX:       " << V5_ETP_CTR_MAX << endl;
             cout << "V5_CUTOFF_PRORATE:       " << V5_CUTOFF_PRORATE << endl;
-            cout << "V5_ETP_CUTOFF_STARTRATE: " << V5_ETP_CUTOFF_STARTRATE << endl;
             cout << "V5_REPLACEMENT_POLICY:   " << (V5_REPLACEMENT_POLICY==1? "SRRIP" : (V5_REPLACEMENT_POLICY==2? "RLR" : "LRU")) << endl;
             cout << "========================================================================" << endl;
             cout << "m_last_seq_a: " << vec_to_string(m_last_seq_a) << endl;
@@ -51,6 +61,10 @@ public:
             cout << "m_curr_seq_b: " << vec_to_string(m_curr_seq_b) << endl;
             cout << "V5_SKIP_TRAINING_DURING_REMAP: "
                  << (V5_SKIP_TRAINING_DURING_REMAP ? "Yes" : "No") << endl;
+            cout << "V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT: "
+                 << V5_CANDIDATE_ENTROPY_MIN_COEFFICIENT << endl;
+            cout << "V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT: "
+                 << V5_CANDIDATE_ENTROPY_MAX_COEFFICIENT << endl;
             cout << endl;
         }
     }
@@ -71,8 +85,9 @@ protected:
     vector<BitEntropy> bitpair_entropy;
     uint32_t num_reset_itv{0};
     uint32_t num_reset_bitpair_etp{0};
-    uint32_t num_updates{0};
     uint64_t num_eviction_pairs{0};
+    // Same updates as num_eviction_pairs; halved with the bit-pair counters.
+    uint64_t scaled_num_eviction_pairs{0};
 };
 
 #endif // ENTROPY_INDEX_V5_H
